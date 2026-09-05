@@ -1,0 +1,1168 @@
+<title>Prize Lift Under the Hood</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f5f4ef;
+    --surface: #fffdf9;
+    --ink: #1b2028;
+    --ink-2: #4c5563;
+    --muted: #7b8494;
+    --line: #dcdad2;
+    --line-strong: #b9b7ae;
+    --accent: #0f8b8d;
+    --accent-ink: #0b6f71;
+    --accent-soft: rgba(15, 139, 141, 0.12);
+    --snake: #6b4fd8;
+    --snake-soft: rgba(107, 79, 216, 0.12);
+    --warn: #fab219;
+    --warn-text: #9a6a00;
+    --crit: #d03b3b;
+    --good: #0ca30c;
+    --tier-1: #86b6ef;
+    --tier-2: #2a78d6;
+    --tier-3: #104281;
+    --grid: #e6e4dc;
+    --shadow: 0 1px 2px rgba(27, 32, 40, 0.06), 0 8px 24px rgba(27, 32, 40, 0.06);
+    --display: "Bricolage Grotesque", "Trebuchet MS", "Segoe UI", sans-serif;
+    --body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #141821;
+      --surface: #1b2028;
+      --ink: #eceef2;
+      --ink-2: #b9bfca;
+      --muted: #8b93a1;
+      --line: #2c323d;
+      --line-strong: #414957;
+      --accent: #3fbfc4;
+      --accent-ink: #5fd0d4;
+      --accent-soft: rgba(63, 191, 196, 0.16);
+      --snake: #a494f0;
+      --snake-soft: rgba(164, 148, 240, 0.16);
+      --warn-text: #fab219;
+      --tier-1: #86b6ef;
+      --tier-2: #3987e5;
+      --tier-3: #184f95;
+      --grid: #262c37;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #141821;
+    --surface: #1b2028;
+    --ink: #eceef2;
+    --ink-2: #b9bfca;
+    --muted: #8b93a1;
+    --line: #2c323d;
+    --line-strong: #414957;
+    --accent: #3fbfc4;
+    --accent-ink: #5fd0d4;
+    --accent-soft: rgba(63, 191, 196, 0.16);
+    --snake: #a494f0;
+    --snake-soft: rgba(164, 148, 240, 0.16);
+    --warn-text: #fab219;
+    --tier-1: #86b6ef;
+    --tier-2: #3987e5;
+    --tier-3: #184f95;
+    --grid: #262c37;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-ink); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .page { max-width: 1040px; margin: 0 auto; padding: 40px 20px 96px; }
+  .prose { max-width: 68ch; }
+  .prose p { margin: 0 0 14px; color: var(--ink-2); }
+  .prose p strong { color: var(--ink); font-weight: 600; }
+  .prose ul, .prose ol { margin: 0 0 14px; padding-left: 22px; color: var(--ink-2); }
+  .prose li { margin-bottom: 6px; }
+  .prose li strong { color: var(--ink); font-weight: 600; }
+
+  header { margin-bottom: 56px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    margin: 0 0 12px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-variation-settings: "opsz" 96;
+    font-weight: 700;
+    font-size: clamp(38px, 6vw, 60px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+    max-width: 16ch;
+  }
+  .lede { font-size: 19px; line-height: 1.45; color: var(--ink-2); max-width: 58ch; margin: 0 0 32px; }
+  .verdict {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px 40px;
+    border-top: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line-strong);
+    padding: 22px 0;
+    max-width: 880px;
+  }
+  .verdict h3 { font-family: var(--display); font-size: 15px; font-weight: 600; margin: 0 0 6px; letter-spacing: 0.01em; }
+  .verdict p { margin: 0; color: var(--ink-2); font-size: 15px; }
+  .verdict .num { font-family: var(--mono); color: var(--ink); }
+
+  section { margin: 0 0 72px; }
+  h2 {
+    font-family: var(--display);
+    font-variation-settings: "opsz" 48;
+    font-weight: 700;
+    font-size: clamp(26px, 3.4vw, 34px);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  h3 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 28px 0 8px; }
+
+  figure { margin: 24px 0; }
+  figure svg { display: block; max-width: 100%; height: auto; }
+  .figwrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; }
+  figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; max-width: 72ch; }
+  figcaption strong { color: var(--ink-2); font-weight: 600; }
+  .svg-ink { color: var(--ink); }
+  svg text { font-family: var(--body); font-size: 12px; fill: currentColor; }
+  svg text.mono { font-family: var(--mono); }
+  svg text.small { font-size: 11px; }
+  svg text.title { font-family: var(--display); font-size: 14px; font-weight: 600; }
+  svg .muted { opacity: 0.62; }
+
+  /* ---------- toy ---------- */
+  .toy {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 18px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
+    gap: 18px 24px;
+  }
+  @media (max-width: 760px) { .toy { grid-template-columns: 1fr; } }
+  .toy-scene { min-width: 0; }
+  .toy-scene svg { width: 100%; height: auto; display: block; }
+  .toy-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
+  .seg button {
+    font: 600 13px var(--body);
+    padding: 8px 12px;
+    background: transparent;
+    color: var(--ink-2);
+    border: 0;
+    border-right: 1px solid var(--line-strong);
+    cursor: pointer;
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-checked="true"] { background: var(--ink); color: var(--surface); }
+  .seg button[data-mode="snake"][aria-checked="true"] { background: var(--snake); color: #fff; }
+  .toy-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .btn {
+    font: 600 14px var(--body);
+    padding: 9px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .big {
+    font: 700 22px var(--display);
+    letter-spacing: 0.02em;
+    padding: 22px 12px;
+    border-radius: 10px;
+    border: 2px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    flex: 1 1 140px;
+    min-height: 84px;
+  }
+  .big:disabled { opacity: 0.35; cursor: default; }
+  .big.pull.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .big.catch { border-color: var(--crit); color: var(--crit); }
+  .big.catch.armed { background: var(--crit); color: #fff; animation: pulse 0.6s ease-in-out infinite alternate; }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.03); } }
+  @media (prefers-reduced-motion: reduce) { .big.catch.armed { animation: none; } }
+  .big small { display: block; font: 500 11px var(--mono); letter-spacing: 0.08em; opacity: 0.8; margin-top: 4px; }
+  .status {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.25;
+    min-height: 2.5em;
+    margin: 0;
+  }
+  .status.warn { color: var(--warn-text); }
+  .status.crit { color: var(--crit); }
+  .status.good { color: var(--accent-ink); }
+  .status.snake { color: var(--snake); }
+  .receipts { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; }
+  .receipts li { padding: 6px 8px; border-left: 2px solid var(--line-strong); background: var(--bg); }
+  .receipts li.empty { border-left-color: transparent; color: var(--muted); background: transparent; padding-left: 0; }
+  .private {
+    border: 1px dashed var(--snake);
+    background: var(--snake-soft);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .private .label { color: var(--snake); }
+  .private .rig { font-family: var(--mono); font-size: 14px; color: var(--ink); margin-top: 4px; }
+  .toy-note { font-size: 13px; color: var(--muted); margin: 12px 0 0; max-width: 78ch; }
+  kbd { font: 500 11px var(--mono); border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; color: var(--ink-2); }
+
+  /* ---------- chart ---------- */
+  .chart {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 16px 16px 8px;
+    position: relative;
+    overflow-x: auto;
+  }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-2); margin: 0 0 8px; }
+  .legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--sw); }
+  .tip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--ink);
+    color: var(--surface);
+    font-size: 12px;
+    padding: 6px 9px;
+    border-radius: 4px;
+    white-space: nowrap;
+    transform: translate(-50%, calc(-100% - 10px));
+    display: none;
+  }
+  .tip b { font-family: var(--mono); font-weight: 500; }
+  .chart-tools { display: flex; justify-content: flex-end; margin-top: 4px; }
+  .chart-tools button { font: 600 12px var(--body); background: none; border: 0; color: var(--accent-ink); cursor: pointer; padding: 6px 4px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 12px 0 0; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 13px; }
+  tr.rec td { background: var(--accent-soft); }
+  .chip { display: inline-block; font: 500 11px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-ink); border: 1px solid var(--accent); border-radius: 999px; padding: 1px 8px; vertical-align: middle; }
+  .tabled { overflow-x: auto; }
+
+  .edits { counter-reset: e; padding: 0; margin: 0; list-style: none; max-width: 72ch; }
+  .edits li { position: relative; padding: 12px 0 12px 44px; border-top: 1px solid var(--line); color: var(--ink-2); }
+  .edits li:last-child { border-bottom: 1px solid var(--line); }
+  .edits li::before { counter-increment: e; content: counter(e); position: absolute; left: 0; top: 12px; font-family: var(--mono); font-size: 13px; color: var(--accent-ink); }
+  .edits li strong { color: var(--ink); font-weight: 600; }
+  footer { font-size: 13px; color: var(--muted); max-width: 72ch; border-top: 1px solid var(--line); padding-top: 18px; }
+  footer code { font-family: var(--mono); font-size: 12px; }
+</style>
+
+<div class="page">
+<header>
+  <p class="eyebrow">Snake Show · design brief v2 · problem 2</p>
+  <h1>Prize Lift under the hood</h1>
+  <p class="lede">Why a Snake can always force a fault, why the heist still usually fails, and what one rule change does to the odds.</p>
+  <div class="verdict">
+    <div>
+      <h3>The winch is fine</h3>
+      <p>Each cable moves its corner within a limited reach. A weight shift sags a corner by more than the red boundary. A partner who works against you during a shift forces a fault, and their lever shows it.</p>
+    </div>
+    <div>
+      <h3>The Catch is the bottleneck</h3>
+      <p>One tap from the House partner saves the case. A heist needs that one tap to miss, twice in three attempts. Against an average partner the Snakes win <span class="num">16%</span> of episodes.</p>
+    </div>
+    <div>
+      <h3>The change</h3>
+      <p>Give each Snake their own Rig attempt every act. Same Catch, same winch. Snake wins rise to <span class="num">37%</span> against average partners, and the shared-attempt machinery disappears.</p>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 1. THE RIG ============ -->
+<section>
+  <p class="eyebrow">The rig</p>
+  <h2>Two corners, two cables, one motor that never waits</h2>
+  <div class="prose">
+    <p>The motor raises the case for about 21 seconds through three secured heights. Each operator holds one cable. <strong>Pull</strong> raises that corner, <strong>release</strong> lets it settle. The capsule inside slides around, so one corner gets heavier for a few seconds at a time. The brief describes all of this. What it doesn't say is how far one operator can move a corner, and that number decides everything below.</p>
+  </div>
+  <figure>
+    <div class="figwrap svg-ink">
+      <svg viewBox="0 0 760 340" role="img" aria-label="The Prize Lift gantry: a motor on a beam raises a case hung from two corner cables, each controlled by one console with a limited reach. The capsule has shifted to the left corner, which sags.">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <!-- pool -->
+        <rect x="100" y="300" width="520" height="24" fill="currentColor" opacity="0.1"/>
+        <text x="110" y="316" class="small muted">pool</text>
+        <!-- beam + motor -->
+        <rect x="100" y="36" width="520" height="10" fill="currentColor"/>
+        <rect x="320" y="10" width="120" height="26" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="380" y="27" text-anchor="middle" class="title">Motor · 21 s</text>
+        <!-- shelf -->
+        <rect x="560" y="92" width="70" height="8" fill="currentColor"/>
+        <text x="595" y="84" text-anchor="middle" class="small">shelf (delivery)</text>
+        <!-- drums -->
+        <circle cx="230" cy="41" r="9" fill="var(--surface)" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="490" cy="41" r="9" fill="var(--surface)" stroke="currentColor" stroke-width="1.5"/>
+        <!-- cables -->
+        <line x1="230" y1="50" x2="230" y2="150" stroke="currentColor" stroke-width="2"/>
+        <line x1="490" y1="50" x2="490" y2="135" stroke="currentColor" stroke-width="2"/>
+        <text x="240" y="100" class="small">cable 1</text>
+        <text x="500" y="100" class="small">cable 2</text>
+        <!-- reach brackets -->
+        <line x1="200" y1="112" x2="200" y2="188" stroke="currentColor" stroke-width="1.2" marker-start="url(#arr)" marker-end="url(#arr)"/>
+        <text x="192" y="154" text-anchor="end" class="small">reach</text>
+        <text x="192" y="167" text-anchor="end" class="small mono">±1.0</text>
+        <line x1="520" y1="97" x2="520" y2="173" stroke="currentColor" stroke-width="1.2" marker-start="url(#arr)" marker-end="url(#arr)"/>
+        <text x="528" y="139" class="small">reach</text>
+        <text x="528" y="152" class="small mono">±1.0</text>
+        <!-- case (tilted: left corner low) -->
+        <polygon points="230,150 490,135 495,215 235,230" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+        <!-- capsule shifted left -->
+        <circle cx="300" cy="190" r="26" fill="var(--snake-soft)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="300" y="194" text-anchor="middle" class="small">prize</text>
+        <line x1="400" y1="190" x2="336" y2="190" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+        <text x="405" y="186" class="small">weight shifts</text>
+        <text x="405" y="199" class="small">→ that corner sags</text>
+        <!-- consoles -->
+        <rect x="110" y="256" width="96" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="158" y="271" text-anchor="middle" class="small">Console 1</text>
+        <text x="158" y="284" text-anchor="middle" class="small mono">PULL · hold</text>
+        <rect x="554" y="256" width="96" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="602" y="271" text-anchor="middle" class="small">Console 2</text>
+        <text x="602" y="284" text-anchor="middle" class="small mono">PULL · hold</text>
+        <polyline points="158,256 158,41 221,41" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <polyline points="602,256 602,41 499,41" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="146" y="215" text-anchor="end" class="small muted">controls</text>
+        <text x="614" y="215" class="small muted">controls</text>
+      </svg>
+    </div>
+    <figcaption><strong>The gantry as the brief describes it, plus one number it leaves out.</strong> Each console can raise or lower its own corner within a limited reach. The capsule has slid to the left, so the left corner hangs lower until cable 1 pulls and cable 2 eases.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="figwrap svg-ink">
+      <svg viewBox="0 0 560 122" role="img" aria-label="Three quantities compared as bars: one corner's reach is 1.0 units, the sag from a weight shift is 1.6 units, and the red tilt boundary is 0.9 units. Two operators together reach 2.0 units.">
+        <line x1="180" y1="8" x2="180" y2="112" stroke="currentColor" stroke-width="1"/>
+        <line x1="480" y1="8" x2="480" y2="112" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"/>
+        <text x="480" y="6" text-anchor="middle" class="small muted">both operators together · 2.0</text>
+        <text x="170" y="32" text-anchor="end">one corner's reach</text>
+        <rect x="180" y="20" width="150" height="16" rx="2" fill="currentColor" opacity="0.55"/>
+        <text x="338" y="32" class="mono">1.0</text>
+        <text x="170" y="64" text-anchor="end">sag from a weight shift</text>
+        <rect x="180" y="52" width="240" height="16" rx="2" fill="var(--snake)"/>
+        <text x="428" y="64" class="mono">1.6</text>
+        <text x="170" y="96" text-anchor="end">red tilt boundary</text>
+        <rect x="180" y="84" width="135" height="16" rx="2" fill="var(--crit)"/>
+        <text x="323" y="96" class="mono">0.9</text>
+      </svg>
+    </div>
+    <figcaption><strong>The three numbers that make the winch work, in proposed units.</strong> A shift sags a corner more than the red boundary, so an unmanaged shift faults. One operator can't absorb it alone, so the pair has to cooperate. Two operators together can. These are my proposed settings, not the brief's.</figcaption>
+  </figure>
+</section>
+
+<!-- ============ 2. THREE OUTCOMES ============ -->
+<section>
+  <p class="eyebrow">Same shift, three partners</p>
+  <h2>What a partner does during a shift decides the outcome</h2>
+  <div class="prose">
+    <p>Take the same moment three times: the weight slides to your corner, so your corner sags by 1.6 and you pull all the way up. What happens next depends only on the other lever.</p>
+  </div>
+  <figure>
+    <div class="figwrap svg-ink">
+      <svg viewBox="0 0 960 330" role="img" aria-label="Three panels. Both adjust: you pull, partner releases, the case stays level and delivers. Partner idle: you pull, partner does nothing, the case wobbles into the amber zone but delivers. Snake holds Pull: you pull, the Snake also pulls, the case tilts past the red boundary and faults.">
+        <defs>
+          <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <!-- ===== Panel A ===== -->
+        <g>
+          <text x="150" y="22" text-anchor="middle" class="title">Both adjust</text>
+          <rect x="40" y="44" width="220" height="6" fill="currentColor"/>
+          <line x1="90" y1="50" x2="90" y2="128" stroke="currentColor" stroke-width="2"/>
+          <line x1="210" y1="50" x2="210" y2="128" stroke="currentColor" stroke-width="2"/>
+          <polygon points="90,128 210,128 210,188 90,188" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+          <circle cx="118" cy="158" r="15" fill="var(--snake-soft)" stroke="currentColor" stroke-width="1.2"/>
+          <text x="72" y="95" text-anchor="end" class="small mono">sag 1.6</text>
+          <line x1="76" y1="100" x2="86" y2="120" stroke="currentColor" stroke-width="1" marker-end="url(#arr2)"/>
+          <!-- operator chips -->
+          <rect x="40" y="212" width="104" height="30" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2"/>
+          <text x="92" y="226" text-anchor="middle" class="small">You</text>
+          <text x="92" y="238" text-anchor="middle" class="small mono">PULL ▲ to +1</text>
+          <rect x="156" y="212" width="104" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <text x="208" y="226" text-anchor="middle" class="small">Partner</text>
+          <text x="208" y="238" text-anchor="middle" class="small mono">release ▼ to −0.6</text>
+          <!-- gauge -->
+          <rect x="40" y="262" width="65" height="12" fill="var(--crit)" opacity="0.35"/>
+          <rect x="105" y="262" width="22" height="12" fill="var(--warn)" opacity="0.45"/>
+          <rect x="127" y="262" width="46" height="12" fill="var(--good)" opacity="0.3"/>
+          <rect x="173" y="262" width="22" height="12" fill="var(--warn)" opacity="0.45"/>
+          <rect x="195" y="262" width="65" height="12" fill="var(--crit)" opacity="0.35"/>
+          <circle cx="150" cy="268" r="7" fill="currentColor"/>
+          <text x="150" y="294" text-anchor="middle" class="small mono">tilt 0.0</text>
+          <text x="150" y="316" text-anchor="middle">Level → delivered</text>
+        </g>
+        <!-- ===== Panel B ===== -->
+        <g transform="translate(330,0)">
+          <text x="150" y="22" text-anchor="middle" class="title">Partner idle</text>
+          <rect x="40" y="44" width="220" height="6" fill="currentColor"/>
+          <line x1="90" y1="50" x2="90" y2="128" stroke="currentColor" stroke-width="2"/>
+          <line x1="210" y1="50" x2="210" y2="140" stroke="currentColor" stroke-width="2"/>
+          <polygon points="90,128 210,140 204,200 84,188" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+          <circle cx="116" cy="163" r="15" fill="var(--snake-soft)" stroke="currentColor" stroke-width="1.2"/>
+          <text x="72" y="95" text-anchor="end" class="small mono">sag 1.6</text>
+          <line x1="76" y1="100" x2="86" y2="120" stroke="currentColor" stroke-width="1" marker-end="url(#arr2)"/>
+          <rect x="40" y="212" width="104" height="30" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2"/>
+          <text x="92" y="226" text-anchor="middle" class="small">You</text>
+          <text x="92" y="238" text-anchor="middle" class="small mono">PULL ▲ to +1</text>
+          <rect x="156" y="212" width="104" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <text x="208" y="226" text-anchor="middle" class="small">Partner</text>
+          <text x="208" y="238" text-anchor="middle" class="small mono">nothing · settles to −1</text>
+          <rect x="40" y="262" width="65" height="12" fill="var(--crit)" opacity="0.35"/>
+          <rect x="105" y="262" width="22" height="12" fill="var(--warn)" opacity="0.45"/>
+          <rect x="127" y="262" width="46" height="12" fill="var(--good)" opacity="0.3"/>
+          <rect x="173" y="262" width="22" height="12" fill="var(--warn)" opacity="0.45"/>
+          <rect x="195" y="262" width="65" height="12" fill="var(--crit)" opacity="0.35"/>
+          <circle cx="130" cy="268" r="7" fill="currentColor"/>
+          <text x="150" y="294" text-anchor="middle" class="small mono">tilt 0.4</text>
+          <text x="150" y="316" text-anchor="middle">Wobble → still delivers</text>
+        </g>
+        <!-- ===== Panel C ===== -->
+        <g transform="translate(660,0)">
+          <text x="150" y="22" text-anchor="middle" class="title" fill="var(--snake)">Snake holds Pull</text>
+          <rect x="40" y="44" width="220" height="6" fill="currentColor"/>
+          <line x1="90" y1="50" x2="90" y2="128" stroke="currentColor" stroke-width="2"/>
+          <line x1="210" y1="50" x2="210" y2="80" stroke="var(--snake)" stroke-width="2.5"/>
+          <polygon points="90,128 210,80 232,136 112,184" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+          <circle cx="128" cy="150" r="15" fill="var(--snake-soft)" stroke="currentColor" stroke-width="1.2"/>
+          <text x="72" y="95" text-anchor="end" class="small mono">sag 1.6</text>
+          <line x1="76" y1="100" x2="86" y2="120" stroke="currentColor" stroke-width="1" marker-end="url(#arr2)"/>
+          <text x="222" y="68" class="small mono" fill="var(--snake)">+1 held</text>
+          <rect x="40" y="212" width="104" height="30" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2"/>
+          <text x="92" y="226" text-anchor="middle" class="small">You</text>
+          <text x="92" y="238" text-anchor="middle" class="small mono">PULL ▲ to +1</text>
+          <rect x="156" y="212" width="104" height="30" rx="3" fill="var(--snake-soft)" stroke="var(--snake)" stroke-width="1.5"/>
+          <text x="208" y="226" text-anchor="middle" class="small">Partner (Snake)</text>
+          <text x="208" y="238" text-anchor="middle" class="small mono">PULL ▲ held at +1</text>
+          <rect x="40" y="262" width="65" height="12" fill="var(--crit)" opacity="0.35"/>
+          <rect x="105" y="262" width="22" height="12" fill="var(--warn)" opacity="0.45"/>
+          <rect x="127" y="262" width="46" height="12" fill="var(--good)" opacity="0.3"/>
+          <rect x="173" y="262" width="22" height="12" fill="var(--warn)" opacity="0.45"/>
+          <rect x="195" y="262" width="65" height="12" fill="var(--crit)" opacity="0.35"/>
+          <circle cx="230" cy="268" r="7" fill="var(--crit)"/>
+          <text x="150" y="294" text-anchor="middle" class="small mono">tilt 1.6 · past red 0.9</text>
+          <text x="150" y="316" text-anchor="middle" fill="var(--crit)">Held 1 s → fault → Catch</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><strong>You pull to the top of your reach in all three.</strong> With a cooperating partner the case levels. With an idle partner it wobbles into amber and still delivers. With a Snake holding Pull, your corner sits 1.6 below theirs and nothing you do at the winch changes that. Their lever is up while their corner is high, which is exactly the receipt in the brief's example. If the shift lands on an idle partner's corner instead, the case faults too, and their inaction is equally visible.</figcaption>
+  </figure>
+</section>
+
+<!-- ============ 3. THE TOY ============ -->
+<section>
+  <p class="eyebrow">Try it</p>
+  <h2>Run one lift as the House operator</h2>
+  <div class="prose">
+    <p>You hold cable 1. Hold <strong>Pull</strong> when your corner sags, let go when it's high. Watch the partner's lever. When the case faults, tap <strong>Catch</strong> once while the needle is in the zone. Switch the partner to <strong>Snake</strong> to see the heist attempt from the House side.</p>
+  </div>
+
+  <div class="toy" id="toy">
+    <div class="toy-scene">
+      <svg id="scene" viewBox="0 0 560 330" aria-label="Live Prize Lift scene">
+        <defs>
+          <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <g class="svg-ink" id="sceneInk">
+          <!-- pool -->
+          <rect x="40" y="292" width="480" height="20" fill="var(--accent)" opacity="0.18"/>
+          <!-- height ladder -->
+          <line x1="52" y1="70" x2="52" y2="250" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+          <line x1="46" y1="250" x2="58" y2="250" stroke="currentColor" stroke-width="1"/>
+          <line x1="46" y1="190" x2="58" y2="190" stroke="currentColor" stroke-width="1"/>
+          <line x1="46" y1="130" x2="58" y2="130" stroke="currentColor" stroke-width="1"/>
+          <line x1="46" y1="70" x2="58" y2="70" stroke="currentColor" stroke-width="1"/>
+          <text x="64" y="253" class="small muted">start</text>
+          <text x="64" y="193" class="small muted">1/3</text>
+          <text x="64" y="133" class="small muted">2/3</text>
+          <text x="64" y="73" class="small muted">shelf</text>
+          <rect id="progFill" x="49" y="250" width="6" height="0" fill="var(--accent)"/>
+          <!-- beam + motor -->
+          <rect x="120" y="30" width="360" height="8" fill="currentColor"/>
+          <rect x="250" y="8" width="100" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <text id="motorTxt" x="300" y="23" text-anchor="middle" class="small mono">MOTOR</text>
+          <!-- shelf -->
+          <rect x="440" y="82" width="60" height="6" fill="currentColor"/>
+          <text x="470" y="76" text-anchor="middle" class="small muted">shelf</text>
+          <!-- cables -->
+          <line id="cabL" x1="200" y1="38" x2="200" y2="238" stroke="currentColor" stroke-width="2"/>
+          <line id="cabR" x1="360" y1="38" x2="360" y2="238" stroke="currentColor" stroke-width="2"/>
+          <!-- case -->
+          <polygon id="caseP" points="200,238 360,238 360,290 200,290" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+          <circle id="capsule" cx="280" cy="264" r="16" fill="var(--snake-soft)" stroke="currentColor" stroke-width="1.2"/>
+          <!-- shift cue -->
+          <g id="cue" opacity="0">
+            <text id="cueTxt" x="280" y="222" text-anchor="middle" class="small">weight shifting →</text>
+          </g>
+          <!-- consoles -->
+          <g id="conL">
+            <rect x="96" y="256" width="84" height="30" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2"/>
+            <text x="138" y="268" text-anchor="middle" class="small">You · cable 1</text>
+            <text id="leverL" x="138" y="281" text-anchor="middle" class="small mono">release</text>
+            <text id="arrowL" x="138" y="246" text-anchor="middle" class="small mono">● level</text>
+          </g>
+          <g id="conR">
+            <rect id="conRbox" x="380" y="256" width="84" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+            <text id="conRname" x="422" y="268" text-anchor="middle" class="small">Partner · cable 2</text>
+            <text id="leverR" x="422" y="281" text-anchor="middle" class="small mono">release</text>
+            <text id="arrowR" x="422" y="246" text-anchor="middle" class="small mono">● level</text>
+          </g>
+          <!-- tilt gauge -->
+          <g id="gauge">
+            <rect x="180" y="306" width="60" height="10" fill="var(--crit)" opacity="0.35"/>
+            <rect x="240" y="306" width="18" height="10" fill="var(--warn)" opacity="0.45"/>
+            <rect x="258" y="306" width="44" height="10" fill="var(--good)" opacity="0.3"/>
+            <rect x="302" y="306" width="18" height="10" fill="var(--warn)" opacity="0.45"/>
+            <rect x="320" y="306" width="60" height="10" fill="var(--crit)" opacity="0.35"/>
+            <circle id="bubble" cx="280" cy="311" r="6" fill="currentColor"/>
+            <circle id="dangerRing" cx="280" cy="311" r="10" fill="none" stroke="var(--crit)" stroke-width="2.5" stroke-dasharray="62.8" stroke-dashoffset="62.8" transform="rotate(-90 280 311)"/>
+            <text x="172" y="315" text-anchor="end" class="small muted">tilt</text>
+          </g>
+          <!-- catch track -->
+          <g id="catchTrack" opacity="0">
+            <rect x="180" y="304" width="200" height="14" fill="none" stroke="var(--crit)" stroke-width="1.5"/>
+            <rect x="300" y="304" width="66" height="14" fill="var(--crit)" opacity="0.35"/>
+            <line id="needle" x1="180" y1="298" x2="180" y2="324" stroke="currentColor" stroke-width="3"/>
+            <text x="172" y="315" text-anchor="end" class="small mono" fill="var(--crit)">CATCH</text>
+            <text id="catchT" x="388" y="315" class="small mono">3.0 s</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="toy-side">
+      <div class="toy-row">
+        <span class="label">Partner</span>
+        <div class="seg" role="radiogroup" aria-label="Partner behavior">
+          <button type="button" role="radio" data-mode="coop" aria-checked="true">Cooperative</button>
+          <button type="button" role="radio" data-mode="idle" aria-checked="false">Idle</button>
+          <button type="button" role="radio" data-mode="snake" aria-checked="false">Snake</button>
+        </div>
+        <button type="button" class="btn primary" id="startBtn">Start lift</button>
+      </div>
+      <p class="status" id="status">Pick a partner and start the lift.</p>
+      <div class="toy-row">
+        <button type="button" class="big pull" id="pullBtn" disabled>PULL<small>hold · or <kbd>Space</kbd></small></button>
+        <button type="button" class="big catch" id="catchBtn" disabled>CATCH<small>one tap · or <kbd>Enter</kbd></small></button>
+      </div>
+      <div class="private" id="private" hidden>
+        <span class="label">Snake's private screen</span>
+        <div class="rig" id="rigTxt">Rig: ready</div>
+        <div>Nothing on the public scene changes when this arms.</div>
+      </div>
+      <div>
+        <span class="label">Receipts this act</span>
+        <ul class="receipts" id="receipts"><li class="empty">The show's cameras haven't recorded anything yet.</li></ul>
+      </div>
+    </div>
+  </div>
+  <p class="toy-note">Timings come from the brief: a 21-second lift, red tilt held for one second, a 3-second Catch with two passes and a half-second zone, one tap per player. The cooperative partner reacts after 0.3 seconds and catches 70% of the time. Reach, sag, and the shift schedule are the proposed settings above. This is a teaching toy, not the game's physics.</p>
+</section>
+
+<!-- ============ 4. THE FUNNEL ============ -->
+<section>
+  <p class="eyebrow">From fault to heist</p>
+  <h2>Everything after the fault is one tap</h2>
+  <div class="prose">
+    <p>Once you accept that a Snake can always force a fault, the heist chain is short. The Snake arms Rig privately, waits for a shift toward the partner's corner, holds Pull through it, and then hopes the partner's one Catch tap misses. Nothing else in the chain has odds worth modeling.</p>
+  </div>
+  <figure>
+    <div class="figwrap svg-ink">
+      <svg viewBox="0 0 960 170" role="img" aria-label="Flow: Rig held 1.5 seconds and armed privately, then a shift toward the partner's corner, then the Snake holds Pull and the fault is forced, then the partner's one Catch tap. A hit leads to caught and rig cleared. A miss leads to a drop into the Snake channel, a heist.">
+        <defs>
+          <marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <!-- step 1 -->
+        <rect x="16" y="56" width="150" height="56" rx="4" fill="var(--snake-soft)" stroke="var(--snake)" stroke-width="1.5"/>
+        <text x="91" y="79" text-anchor="middle" class="title">Rig held 1.5 s</text>
+        <text x="91" y="97" text-anchor="middle" class="small">armed · private</text>
+        <line x1="166" y1="84" x2="196" y2="84" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr4)"/>
+        <!-- step 2 -->
+        <rect x="198" y="56" width="160" height="56" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="278" y="79" text-anchor="middle" class="title">Shift toward</text>
+        <text x="278" y="97" text-anchor="middle" class="small">partner's corner · ≥1 per lift</text>
+        <line x1="358" y1="84" x2="388" y2="84" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr4)"/>
+        <!-- step 3 -->
+        <rect x="390" y="56" width="160" height="56" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="470" y="79" text-anchor="middle" class="title">Snake holds Pull</text>
+        <text x="470" y="97" text-anchor="middle" class="small">fault forced · visible</text>
+        <line x1="550" y1="84" x2="580" y2="84" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr4)"/>
+        <!-- step 4 -->
+        <rect x="582" y="56" width="140" height="56" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="652" y="79" text-anchor="middle" class="title">Partner's one tap</text>
+        <text x="652" y="97" text-anchor="middle" class="small">half-second zone, two passes</text>
+        <!-- branches -->
+        <path d="M722,74 C750,74 750,36 780,36" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr4)"/>
+        <path d="M722,94 C750,94 750,132 780,132" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr4)"/>
+        <text x="742" y="50" text-anchor="middle" class="small mono">hit</text>
+        <text x="742" y="124" text-anchor="middle" class="small mono">miss</text>
+        <rect x="782" y="16" width="160" height="40" rx="4" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="862" y="34" text-anchor="middle" class="title">Caught</text>
+        <text x="862" y="49" text-anchor="middle" class="small">rig cleared · attempt spent</text>
+        <rect x="782" y="112" width="160" height="40" rx="4" fill="var(--snake-soft)" stroke="var(--snake)" stroke-width="1.5"/>
+        <text x="862" y="130" text-anchor="middle" class="title">Drop → heist</text>
+        <text x="862" y="145" text-anchor="middle" class="small">looks like any other drop</text>
+      </svg>
+    </div>
+    <figcaption><strong>The heist chain.</strong> Only the last step has odds. The partner's miss rate is the heist rate, and Snakes need two heists.</figcaption>
+  </figure>
+  <div class="tabled">
+    <table>
+      <thead>
+        <tr><th>House partner</th><th class="num">Single-tap hit</th><th class="num">Heist per attempt</th><th class="num">2 heists from 3 team attempts</th><th class="num">2 heists from 6 per-Snake attempts</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Novice</td><td class="num">50%</td><td class="num">50%</td><td class="num">50%</td><td class="num">89%</td></tr>
+        <tr><td>Average</td><td class="num">70%</td><td class="num">30%</td><td class="num">22%</td><td class="num">58%</td></tr>
+        <tr><td>Practiced</td><td class="num">90%</td><td class="num">10%</td><td class="num">3%</td><td class="num">12%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="toy-note">Heist odds assume the fault is always forced. The last column counts six attempts only while both Snakes survive, so the real figure sits lower once a Snake is voted out.</p>
+</section>
+
+<!-- ============ 5. THE ODDS ============ -->
+<section>
+  <p class="eyebrow">Whole episodes</p>
+  <h2>What each option does to the Snake win rate</h2>
+  <div class="prose">
+    <p>Simulated full episodes: three acts, random pairings, the runoff tie rule from problem 1, House votes landing on a Snake 45% of the time. Snakes attempt whenever they can and stop at two heists. A healthy hidden-team win rate sits around 35% to 50%.</p>
+  </div>
+  <div class="chart" id="chart">
+    <div class="legend">
+      <span style="--sw: var(--tier-1)">Novice partner (50% hit)</span>
+      <span style="--sw: var(--tier-2)">Average partner (70%)</span>
+      <span style="--sw: var(--tier-3)">Practiced partner (90%)</span>
+    </div>
+    <svg id="barChart" viewBox="0 0 760 340" role="img" aria-label="Grouped bar chart of Snake win rates for four rule variants across three partner skill levels, with a shaded healthy range from 35 to 50 percent. Values are listed in the table below."></svg>
+    <div class="tip" id="tip"></div>
+    <div class="chart-tools"><button type="button" id="tableBtn" aria-expanded="false">Show as table</button></div>
+    <div class="tabled" id="chartTable" hidden>
+      <table>
+        <thead><tr><th>Variant</th><th class="num">Novice</th><th class="num">Average</th><th class="num">Practiced</th></tr></thead>
+        <tbody>
+          <tr><td>Current · 1 attempt per team, 1 hit saves</td><td class="num">30%</td><td class="num">16%</td><td class="num">5%</td></tr>
+          <tr class="rec"><td>1 attempt per Snake, 1 hit saves <span class="chip">recommended</span></td><td class="num">52%</td><td class="num">37%</td><td class="num">21%</td></tr>
+          <tr><td>1 attempt per team, 2 hits needed</td><td class="num">46%</td><td class="num">29%</td><td class="num">10%</td></tr>
+          <tr><td>1 attempt per Snake, 2 hits needed</td><td class="num">60%</td><td class="num">52%</td><td class="num">27%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="prose" style="margin-top: 20px;">
+    <p><strong>Read across a row, not down a column.</strong> The current rule only reaches the healthy band against novices. Per-Snake attempts lift every tier and keep a floor against practiced partners. The two-hit Catch also helps, but it breaks the brief's one-tap rule, drops innocent novice pairs to a 69% save rate, and needs a two-segment meter on a phone. It stays in reserve.</p>
+  </div>
+</section>
+
+<!-- ============ 6. THE CHANGE ============ -->
+<section>
+  <p class="eyebrow">The change</p>
+  <h2>One attempt per Snake, and nothing else moves</h2>
+  <figure>
+    <div class="figwrap svg-ink">
+      <svg viewBox="0 0 760 170" role="img" aria-label="Before: two Snakes share one Rig attempt per act, which needs reservation, priority, and teammate status rules. After: each Snake holds their own attempt per act, with none of those rules.">
+        <defs>
+          <marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <!-- before -->
+        <text x="20" y="22" class="title">Brief v2 · shared attempt</text>
+        <circle cx="50" cy="70" r="16" fill="var(--snake-soft)" stroke="var(--snake)" stroke-width="1.5"/>
+        <text x="50" y="74" text-anchor="middle" class="small mono">S1</text>
+        <circle cx="50" cy="130" r="16" fill="var(--snake-soft)" stroke="var(--snake)" stroke-width="1.5"/>
+        <text x="50" y="134" text-anchor="middle" class="small mono">S2</text>
+        <line x1="70" y1="74" x2="140" y2="94" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr5)"/>
+        <line x1="70" y1="126" x2="140" y2="106" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr5)"/>
+        <rect x="144" y="80" width="120" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="204" y="97" text-anchor="middle" class="small">1 Rig attempt</text>
+        <text x="204" y="111" text-anchor="middle" class="small">per act, per team</text>
+        <text x="290" y="88" class="small muted">needs: reservation</text>
+        <text x="290" y="102" class="small muted">first-hold priority</text>
+        <text x="290" y="116" class="small muted">teammate status</text>
+        <!-- divider -->
+        <line x1="420" y1="30" x2="420" y2="150" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>
+        <!-- after -->
+        <text x="450" y="22" class="title" fill="var(--accent-ink)">Proposed · one each</text>
+        <circle cx="480" cy="70" r="16" fill="var(--snake-soft)" stroke="var(--snake)" stroke-width="1.5"/>
+        <text x="480" y="74" text-anchor="middle" class="small mono">S1</text>
+        <circle cx="480" cy="130" r="16" fill="var(--snake-soft)" stroke="var(--snake)" stroke-width="1.5"/>
+        <text x="480" y="134" text-anchor="middle" class="small mono">S2</text>
+        <line x1="500" y1="70" x2="560" y2="70" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr5)"/>
+        <line x1="500" y1="130" x2="560" y2="130" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr5)"/>
+        <rect x="564" y="52" width="120" height="36" rx="4" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="624" y="74" text-anchor="middle" class="small">1 Rig attempt per act</text>
+        <rect x="564" y="112" width="120" height="36" rx="4" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="624" y="134" text-anchor="middle" class="small">1 Rig attempt per act</text>
+        <text x="700" y="102" class="small muted">no shared state</text>
+      </svg>
+    </div>
+    <figcaption><strong>The only structural edit.</strong> Attempts follow the Snake, not the team. Catching a Snake early halves the sabotage capacity by itself, and three rules about who holds the shared attempt go away.</figcaption>
+  </figure>
+
+  <h3>Edits to the brief, if you agree</h3>
+  <ol class="edits">
+    <li><strong>State the winch model.</strong> Each cable moves its corner within a limited reach. A load shift sags a corner by more than the red boundary. Correcting it needs the loaded corner pulled and the other corner released. A partner who holds Pull through a shift toward the other corner forces a fault, visibly.</li>
+    <li><strong>Schedule at least one shift toward each corner in every lift</strong>, so both operators must act and every Snake gets a window.</li>
+    <li><strong>One Rig attempt per Snake per act.</strong> Remove the reservation, priority, and teammate status rules. Keep the private "Rig armed" confirmation.</li>
+    <li><strong>Early House victory</strong> triggers when completed heists plus remaining attempts, counting only living Snakes, can't reach two.</li>
+    <li><strong>Vary the Catch needle speed</strong> per fault among a small fixed set of patterns, to narrow the gap between novice and practiced hit rates. Window width stays a test setting.</li>
+    <li><strong>Replace the acceptance wording</strong> "if experienced players stop every heist, revise" with a measurable target: heist success per attempt between 40% and 60% against average partners.</li>
+  </ol>
+</section>
+
+<footer>
+  Simulation: 30,000 episodes per cell, House votes independent with fixed accuracy, Snakes never coordinate votes, no rescuers, fault forced in 90% of attempts. Scripts: <code>tiesim.py</code> and <code>heistsim.py</code> in the session scratchpad. Source brief: <code>concepts/snake-show/snake-show-design-brief-v2.md</code>.
+</footer>
+</div>
+
+<script>
+(function () {
+  // ---------- chart ----------
+  const data = [
+    { name: 'Current', sub: '1 per team · 1 hit saves', v: [30, 16, 5], rec: false },
+    { name: 'Per Snake', sub: '1 per Snake · 1 hit saves', v: [52, 37, 21], rec: true },
+    { name: 'Two-hit Catch', sub: '1 per team · 2 hits', v: [46, 29, 10], rec: false },
+    { name: 'Both', sub: '1 per Snake · 2 hits', v: [60, 52, 27], rec: false },
+  ];
+  const tiers = ['Novice partner', 'Average partner', 'Practiced partner'];
+  const tierVars = ['var(--tier-1)', 'var(--tier-2)', 'var(--tier-3)'];
+  const svg = document.getElementById('barChart');
+  const NS = 'http://www.w3.org/2000/svg';
+  const W = 760, H = 340, L = 52, R = 16, T = 20, B = 70;
+  const plotW = W - L - R, plotH = H - T - B;
+  const yMax = 70;
+  const y = v => T + plotH - (v / yMax) * plotH;
+  function el(tag, attrs, text) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    svg.appendChild(e);
+    return e;
+  }
+  // healthy band
+  el('rect', { x: L, y: y(50), width: plotW, height: y(35) - y(50), fill: 'var(--accent)', opacity: 0.1 });
+  el('text', { x: L + plotW - 6, y: y(50) + 13, 'text-anchor': 'end', class: 'small', fill: 'var(--accent-ink)' }, 'healthy range · 35–50%');
+  // grid + y labels
+  for (let v = 0; v <= yMax; v += 10) {
+    el('line', { x1: L, x2: L + plotW, y1: y(v), y2: y(v), stroke: v === 0 ? 'var(--line-strong)' : 'var(--grid)', 'stroke-width': 1 });
+    el('text', { x: L - 8, y: y(v) + 4, 'text-anchor': 'end', class: 'small mono', fill: 'var(--muted)' }, v + '%');
+  }
+  const groupW = plotW / data.length;
+  const barW = 26, gap = 3;
+  const tip = document.getElementById('tip');
+  const chartBox = document.getElementById('chart');
+  data.forEach((d, gi) => {
+    const cx = L + groupW * gi + groupW / 2;
+    const startX = cx - (barW * 3 + gap * 2) / 2;
+    d.v.forEach((v, ti) => {
+      const x = startX + ti * (barW + gap);
+      const r = el('rect', { x, y: y(v), width: barW, height: y(0) - y(v), fill: tierVars[ti], rx: 0 });
+      // rounded top only: overlay a small rect at the top with rx
+      el('rect', { x, y: y(v), width: barW, height: Math.min(8, y(0) - y(v)), fill: tierVars[ti], rx: 4 });
+      if (d.rec) {
+        el('text', { x: x + barW / 2, y: y(v) - 6, 'text-anchor': 'middle', class: 'small mono', fill: 'var(--ink-2)' }, v + '%');
+      }
+      // hit target
+      const hit = el('rect', { x: x - 2, y: T, width: barW + 4, height: plotH, fill: 'transparent' });
+      const show = (evt) => {
+        tip.innerHTML = d.name + ' · ' + tiers[ti] + ': <b>' + v + '%</b> Snake wins';
+        tip.style.display = 'block';
+        const box = chartBox.getBoundingClientRect();
+        const bb = r.getBoundingClientRect();
+        tip.style.left = (bb.left - box.left + bb.width / 2) + 'px';
+        tip.style.top = (bb.top - box.top) + 'px';
+      };
+      hit.addEventListener('mouseenter', show);
+      hit.addEventListener('mousemove', show);
+      hit.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+    });
+    el('text', { x: cx, y: y(0) + 18, 'text-anchor': 'middle', class: 'title', fill: d.rec ? 'var(--accent-ink)' : 'currentColor' }, d.name);
+    el('text', { x: cx, y: y(0) + 34, 'text-anchor': 'middle', class: 'small', fill: 'var(--muted)' }, d.sub);
+    if (d.rec) el('text', { x: cx, y: y(0) + 52, 'text-anchor': 'middle', class: 'small mono', fill: 'var(--accent-ink)' }, 'RECOMMENDED');
+  });
+  svg.style.color = 'var(--ink)';
+  const tableBtn = document.getElementById('tableBtn');
+  const chartTable = document.getElementById('chartTable');
+  tableBtn.addEventListener('click', () => {
+    const open = chartTable.hidden;
+    chartTable.hidden = !open;
+    tableBtn.textContent = open ? 'Hide table' : 'Show as table';
+    tableBtn.setAttribute('aria-expanded', String(open));
+  });
+
+  // ---------- toy ----------
+  const SAG = 1.6, RED = 0.9, AMBER = 0.45, LIFT = 21, DANGER = 1.0, CATCH_WIN = 3.0, PASS = 1.5;
+  const ZONE = [0.6, 0.93];
+  const PULL_RATE = 1.5, SETTLE_RATE = 1.0, RESET_T = 1.2;
+  const SHIFTS_TEMPLATE = [
+    { side: 'R', t0: 3.0, t1: 8.0 },
+    { side: 'L', t0: 10.0, t1: 15.0 },
+    { side: 'R', t0: 16.5, t1: 20.5 },
+  ];
+  const RIG_START = 9.6, RIG_HOLD = 1.5, SNAKE_HOLD_END = 15.5;
+
+  const $ = id => document.getElementById(id);
+  const ui = {
+    status: $('status'), pull: $('pullBtn'), catch: $('catchBtn'), start: $('startBtn'),
+    priv: $('private'), rig: $('rigTxt'), receipts: $('receipts'),
+    cabL: $('cabL'), cabR: $('cabR'), caseP: $('caseP'), capsule: $('capsule'),
+    cue: $('cue'), cueTxt: $('cueTxt'), leverL: $('leverL'), leverR: $('leverR'),
+    arrowL: $('arrowL'), arrowR: $('arrowR'), bubble: $('bubble'), ring: $('dangerRing'),
+    gauge: $('gauge'), track: $('catchTrack'), needle: $('needle'), catchT: $('catchT'),
+    prog: $('progFill'), motor: $('motorTxt'), conRbox: $('conRbox'), conRname: $('conRname'),
+  };
+
+  let S = null;
+  let mode = 'coop';
+  let rafId = null, last = 0;
+
+  function fresh() {
+    return {
+      phase: 'idle', t: 0, prog: 0, hL: -1, hR: -1, sagL: 0, sagR: 0, tilt: 0,
+      danger: 0, pull: false, partnerPull: false, partnerSeen: 0,
+      shifts: SHIFTS_TEMPLATE.map(s => Object.assign({ spent: false }, s)),
+      fault: null, resetT: 0, rig: 'ready', receipts: [], outcome: null,
+      faultCount: 0, snakeLogged: false, idleLogged: false,
+    };
+  }
+
+  function setStatus(text, cls) {
+    ui.status.textContent = text;
+    ui.status.className = 'status' + (cls ? ' ' + cls : '');
+  }
+  function receipt(text) {
+    S.receipts.push(text);
+    if (S.receipts.length > 5) S.receipts.shift();
+    ui.receipts.innerHTML = S.receipts.map(r => '<li>' + r + '</li>').join('');
+  }
+  function setRig(state, text) {
+    S.rig = state;
+    ui.rig.textContent = 'Rig: ' + text;
+  }
+
+  function sagAt(t, s) {
+    if (s.spent || t < s.t0 || t > s.t1) return 0;
+    const up = Math.min(1, (t - s.t0) / 1.2);
+    const down = Math.min(1, (s.t1 - t) / 1.2);
+    return SAG * Math.min(up, down);
+  }
+  function activeShift(t) {
+    return S.shifts.find(s => !s.spent && t >= s.t0 && t <= s.t1) || null;
+  }
+  function upcomingCue(t) {
+    return S.shifts.find(s => !s.spent && t >= s.t0 - 1.4 && t < s.t0) || null;
+  }
+  function heightLabel(p) { return Math.min(3, Math.floor(p * 3 + 1e-6)); }
+
+  function stepLift(dt) {
+    S.t += dt;
+    // sag
+    S.sagL = 0; S.sagR = 0;
+    for (const s of S.shifts) {
+      const v = sagAt(S.t, s);
+      if (s.side === 'L') S.sagL += v; else S.sagR += v;
+    }
+    // partner behaviour
+    const tiltNow = (S.hL - S.sagL) - (S.hR - S.sagR);
+    S.partnerSeen += (tiltNow - S.partnerSeen) * Math.min(1, dt / 0.3);
+    if (mode === 'idle') {
+      S.partnerPull = false;
+    } else if (mode === 'snake' && S.t >= RIG_START && S.t <= SNAKE_HOLD_END) {
+      S.partnerPull = true;
+      if (S.rig === 'ready') { S.rigHoldStart = S.t; setRig('holding', 'holding… (also pulls)'); }
+      if (S.rig === 'holding' && S.t - S.rigHoldStart >= RIG_HOLD) setRig('armed', 'ARMED — only you see this');
+    } else {
+      S.partnerPull = S.partnerSeen > 0.06; // their corner is low → pull
+    }
+    // heights
+    S.hL = clamp(S.hL + (S.pull ? PULL_RATE : -SETTLE_RATE) * dt, -1, 1);
+    S.hR = clamp(S.hR + (S.partnerPull ? PULL_RATE : -SETTLE_RATE) * dt, -1, 1);
+    S.tilt = (S.hL - S.sagL) - (S.hR - S.sagR);
+    // danger timer
+    if (Math.abs(S.tilt) > RED) {
+      S.danger += dt;
+      if (S.danger >= DANGER) return startFault();
+    } else {
+      S.danger = 0;
+    }
+    // motor
+    S.prog = Math.min(1, S.prog + dt / LIFT);
+    if (S.prog >= 1) return deliver();
+  }
+
+  function startFault() {
+    S.phase = 'fault';
+    S.faultCount += 1;
+    S.fault = { t: 0, you: false, partnerAt: null, partnerHit: false, partnerDone: false };
+    const sh = activeShift(S.t);
+    const side = sh ? (sh.side === 'L' ? 'cable 1' : 'cable 2') : 'no';
+    if (sh) sh.spent = true;
+    if (S.rig === 'holding') setRig('ready', 'hold cancelled by the fault — attempt released');
+    receipt('Station faulted at height ' + heightLabel(S.prog) + '/3 during a shift toward ' + side + '.');
+    if (mode === 'snake' && !S.snakeLogged && S.t >= RIG_START) {
+      receipt('Cable 2 kept pulling while its corner was high.');
+      S.snakeLogged = true;
+    }
+    if (mode === 'idle' && !S.idleLogged) {
+      receipt('Cable 2 did not adjust while its corner was low.');
+      S.idleLogged = true;
+    }
+    if (mode === 'coop') {
+      S.fault.partnerHit = Math.random() < 0.7;
+      // partner taps during pass 1 or 2
+      const pass = Math.random() < 0.5 ? 0 : 1;
+      S.fault.partnerAt = pass * PASS + (S.fault.partnerHit ? (ZONE[0] + Math.random() * (ZONE[1] - ZONE[0])) * PASS : Math.random() * ZONE[0] * PASS);
+    }
+    ui.catch.disabled = false;
+    ui.catch.classList.add('armed');
+    ui.pull.disabled = true;
+    ui.pull.classList.remove('active');
+    S.pull = false;
+    setStatus('Catch! Tap once while the needle is in the zone.', 'crit');
+  }
+
+  function stepFault(dt) {
+    S.fault.t += dt;
+    if (S.fault.partnerAt != null && !S.fault.partnerDone && S.fault.t >= S.fault.partnerAt) {
+      S.fault.partnerDone = true;
+      if (S.fault.partnerHit) { receipt('Cable 2 caught the case.'); return caught(); }
+      receipt('Cable 2 missed a catch.');
+    }
+    if (S.fault.t >= CATCH_WIN) return dropped();
+  }
+
+  function needlePos() { return (S.fault.t % PASS) / PASS; }
+
+  function tapCatch() {
+    if (S.phase !== 'fault' || S.fault.you) return;
+    S.fault.you = true;
+    ui.catch.disabled = true;
+    ui.catch.classList.remove('armed');
+    const n = needlePos();
+    if (n >= ZONE[0] && n <= ZONE[1]) { receipt('Cable 1 caught the case.'); return caught(); }
+    receipt('Cable 1 missed a catch.');
+    if (S.fault.partnerAt == null || S.fault.partnerDone) setStatus('Missed. Nobody else can tap. Watch the drop…', 'crit');
+    else setStatus('Missed. Your partner still has a tap…', 'warn');
+  }
+
+  function caught() {
+    S.phase = 'reset';
+    S.resetT = 0;
+    S.prog = Math.floor(S.prog * 3 + 1e-6) / 3;
+    S.hL = -0.5; S.hR = -0.5; S.danger = 0; S.partnerSeen = 0;
+    ui.catch.disabled = true; ui.catch.classList.remove('armed');
+    if (S.rig === 'armed') setRig('cleared', 'cleared by the catch — attempt spent');
+    setStatus('Caught — keep lifting. The case is back at height ' + heightLabel(S.prog) + '/3.', 'good');
+  }
+
+  function stepReset(dt) {
+    S.resetT += dt;
+    if (S.resetT >= RESET_T) {
+      S.phase = 'lifting';
+      ui.pull.disabled = false;
+      setStatus('Lifting again. Keep it level.', '');
+    }
+  }
+
+  function dropped() {
+    S.phase = 'done';
+    ui.catch.disabled = true; ui.catch.classList.remove('armed');
+    ui.pull.disabled = true;
+    receipt('The capsule dropped into the collection housing.');
+    if (S.rig === 'armed') {
+      setRig('heist', 'HEIST — capsule went down the Snake channel');
+      S.outcome = 'heist';
+      setStatus('Dropped. Publicly, this is any drop. Privately, it is a heist: Heists 1/2.', 'snake');
+    } else {
+      S.outcome = 'bin';
+      setStatus('Dropped into the recovery bin. No heist. The station is done for this act.', 'crit');
+    }
+    ui.start.textContent = 'Run it again';
+  }
+
+  function deliver() {
+    S.phase = 'done';
+    ui.pull.disabled = true;
+    ui.pull.classList.remove('active');
+    S.pull = false;
+    receipt('Delivered. One delivery banked in the House Pot.');
+    if (S.rig === 'armed') setRig('defeated', 'defeated — safe delivery, attempt spent');
+    setStatus('Delivered. The case reached the shelf level.', 'good');
+    ui.start.textContent = 'Run it again';
+  }
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  // ---------- render ----------
+  const CASE_W = 160, CASE_H = 52, PX = 22;
+  function render() {
+    const baseY = 238 - S.prog * 168;
+    const yl = baseY - (S.hL - S.sagL) * PX;
+    const yr = baseY - (S.hR - S.sagR) * PX;
+    ui.cabL.setAttribute('y2', yl.toFixed(1));
+    ui.cabR.setAttribute('y2', yr.toFixed(1));
+    const dx = CASE_W, dy = yr - yl;
+    const len = Math.hypot(dx, dy);
+    const px = -dy / len * CASE_H, py = dx / len * CASE_H;
+    const pts = [[200, yl], [360, yr], [360 + px, yr + py], [200 + px, yl + py]];
+    ui.caseP.setAttribute('points', pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '));
+    // capsule offset along the case
+    const shift = (S.sagR - S.sagL) / SAG; // + → right
+    const ux = dx / len, uy = dy / len;
+    const cxm = 280 + px / 2, cym = (yl + yr) / 2 + py / 2;
+    const off = shift * 46;
+    ui.capsule.setAttribute('cx', (cxm + ux * off).toFixed(1));
+    ui.capsule.setAttribute('cy', (cym + uy * off).toFixed(1));
+    // progress ladder
+    ui.prog.setAttribute('height', (S.prog * 180).toFixed(1));
+    ui.prog.setAttribute('y', (250 - S.prog * 180).toFixed(1));
+    ui.motor.textContent = S.phase === 'lifting' ? 'MOTOR · ' + Math.ceil((1 - S.prog) * LIFT) + ' s' : (S.phase === 'fault' ? 'MOTOR · paused' : 'MOTOR');
+    // levers
+    ui.leverL.textContent = S.pull ? 'PULL ▲' : 'release';
+    ui.leverR.textContent = S.partnerPull ? 'PULL ▲' : (mode === 'idle' ? 'idle' : 'release');
+    // arrows (your corner high/low)
+    const t = S.tilt;
+    ui.arrowL.textContent = t > AMBER ? '▲ high — release' : (t < -AMBER ? '▼ low — pull' : '● level');
+    ui.arrowR.textContent = t < -AMBER ? '▲ high' : (t > AMBER ? '▼ low' : '● level');
+    // cue
+    const cue = S.phase === 'lifting' ? upcomingCue(S.t) : null;
+    ui.cue.setAttribute('opacity', cue ? 1 : 0);
+    if (cue) ui.cueTxt.textContent = cue.side === 'L' ? '← weight shifting to your corner' : 'weight shifting to partner\'s corner →';
+    // gauge / catch track
+    const inFault = S.phase === 'fault';
+    ui.gauge.setAttribute('opacity', inFault ? 0 : 1);
+    ui.track.setAttribute('opacity', inFault ? 1 : 0);
+    if (!inFault) {
+      const bx = 280 - clamp(t, -2.2, 2.2) * 45.45;
+      ui.bubble.setAttribute('cx', bx.toFixed(1));
+      ui.bubble.setAttribute('fill', Math.abs(t) > RED ? 'var(--crit)' : 'currentColor');
+      ui.ring.setAttribute('cx', bx.toFixed(1));
+      ui.ring.setAttribute('transform', 'rotate(-90 ' + bx.toFixed(1) + ' 311)');
+      ui.ring.setAttribute('stroke-dashoffset', (62.8 * (1 - clamp(S.danger / DANGER, 0, 1))).toFixed(1));
+    } else {
+      const n = needlePos();
+      const nx = 180 + n * 200;
+      ui.needle.setAttribute('x1', nx.toFixed(1));
+      ui.needle.setAttribute('x2', nx.toFixed(1));
+      ui.catchT.textContent = Math.max(0, CATCH_WIN - S.fault.t).toFixed(1) + ' s';
+    }
+    // partner console styling
+    const isSnake = mode === 'snake';
+    ui.conRbox.setAttribute('stroke', isSnake && S.rig !== 'ready' && S.rig !== 'holding' ? 'var(--snake)' : 'currentColor');
+    ui.conRbox.setAttribute('fill', 'none');
+    ui.conRname.textContent = 'Partner · cable 2';
+  }
+
+  function statusForLift() {
+    if (S.phase !== 'lifting') return;
+    const sh = activeShift(S.t);
+    if (Math.abs(S.tilt) > RED) return setStatus('Past red! ' + (DANGER - S.danger).toFixed(1) + ' s to a fault.', 'crit');
+    if (sh && sh.side === 'L') return setStatus('Weight on your corner. Hold Pull.', 'warn');
+    if (sh && sh.side === 'R') return setStatus('Weight on the partner\'s corner. Ease off and let them pull.', 'warn');
+    if (Math.abs(S.tilt) > AMBER) return setStatus(S.tilt > 0 ? 'Your corner is high. Release.' : 'Your corner is low. Pull.', 'warn');
+    setStatus('Lifting. Keep it level.', '');
+  }
+
+  function loop(ts) {
+    const dt = Math.min(0.05, (ts - last) / 1000 || 0);
+    last = ts;
+    if (S.phase === 'lifting') { stepLift(dt); statusForLift(); }
+    else if (S.phase === 'fault') stepFault(dt);
+    else if (S.phase === 'reset') stepReset(dt);
+    render();
+    if (S.phase !== 'done') rafId = requestAnimationFrame(loop);
+  }
+
+  function start() {
+    if (rafId) cancelAnimationFrame(rafId);
+    S = fresh();
+    ui.receipts.innerHTML = '<li class="empty">The show\'s cameras haven\'t recorded anything yet.</li>';
+    ui.priv.hidden = mode !== 'snake';
+    setRig('ready', 'ready (1.5 s hold, private)');
+    S.phase = 'lifting';
+    ui.pull.disabled = false;
+    ui.catch.disabled = true; ui.catch.classList.remove('armed');
+    ui.start.textContent = 'Restart';
+    setStatus('Lifting. Keep it level.', '');
+    last = performance.now();
+    rafId = requestAnimationFrame(loop);
+  }
+
+  // controls
+  ui.start.addEventListener('click', start);
+  document.querySelectorAll('.seg [data-mode]').forEach(b => {
+    b.addEventListener('click', () => {
+      mode = b.dataset.mode;
+      document.querySelectorAll('.seg [data-mode]').forEach(x => x.setAttribute('aria-checked', String(x === b)));
+      ui.priv.hidden = mode !== 'snake';
+      if (S && S.phase !== 'done' && S.phase !== 'idle') start();
+    });
+  });
+  const pullOn = e => {
+    if (e) e.preventDefault();
+    if (e && e.pointerId != null) { try { ui.pull.setPointerCapture(e.pointerId); } catch (err) { /* capture is optional */ } }
+    if (S && S.phase === 'lifting') { S.pull = true; ui.pull.classList.add('active'); }
+  };
+  const pullOff = () => { if (S) S.pull = false; ui.pull.classList.remove('active'); };
+  ui.pull.addEventListener('pointerdown', pullOn);
+  ui.pull.addEventListener('pointerup', pullOff);
+  ui.pull.addEventListener('pointercancel', pullOff);
+  ui.catch.addEventListener('pointerdown', e => { e.preventDefault(); tapCatch(); });
+  document.addEventListener('keydown', e => {
+    if (e.repeat) return;
+    if (e.code === 'Space') { pullOn(e); }
+    if (e.code === 'Enter' || e.key === 'c' || e.key === 'C') { if (S && S.phase === 'fault') { e.preventDefault(); tapCatch(); } }
+  });
+  document.addEventListener('keyup', e => { if (e.code === 'Space') pullOff(); });
+
+  // initial render at rest
+  S = fresh();
+  render();
+})();
+</script>
