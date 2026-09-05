@@ -1,6 +1,6 @@
 # Snake Show design brief v2
 
-Version 2 · 5 September 2026 · Design for prototype validation
+Version 2, Prize Lift revised · 5 September 2026 · Design for prototype validation
 
 ## What the game is
 
@@ -72,79 +72,109 @@ The finale reveals all roles, shows a short factual reconstruction, and awards p
 
 # Prize Lift — the normal controls
 
-Prize Lift is a cooperative balance challenge played on a bright studio gantry. A transparent case holds one oversized prize capsule above a pool. The show’s motor raises it toward a receiving shelf while contestants manage its support cables. **Keep the case level until delivery.** All timings below are prototype settings.
+Prize Lift is a cooperative lifting challenge played on a bright studio gantry above the pool. One oversized prize capsule rests on an open **tray** hung from two long cables, one at each end. Each cable has its own motor, and each operator runs one motor. There is no automatic hoist: the operators lift the tray to the receiving shelf themselves. **Get both ends of the tray above the delivery line with the capsule still aboard.** All numbers in this chapter are prototype settings; the table at its end lists them with their names in the playable model.
 
 ## Take a console; learn one action
 
-Each operator stands at a numbered console controlling one corner of the case. A normal station has two operators; an odd-sized cast uses one station with three cables and three operators. A fixed camera keeps the entire case, consoles, and nearby contestants visible. The movement joystick is hidden while operating; **Leave** restores movement and releases that cable’s input.
+Each operator stands at a numbered console controlling one end of the tray. A normal station has two operators; an odd-sized cast uses one station with a triangular tray, three cables, and three operators, each at a corner. A fixed camera keeps the entire tray, consoles, and nearby contestants visible. The movement joystick is hidden while operating; **Leave** restores movement and releases that cable’s input.
 
-The large **Pull** button has two states: **hold to tighten and raise your corner; release to ease and let it settle**. There is no repeated tapping or extra boost. Pulling and releasing visibly move the avatar’s lever and the corresponding cable. Both teams use identical controls and physical rules.
+The large **Pull** button has one rule: **hold to run your motor and raise your end; release to let the weight take over.** A held motor pushes its cable with a fixed force. A released cable pays out under whatever it carries. There is no extra boost, and a quick tap only runs the motor for a short pulse, a proposed 0.15 seconds. Pulling and releasing visibly move the avatar’s lever and the corresponding cable. Both teams use identical controls and physical rules.
 
-## Read the case and adjust together
+## The capsule leans on the nearer cable
 
-A level gauge mirrors the case’s real tilt. A local arrow identifies whether your corner is high or low; shape and position accompany color. If your corner is high, release while the lower corner’s operator pulls. If it is low, pull. In the three-person version, a bubble level shows tilt across the triangular platform; each player still manages only their own corner.
+The capsule’s weight splits between the cables by distance. Near the left end it loads the left cable; at the center it loads both equally. Motor force is fixed and the load is not, so the loaded end answers a pull sluggishly and sinks fast, while the light end answers at once and sinks slowly. The operator carrying the capsule has to hold longer. The operator on the light end has to hold less than feels natural, or the tray tilts.
 
-Visible shifts of the capsule’s weight change the load on the cables, with an advance visual cue. This creates a reason to adjust instead of holding one button throughout. Ordinary mistakes and deliberately poor winch handling affect the same visible physics. The machine never changes those physics according to the viewer’s role.
+The tray starts level with the capsule halfway to one end, on a random side, so the two cables never start with the same load. The tray tilts whenever its ends move at different rates. The capsule holds still below a slope of about two percent, then slides toward the low end, and nothing stops it at the edge. A level gauge mirrors the tray’s tilt, and a local arrow says whether your end is high or low, with shape and position accompanying color. If your end is high, release while the other operator pulls. If it is low, pull. On the three-cable tray, a bubble level shows tilt across the triangle; each player still manages only their own corner.
 
-## The motor sets the pace
+## The operators set the pace
 
-After a short start cue, the motor advances automatically through three secured heights, targeting roughly **21 seconds of uninterrupted travel**. Contestants cannot pause the challenge by refusing to pull or by staying away. Unmanaged load shifts must eventually cause a fault; idle operation cannot produce a reliable safe delivery.
+Nothing lifts the tray except the motors. With both operators holding, the tray reaches the shelf in about 13 seconds at the proposed settings. With neither holding, it sinks. The pool surface sits deeper below the start than the tray can tilt, so one end can reach the water only when both ends have sunk. Any end touching the water is an **automatic drop**: the capsule is lost with no Catch, and the lift simply fails. Refusing to pull therefore cannot produce a safe delivery, and no single operator can sink the tray alone.
 
-Reaching the shelf with the case level banks one delivery into the House Pot. A station can score one delivery per act. Finished operators can watch or help another station for the remaining time. Failure, recovery, and sabotage are defined on the following pages.
+Reaching the shelf with the capsule aboard banks one delivery into the House Pot. A station can score one delivery per act. Finished operators can watch or help another station for the remaining time. Failure, recovery, and sabotage are defined on the following pages.
+
+## Proposed settings
+
+Distances are in tray half-lengths, so the tray is two units long. These values were tuned by hand in the playable model at [`prototypes/prize-lift-coupled-cables.html`](prototypes/prize-lift-coupled-cables.html), where every row is a slider. They are starting points for the tests below, not validated balance.
+
+| Setting | Proposed value | Name in the model |
+|---|---|---|
+| Motor force, relative to the load with the capsule centered | 1.7 | `force` |
+| Top speed of an end, up | 0.2 per second | `vup` |
+| Top speed of an end, down | 0.2 per second | `vdown` |
+| Winch drag | 4.0 | `cw` |
+| Gravity | 1.5 | `g` |
+| Capsule weight, relative to the tray | 1.0 | `ballW` |
+| Capsule slide response to slope | 1.0 | `roll` |
+| Capsule slide drag | 0.1 | `cb` |
+| Static friction, the slope the capsule holds still below | 0.02 | `mus` |
+| Sliding friction | 0.05 | `muk` |
+| Capsule start offset from the center | 0.5 | `x0` |
+| Tap pulse | 0.15 s | `pulse` |
+| Delivery line above the start | 2.6 | `finish` |
+| Water line below the start | 1.8 | `water` |
+| Maximum tilt, from the tray’s length | about 53° | `dmax` |
+| Rig hold to arm | 1.5 s | not in the model |
+| Rig burst length | 2.2 s | `rigTime` |
+| Rig force multiplier while held | 2 | `rigForce` |
+| Rig pull-down multiplier while released | 2 | `rigDown` |
+| Catch window | 3 s, two passes | `catchWin` |
+| Catch zone | 0.25 s per pass | `catchZone` |
 
 # Prize Lift — faults and recovery
 
 ## A warning players can read
 
-Moderate tilt produces an amber warning and a directional arrow. Returning toward level clears it. If the case stays beyond the marked red tilt boundary for a proposed **one continuous second**, a safety clutch slips: the motor pauses and a three-second **Catch!** sequence starts. Returning below the boundary before that second expires resets the danger timer.
+Moderate tilt produces an amber warning and a directional arrow. Returning toward level clears it. The tray has no walls. If the tilt persists, the capsule slides, and when its center passes the end of the tray it rolls off: the motors freeze, the capsule begins to fall, and a three-second **Catch!** sequence starts. A tray sinking toward the water shows a separate warning when either end comes within 0.3 of a unit of the surface.
 
-The case visibly drops onto its emergency latch. Its gauge, warning light, sound, and movement are the same whether a Snake has rigged it or everyone is innocent. Normal Pull input pauses during this sequence. A warning identifies a physical problem; it does not identify sabotage.
+The fault looks the same whether a Snake has rigged the lift or everyone is innocent. Its warning, sound, and the capsule’s movement carry no role information. Normal Pull input pauses during the sequence, and the tray holds its position. A warning identifies a physical problem; it does not identify sabotage.
 
 ## Catch is a timing action
 
-A large needle sweeps across a marked catch zone twice during the proposed **three-second window**. Tap **Catch** when the needle is inside that zone. The initial target is about half a second of opportunity on each pass, with enough lead-in to read the cue. The world gauge and local overlay show the same server-timed motion.
+A large needle sweeps across a marked catch zone twice during the proposed **three-second window**. Tap **Catch** when the needle is inside that zone. The initial target is a quarter of a second of opportunity on each pass, with enough lead-in to read the cue. The world gauge and local overlay show the same server-timed motion.
 
-Each operator gets one tap per fault. Active contestants standing in the clearly marked rescue area can also attempt a catch, once each. **One successful tap saves the case for everyone.** Another player’s early or late tap cannot cancel that save or consume someone else’s opportunity. The first successful input resolves the sequence immediately.
+Each operator gets one tap per fault. Active contestants standing in the clearly marked rescue area can also attempt a catch, once each. **One successful tap saves the capsule for everyone.** Another player’s early or late tap cannot cancel that save or consume someone else’s opportunity. The first successful input resolves the sequence immediately.
 
-Catch requires a fresh press after the prompt appears. Holding Pull, holding Rig, pre-holding Catch, or rapidly tapping cannot automatically complete it. A missed tap uses that player’s opportunity; the remaining eligible players can still save the case. Input acceptance needs a bounded latency allowance tested on ordinary phones and connections.
+Catch requires a fresh press after the prompt appears. Holding Pull, holding Rig, pre-holding Catch, or rapidly tapping cannot automatically complete it. A missed tap uses that player’s opportunity; the remaining eligible players can still save the capsule. Input acceptance needs a bounded latency allowance tested on ordinary phones and connections.
 
 ## What happens next
 
-A successful catch returns the case to the last secured height, levels it, and resumes after a short reset. It also clears any hidden rig on that prize. Players see **“Caught — keep lifting”**, without learning whether a rig existed. The rescue costs time but never requires the Snake’s cooperation.
+A successful catch puts the capsule back at the center of the tray and resumes the lift from the tray’s current height after a short reset. It also clears any hidden rig on that prize. Players see **“Caught — keep lifting”**, without learning whether a rig existed. The rescue costs the window plus the climb back: in one simulated run at the proposed settings, a lift that survived a single fault finished at about 19 seconds, so a second fault is likely to run out the act. Whether the capsule should instead return to the edge it fell from is a test setting.
 
-If nobody succeeds, the base hatch opens and the capsule falls into an opaque collection housing. Everyone sees that same failure. A fresh capsule loads after a proposed three seconds if time remains; the station still has at most one scoring delivery. An already consumed Snake attempt stays consumed. Expiry of the act or an administrative cancellation never creates a heist by itself.
+If nobody succeeds, the capsule falls into the pool’s opaque collection housing. Everyone sees that same failure. A fresh capsule loads on the tray after a proposed three seconds if time remains; the station still has at most one scoring delivery. An already consumed Snake attempt stays consumed. Expiry of the act, a sunk tray, or an administrative cancellation never creates a heist by itself.
 
 # Prize Lift — the hidden heist
 
 ## Rig is a private control, with a real effect
 
-While operating a moving case, a Snake can hold **Rig** instead of Pull for **1½ seconds**. For that entire hold, Rig also sends the ordinary Pull input: the same corner rises, the same lever moves, and the same load rules apply. Releasing early, leaving the console, or entering a fault before completion cancels the unfinished hold and releases its reservation.
+While operating a moving tray, a Snake can hold **Rig** instead of Pull for **1½ seconds**. For that entire hold, Rig also sends the ordinary Pull input: the same end rises, the same lever moves, and the same load rules apply. Releasing early, leaving the console, or entering a fault before completion cancels the unfinished hold and releases its reservation.
 
-Completion consumes the team’s act attempt and arms a concealed diverter inside this prize’s collection housing. Continuing to hold still behaves like Pull. The button then becomes unavailable for another attempt. The Snake privately sees **“Rig armed”**; no exterior hatch opens and no object changes appearance when arming completes.
+Completion consumes the team’s act attempt and does two things at once. It arms a concealed diverter in the collection housing for this capsule. And for the next **2.2 seconds** it doubles that motor: twice the force while held and twice the pull on the cable while released, so that end moves twice as fast in both directions. The Snake privately sees **“Rig armed”** and a countdown. The button then becomes unavailable for another attempt. No exterior hatch opens and no object changes appearance.
 
-## Arming alone does not steal anything
+## The burst tilts the tray; the Catch decides the theft
 
-Rig neither forces a wobble nor guarantees a drop. The Snake must exploit an ordinary mistake or use the normal winch controls to create dangerous tilt. That behavior is visible and can draw suspicion. House players can correct the tilt or win the Catch sequence. Sabotage therefore involves setting the trap, choosing a moment, and risking discovery.
+Without the burst, a Snake cannot out-tilt an attentive partner, because both motors have the same limits. The doubled motor is what makes sabotage possible, and it lasts two seconds. From the light end, a burst of pulling drives the capsule toward the partner’s end and off it. From the heavy end, letting the doubled cable drop does the same toward the Snake’s own end. Either way the tray tilts, the capsule slides, and House players get the ordinary Catch. A partner who levels quickly can still keep the capsule aboard.
 
-An **armed prize followed by an unsuccessful Catch** diverts the dropped capsule into the concealed Snake channel: one successful heist. Without a rig, the same visible drop sends it to the ordinary recovery bin and awards no heist. A successful Catch clears the rig and ends that attempt; safe delivery or the act ending also defeats an unresolved attempt. The rig cannot transfer to a replacement capsule.
+An **armed capsule followed by an unsuccessful Catch** diverts it into the concealed Snake channel: one successful heist. Without a rig, the same visible drop sends it to the ordinary recovery bin and awards no heist. A successful Catch clears the rig and ends that attempt; safe delivery, a sunk tray, or the act ending also defeats an unresolved attempt. The rig cannot transfer to a replacement capsule.
 
 ## One shared scene; limited private information
 
-House players, Snakes, and live observers see the same case position, lever movement, tilt, warning, Catch gauge, hatch opening, and capsule drop, subject to their camera view. **There is no Snake-only version of the physical scene.** The internal routing is concealed from everyone’s live camera.
+House players, Snakes, and live observers see the same tray position, lever movement, tilt, warning, capsule slide, Catch gauge, and capsule drop, subject to their camera view. **There is no Snake-only version of the physical scene.** The internal routing is concealed from everyone’s live camera. A doubled end does move visibly faster than a plain motor allows; the brief accepts that as a live observation a watching player may or may not notice, and the receipts never record it.
 
-Only private interface information differs: role card, Snake teammate identity, Rig button and hold progress, attempt status, and immediate confirmation of its outcome. Everyone receives the successful-heist count at the act’s end. The finale can show a cutaway of the recorded diversion after roles are revealed. The stolen capsule is an episode prop, never a player’s owned item or saved currency.
+Only private interface information differs: role card, Snake teammate identity, Rig button, hold progress, burst countdown, attempt status, and immediate confirmation of its outcome. Everyone receives the successful-heist count at the act’s end. The finale can show a cutaway of the recorded diversion after roles are revealed. The stolen capsule is an episode prop, never a player’s owned item or saved currency.
 
 ## Prototype acceptance
 
-First verify that novices understand Pull/release, a single attentive House player can rescue, and both viewers see identical public events. Test refusal to play, constant holds, tap spam, deliberate imbalance, and two- versus three-person stations. If experienced players stop every heist, or newcomers cannot stop one, revise the interaction before adding challenges.
+First verify that novices understand hold/release and the leaning capsule, a single attentive House player can rescue, and both viewers see identical public events. Test refusal to play, constant holds, tap spam, deliberate imbalance, and two- versus three-person stations. Measure, against novice and practiced House partners, how often a Rig burst produces a fault and how often that fault becomes a heist. If experienced players stop every heist, or newcomers cannot stop one, revise the interaction before adding challenges.
+
+The earlier model’s simulation found that the Catch, not the tilt, decides the heist rate, and the coupled-cables model has not changed that. Expect the catch-zone width and the number of attempts per act to be the balance dials, with the Rig burst length and multipliers behind them.
 
 # Receipts, deduction, and the live vote
 
 ## What evidence actually says
 
-A receipt is a short, automatically generated record of something the show’s cameras or challenge systems observed. It is always accurate within its stated scope, but does not expose the complete event log. For example: the east lift failed; Maya and Leo operated it; Leo kept pulling while his corner was high; Maya missed a catch.
+A receipt is a short, automatically generated record of something the show’s cameras or challenge systems observed. It is always accurate within its stated scope, but does not expose the complete event log. For example: the east lift failed; Maya and Leo operated it; Leo kept pulling while his end was high; Maya missed a catch.
 
-These receipts identify a place, people, and observable actions. A normal Pull and a Rig hold have the same public action, so no card names the private Rig input before the finale. Other stations may have failed innocently, and successful heists are announced for the act as a whole. Comparing behavior across acts and partnerships is how players narrow their suspicions.
+These receipts identify a place, people, and observable actions. A normal Pull and a Rig hold have the same public action, so no card names the private Rig input before the finale. Receipts record when a motor was held or idle while its end sat above or below the other, never how fast an end moved, so a Rig burst leaves the same kind of card as an ordinary over-pull. Other stations may have failed innocently, and successful heists are announced for the act as a whole. Comparing behavior across acts and partnerships is how players narrow their suspicions.
 
 Receipts remain accessible for the rest of the episode. The initial design shows only a few salient cards at once; players can revisit earlier acts. Selection must follow documented coverage rules, rather than secretly choosing clues that guarantee a desired winner. The full record is reserved for the finale.
 
@@ -172,7 +202,7 @@ This illustrative episode demonstrates the rules. It is not a scripted sequence 
 
 Maya, Leo, Nia, Omar, Tess, Hugo, Iris, and Ben enter the villa. Leo and Nia privately learn that they are Snakes. The other six are House players and do not know who the Snakes are.
 
-Maya partners with Leo at Prize Lift; each controls a corner cable. Leo completes a Rig hold, then keeps pulling while his corner is already high. Maya does not correct the tilt in time and mistimes her Catch tap. Nobody else saves the case, so its capsule is diverted. Another station fails innocently. The act ends with **Heists: 1/2**.
+Maya partners with Leo at Prize Lift; each controls one end of the tray. Leo completes a Rig hold, and for the next two seconds his doubled motor keeps pulling while his end is already high. The capsule slides off Maya’s end before she can level, and she mistimes her Catch tap. Nobody else saves the case, so its capsule is diverted. Another station fails innocently. The act ends with **Heists: 1/2**.
 
 Receipts show both failed stations and relevant winch actions. Maya remembers Leo helping earlier and votes for Hugo. Enough others choose Hugo that he is removed; his card reveals House. He can follow the public episode backstage or start another match. **Seven contestants remain: five House players and two Snakes, Leo and Nia. Heists: 1/2 means one successful theft, not one remaining Snake.**
 
@@ -278,7 +308,7 @@ Run repeated sessions with roughly 40–60 appropriately recruited target-age pl
 
 Proposed initial screening gates are that 80% explain their team objective, 70% identify relevant evidence, and 60% voluntarily start another episode when free to stop. Compare suspect accuracy against a random choice among eligible contestants. Team win rates alone may reflect sabotage difficulty. These small-sample gates are internal proposals, not population retention estimates.
 
-Compare 4½- and six-minute episodes, easier and harder Catch timing, and permitted chat on or off. Change one major factor at a time. Test idle stations, constant holds, tap spam, intentional imbalance, extra rescuers, coordinated friend votes, and newcomer targeting. Measure heist success against novice and practiced House players; tune two- and three-person stations separately. A dominant low-effort strategy requires revision. Record the tie rate per vote and how each runoff resolved; if deadlocks stay common, revisit the vote structure rather than the tie rule.
+Compare 4½- and six-minute episodes, easier and harder Catch timing, shorter and longer Rig bursts, and permitted chat on or off. Change one major factor at a time. Test idle stations, constant holds, tap spam, intentional imbalance, extra rescuers, coordinated friend votes, and newcomer targeting. Measure heist success against novice and practiced House players; tune two- and three-person stations separately. A dominant low-effort strategy requires revision. Record the tie rate per vote and how each runoff resolved; if deadlocks stay common, revisit the vote structure rather than the tie rule.
 
 ## Do unfamiliar players return?
 
@@ -308,7 +338,7 @@ All characters, branding, art, sound, and show presentation must be original or 
 
 ## Decisions the prototype must resolve
 
-The two-heist target, 1½-second Rig hold, one-second danger threshold, three-second Catch window, catch-zone width, receipt coverage, runoff length, and episode length are test settings. The core question is whether players enjoy cooperation, notice a plausible betrayal, reason about evidence, and feel fairly treated when wrong.
+The two-heist target, the 1½-second Rig hold, the 2.2-second Rig burst and its multipliers, the three-second Catch window and quarter-second zone, the motor force and speed limits, the capsule’s friction and start offset, the pool depth, receipt coverage, runoff length, and episode length are test settings. Two Prize Lift rules remain open from its review: whether the Snake team keeps one attempt per act or each Snake gets one, and whether a caught capsule returns to the center or to the edge it fell from. The core question is whether players enjoy cooperation, notice a plausible betrayal, reason about evidence, and feel fairly treated when wrong.
 
 The House Pot must be understandable as a temporary performance score alongside the heist objective. Backstage must earn voluntary attention. Cosmetics need demonstrated desirability. If any of these systems confuse players or fail to add value, simplify them before expanding. A new challenge needs a complete description of normal play, sabotage, prevention, evidence, and rewards before it enters the backlog.
 
@@ -369,6 +399,12 @@ This gives up some chase tension and the immediate thrill of an attack. Prize Li
 The earlier v2 mixed winch and balancing jobs, timing taps, boost, Rig, and a hold-to-Stabilize response. The refinement gives every operator one hold/release cable control. Automatic motor progress prevents refusing to play from guaranteeing safety. Catch becomes a timing action with an individual attempt, so holding or spamming cannot automatically rescue, and a Snake cannot veto someone else’s save.
 
 Rig now arms concealed routing rather than creating a mandatory disturbance. Its hold also performs a real Pull, with identical public physics and animation. A heist requires an actual unrecovered failure. This preserves observable suspicious behavior without rendering conflicting worlds. The tradeoff is more reliance on winch skill; novice and experienced groups must both have meaningful chances to cause and prevent theft.
+
+## Prize Lift: coupled cables replace the paced motor
+
+The refinement above never stated how the winch responded to input, and heist feasibility depended entirely on that. A simulation of one plausible model, bounded cable reach with load shifts larger than the red boundary, showed a Snake could always force a fault, and that the heist then hung on the partner’s single Catch tap: about 16% Snake wins against average partners with the shared attempt, rising to 37% with one attempt per Snake. A first mockup of that analysis is kept at [`prototypes/prize-lift-under-the-hood.html`](prototypes/prize-lift-under-the-hood.html).
+
+The revised chapter replaces the paced motor with one motor per cable, constant force, a capsule that loads the nearer cable, and a tray with no walls. In the playable model, a plain motor cannot out-tilt an attentive partner; only the Rig burst can. Sabotage therefore depends on a tool the rules can meter instead of on a quirk of the winch, and refusing to pull sinks the tray instead of stalling it. Three decisions followed play: the Rig is a timed burst rather than a standing state, the pool sits deeper than the tray can tilt so nobody can sink it alone, and receipts do not record speed. Settings were tuned by hand and remain hypotheses. The Catch is still the bottleneck; attempts per act and the catch-zone width remain the balance dials.
 
 ## Win conditions and duration are explicit
 
