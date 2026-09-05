@@ -6,7 +6,7 @@ Version 2, Prize Lift revised · 5 September 2026 · Design for prototype valida
 
 Snake Show is an online party game on Roblox, the platform where players join games as customizable 3D avatars. Eight players become contestants in a colorful reality-TV competition set in a luxury villa. Each short match is presented as one television **episode**, with team challenges, evidence, live votes, and a final reveal.
 
-The cast has **eight contestants in total: six House players and two Snakes**. The House protects the show’s prizes; the Snakes try to steal them through hidden sabotage. Roles are assigned privately at the start. Snakes look like ordinary contestants; the name describes their secret role, not an animal character. They know each other’s identities. House players know only their own role.
+The cast has **eight contestants in total: six Loyals and two Snakes**. The Loyals protect the show’s prizes; the Snakes try to steal them through hidden sabotage. A **Loyal** is any contestant who is not a Snake; together they are the Loyals. Roles are assigned privately at the start. Snakes look like ordinary contestants; the name describes their secret role, not an animal character. They know each other’s identities. Loyals know only their own role.
 
 A **heist** is a successful act of sabotage that diverts a challenge’s prize to the Snake team. It is a playable action with an opportunity for others to stop it. Simply making a mistake or losing a challenge does not count as a heist.
 
@@ -14,7 +14,7 @@ A **heist** is a successful act of sabotage that diverts a challenge’s prize t
 
 Contestants move around the villa, cooperate in short physical or timing challenges, watch for suspicious behavior, and inspect **receipts**: event cards showing limited, factual observations. They then vote to remove a suspected Snake from the competition. Removed players can follow the episode from a backstage lounge or join another match.
 
-An episode contains up to three challenge-and-vote **acts** and lasts about 4½ to 5 minutes. Snakes win only if they complete at least two heists and keep one Snake in the competition after the final vote. The House wins if either condition is prevented. The finale reveals the roles and reconstructs the key sabotage moments.
+An episode contains up to three challenge-and-vote **acts** and lasts about 4½ to 5 minutes. Snakes win only if they complete at least two heists and keep one Snake in the competition after the final vote. The Loyals win if either condition is prevented. The finale reveals the roles and reconstructs the key sabotage moments.
 
 ## The experience and the business
 
@@ -38,7 +38,7 @@ Players keep recognizable humanoid avatars with compatible outfits and standardi
 
 ## What appears on a phone
 
-During a challenge, the top of the screen shows the act number, time remaining, and **Heists: 0/2**: completed thefts toward the Snakes’ target. This number never means Snakes remaining. Local instructions and large thumb controls explain the task. A smaller House Pot indicator shows the score earned from deliveries; it is separate from both team size and heists.
+During a challenge, the top of the screen shows the act number, time remaining, and **Heists: 0/2**: completed thefts toward the Snakes’ target. This number never means Snakes remaining. Local instructions and large thumb controls explain the task. A smaller Prize Pot indicator shows the score earned from deliveries; it is separate from both team size and heists.
 
 The evidence screen displays a few automatically generated event cards, each with an act, location, and relevant contestants. The voting screen shows the remaining contestants as large selectable portraits. The result screen announces the winning team before showing the replay and rewards. Only information relevant to the current phase occupies the main screen.
 
@@ -50,7 +50,7 @@ Short host captions, countdown tones, camera flashes, and crowd reactions suppor
 
 ## Casting: 10 seconds
 
-Matchmaking assembles eight players. A private card assigns each player to the House or the Snakes and shows that team’s objective. Snakes also see their teammate. All eight entrances appear in a short shared montage. Players do not select or buy their team assignment.
+Matchmaking assembles eight players. A private card assigns each player to the Loyals or the Snakes and shows that team’s objective. Snakes also see their teammate. All eight entrances appear in a short shared montage. Players do not select or buy their team assignment.
 
 ## Each act: 45 seconds of challenge play
 
@@ -66,7 +66,7 @@ The contestant with the most votes leaves the competition and their team is reve
 
 ## Winning and the finale: 20 seconds
 
-After the third vote, Snakes win if they have at least two successful heists and at least one Snake remains active. Otherwise the House wins. Catching both Snakes ends the episode early with a House victory. Two unsuccessful heist opportunities also trigger an early House victory because reaching two successes is then impossible.
+After the third vote, Snakes win if they have at least two successful heists and at least one Snake remains active. Otherwise the Loyals win. Catching both Snakes ends the episode early with a Loyal victory. Two unsuccessful heist opportunities also trigger an early Loyal victory because reaching two successes is then impossible.
 
 The finale reveals all roles, shows a short factual reconstruction, and awards progress. All original team members share their team’s result, including those voted out. Active survivors do not win individually. The full timing is **10 + 3 × (45 + 10 + 25) + 20 = 270 seconds**, plus 10 seconds for each act that needs a runoff, so an episode runs 270 to 300 seconds. Queue time is additional; transitions are included in the phase budgets.
 
@@ -90,7 +90,7 @@ The tray starts level with the capsule halfway to one end, on a random side, so 
 
 Nothing lifts the tray except the motors. With both operators holding, the tray reaches the shelf in about 13 seconds at the proposed settings. With neither holding, it sinks. The pool surface sits deeper below the start than the tray can tilt, so one end can reach the water only when both ends have sunk. Any end touching the water is an **automatic drop**: the capsule is lost with no Catch, and the lift simply fails. Refusing to pull therefore cannot produce a safe delivery, and no single operator can sink the tray alone.
 
-Reaching the shelf with the capsule aboard banks one delivery into the House Pot. A station can score one delivery per act. Finished operators can watch or help another station for the remaining time. Failure, recovery, and sabotage are defined on the following pages.
+Reaching the shelf with the capsule aboard banks one delivery into the Prize Pot. A station can score one delivery per act. Finished operators can watch or help another station for the remaining time. Failure, recovery, and sabotage are defined on the following pages.
 
 ## Proposed settings
 
@@ -152,19 +152,19 @@ Completion consumes the team’s act attempt and does two things at once. It arm
 
 ## The burst tilts the tray; the Catch decides the theft
 
-Without the burst, a Snake cannot out-tilt an attentive partner, because both motors have the same limits. The doubled motor is what makes sabotage possible, and it lasts five seconds. From the light end, a burst of pulling drives the capsule toward the partner’s end and off it. From the heavy end, letting the doubled cable drop does the same toward the Snake’s own end. Either way the tray tilts, the capsule slides, and House players get the ordinary Catch. A partner who levels quickly can still keep the capsule aboard.
+Without the burst, a Snake cannot out-tilt an attentive partner, because both motors have the same limits. The doubled motor is what makes sabotage possible, and it lasts five seconds. From the light end, a burst of pulling drives the capsule toward the partner’s end and off it. From the heavy end, letting the doubled cable drop does the same toward the Snake’s own end. Either way the tray tilts, the capsule slides, and Loyals get the ordinary Catch. A partner who levels quickly can still keep the capsule aboard.
 
 An **armed capsule followed by an unsuccessful Catch** diverts it into the concealed Snake channel: one successful heist. Without a rig, the same visible drop sends it to the ordinary recovery bin and awards no heist. A successful Catch clears the rig and ends that attempt; safe delivery, a sunk tray, or the act ending also defeats an unresolved attempt. The rig cannot transfer to a replacement capsule.
 
 ## One shared scene; limited private information
 
-House players, Snakes, and live observers see the same tray position, lever movement, tilt, warning, capsule slide, Catch gauge, and capsule drop, subject to their camera view. **There is no Snake-only version of the physical scene.** The internal routing is concealed from everyone’s live camera. A doubled end does move visibly faster than a plain motor allows; the brief accepts that as a live observation a watching player may or may not notice, and the receipts never record it.
+Loyals, Snakes, and live observers see the same tray position, lever movement, tilt, warning, capsule slide, Catch gauge, and capsule drop, subject to their camera view. **There is no Snake-only version of the physical scene.** The internal routing is concealed from everyone’s live camera. A doubled end does move visibly faster than a plain motor allows; the brief accepts that as a live observation a watching player may or may not notice, and the receipts never record it.
 
 Only private interface information differs: role card, Snake teammate identity, Rig button, hold progress, burst countdown, attempt status, and immediate confirmation of its outcome. Everyone receives the successful-heist count at the act’s end. The finale can show a cutaway of the recorded diversion after roles are revealed. The stolen capsule is an episode prop, never a player’s owned item or saved currency.
 
 ## Prototype acceptance
 
-First verify that novices understand hold/release and the leaning capsule, a single attentive House player can rescue, and both viewers see identical public events. Test refusal to play, constant holds, tap spam, deliberate imbalance, and two- versus three-person stations. Measure, against novice and practiced House partners, how often a Rig burst produces a fault and how often that fault becomes a heist. If experienced players stop every heist, or newcomers cannot stop one, revise the interaction before adding challenges.
+First verify that novices understand hold/release and the leaning capsule, a single attentive Loyal can rescue, and both viewers see identical public events. Test refusal to play, constant holds, tap spam, deliberate imbalance, and two- versus three-person stations. Measure, against novice and practiced Loyal partners, how often a Rig burst produces a fault and how often that fault becomes a heist. If experienced players stop every heist, or newcomers cannot stop one, revise the interaction before adding challenges.
 
 The earlier model’s simulation found that the Catch, not the tilt, decides the heist rate, and the coupled-cables model has not changed that. Expect the catch-zone width and the number of attempts per act to be the balance dials, with the Rig burst length and multipliers behind them.
 
@@ -180,7 +180,7 @@ Receipts remain accessible for the rest of the episode. The initial design shows
 
 ## What a player can decide
 
-A player might trust someone who helped deliver a prize, suspect repeated poor winch handling before failures, or reconsider when another partnership produces conflicting evidence. A missed catch is not proof of guilt. House players try to identify the Snakes. Snakes can cooperate to build credibility, choose when to risk sabotage, and vote to divert suspicion.
+A player might trust someone who helped deliver a prize, suspect repeated poor winch handling before failures, or reconsider when another partnership produces conflicting evidence. A missed catch is not proof of guilt. Loyals try to identify the Snakes. Snakes can cooperate to build credibility, choose when to risk sabotage, and vote to divert suspicion.
 
 Voting is based on player judgment. A vote is never presented as verified evidence. The core interface consists of the automatic event board, an optional local suspect selection, and the final ballot. A local selection is visible only to that player until they submit a vote; it does not send a custom message.
 
@@ -200,27 +200,27 @@ This illustrative episode demonstrates the rules. It is not a scripted sequence 
 
 ## The cast and the first act
 
-Maya, Leo, Nia, Omar, Tess, Hugo, Iris, and Ben enter the villa. Leo and Nia privately learn that they are Snakes. The other six are House players and do not know who the Snakes are.
+Maya, Leo, Nia, Omar, Tess, Hugo, Iris, and Ben enter the villa. Leo and Nia privately learn that they are Snakes. The other six are Loyals and do not know who the Snakes are.
 
 Maya partners with Leo at Prize Lift; each controls one end of the tray. Leo completes a Rig hold, and for the next five seconds his doubled motor keeps pulling while his end is already high. The capsule slides off Maya’s end before she can level, and she mistimes her Catch tap. Nobody else saves the case, so its capsule is diverted. Another station fails innocently. The act ends with **Heists: 1/2**.
 
-Receipts show both failed stations and relevant winch actions. Maya remembers Leo helping earlier and votes for Hugo. Enough others choose Hugo that he is removed; his card reveals House. He can follow the public episode backstage or start another match. **Seven contestants remain: five House players and two Snakes, Leo and Nia. Heists: 1/2 means one successful theft, not one remaining Snake.**
+Receipts show both failed stations and relevant winch actions. Maya remembers Leo helping earlier and votes for Hugo. Enough others choose Hugo that he is removed; his card reveals Loyal. He can follow the public episode backstage or start another match. **Seven contestants remain: five Loyals and two Snakes, Leo and Nia. Heists: 1/2 means one successful theft, not one remaining Snake.**
 
 ## The second act
 
 Groups rotate. Nia uses the next act’s attempt successfully at another station, bringing the display to **Heists: 2/2**. Both Snakes are still active before this act’s vote. They have met the theft requirement, but at least one must survive all remaining votes.
 
-This time the group votes out Leo, and his card reveals Snake. Six contestants remain: five House players and one Snake, Nia. **Heists: 2/2 stays unchanged** because removing a Snake does not undo completed thefts. The House can still win by identifying Nia in the final act.
+This time the group votes out Leo, and his card reveals Snake. Six contestants remain: five Loyals and one Snake, Nia. **Heists: 2/2 stays unchanged** because removing a Snake does not undo completed thefts. The Loyals can still win by identifying Nia in the final act.
 
 ## The third act and the outcome
 
 Nia chooses to play cooperatively in the final challenge. She already has the two team heists required and now wants to avoid suspicion. Not using this act’s attempt does not erase either previous success.
 
-The remaining players revisit the second act’s receipts and connect Nia with that station’s suspicious adjustment. They vote her out. With both Snakes exposed, the House wins despite the two stolen capsules. If they had instead removed a House player or deadlocked, Nia would have survived and the Snakes would have won.
+The remaining players revisit the second act’s receipts and connect Nia with that station’s suspicious adjustment. They vote her out. With both Snakes exposed, the Loyals win despite the two stolen capsules. If they had instead removed a Loyal or deadlocked, Nia would have survived and the Snakes would have won.
 
 ## The payoff
 
-The finale reconstructs Leo’s rig and winch action, Maya’s missed catch, the first vote, and Nia’s later heist. Players see how cooperation, observation, and voting produced the outcome. Hugo still receives the House team-result bonus despite his early removal. Everyone can equip earned cosmetics and choose another episode.
+The finale reconstructs Leo’s rig and winch action, Maya’s missed catch, the first vote, and Nia’s later heist. Players see how cooperation, observation, and voting produced the outcome. Hugo still receives the Loyal team-result bonus despite his early removal. Everyone can equip earned cosmetics and choose another episode.
 
 # Joining, leaving, and playing backstage
 
@@ -250,7 +250,7 @@ A brief reconnect allowance should cover temporary connection loss. If a departu
 
 ## What carries into the next episode
 
-**Fame** is a non-spendable measure of career progress. **Show Credits** are earned currency for cosmetic unlocks. Both persist between episodes. The House Pot and heist counter belong only to the current episode and reset afterward. A future competitive rating would be a separate measure of match performance.
+**Fame** is a non-spendable measure of career progress. **Show Credits** are earned currency for cosmetic unlocks. Both persist between episodes. The Prize Pot and heist counter belong only to the current episode and reset afterward. A future competitive rating would be a separate measure of match performance.
 
 Players receive baseline progress for meaningful challenge participation, plus modest bonuses for the team result and useful performance such as a correct vote. Repeated accusations, intentionally getting removed, and idle time do not generate bonus progress. Exact reward amounts remain to be tested.
 
@@ -258,7 +258,7 @@ The persistent identity is a recognizable contestant: an outfit, entrance animat
 
 ## Self-expression and relationships
 
-Style labels such as Mastermind or Showstopper can describe cosmetic themes or earned achievements. The launch game has only two functional roles, House and Snake, with no additional secret professions, neutral teams, or personal victory conditions. Future abilities require a clear purpose, equal gameplay access, and independent testing.
+Style labels such as Mastermind or Showstopper can describe cosmetic themes or earned achievements. The launch game has only two functional roles, Loyal and Snake, with no additional secret professions, neutral teams, or personal victory conditions. Future abilities require a clear purpose, equal gameplay access, and independent testing.
 
 Players can choose to rematch with a compatible cast and use Roblox’s supported friend controls. Later, recurring groups could earn a shared cosmetic set or trophy display. Permanent memories should celebrate participation and achievements; a player’s suspicion or unpopularity in one episode should not become a public label.
 
@@ -308,7 +308,7 @@ Run repeated sessions with roughly 40–60 appropriately recruited target-age pl
 
 Proposed initial screening gates are that 80% explain their team objective, 70% identify relevant evidence, and 60% voluntarily start another episode when free to stop. Compare suspect accuracy against a random choice among eligible contestants. Team win rates alone may reflect sabotage difficulty. These small-sample gates are internal proposals, not population retention estimates.
 
-Compare 4½- and six-minute episodes, easier and harder Catch timing, shorter and longer Rig bursts, and permitted chat on or off. Change one major factor at a time. Test idle stations, constant holds, tap spam, intentional imbalance, extra rescuers, coordinated friend votes, and newcomer targeting. Measure heist success against novice and practiced House players; tune two- and three-person stations separately. A dominant low-effort strategy requires revision. Record the tie rate per vote and how each runoff resolved; if deadlocks stay common, revisit the vote structure rather than the tie rule.
+Compare 4½- and six-minute episodes, easier and harder Catch timing, shorter and longer Rig bursts, and permitted chat on or off. Change one major factor at a time. Test idle stations, constant holds, tap spam, intentional imbalance, extra rescuers, coordinated friend votes, and newcomer targeting. Measure heist success against novice and practiced Loyals; tune two- and three-person stations separately. A dominant low-effort strategy requires revision. Record the tie rate per vote and how each runoff resolved; if deadlocks stay common, revisit the vote structure rather than the tie rule.
 
 ## Do unfamiliar players return?
 
@@ -322,7 +322,7 @@ Use adequate sample sizes and stated uncertainty before expanding. The decision 
 
 ## Information, reliability, and fair outcomes
 
-The server must own roles, sabotage reservations, winch state, Catch resolution, vote totals, rewards, and the factual replay. Replicate one public scene to every viewer. Send private role and rig information only to eligible clients; merely hiding secret data in a House player’s interface is insufficient. Validate input timing, proximity, and state transitions, including simultaneous catch attempts.
+The server must own roles, sabotage reservations, winch state, Catch resolution, vote totals, rewards, and the factual replay. Replicate one public scene to every viewer. Send private role and rig information only to eligible clients; merely hiding secret data in a Loyal’s interface is insufficient. Validate input timing, proximity, and state transitions, including simultaneous catch attempts.
 
 Rewards must be issued once even if a player reconnects, starts another episode, or a server retries. The Product Owner should require explicit behavior for missed votes, abandoned sabotage claims, disconnects, and incomplete episodes. The proposed reconnect and cancellation rules need tests against deliberate leaving as well as normal connection loss.
 
@@ -334,13 +334,13 @@ Roblox’s preset guidance limits one experience—called a Universe in its tech
 
 Current age-based account materials describe additional evaluation for games available to under-16 players and different access and communication rules by account and region [4]. Confirm actual audience eligibility, maturity classification, and creator requirements before recruitment or paid launch. Describe the game’s real features accurately during review.
 
-All characters, branding, art, sound, and show presentation must be original or properly licensed. Snake Show is a working title whose availability remains unverified. The proposed visual treatment is a design direction, not evidence that assets, a name, or platform approval have been secured.
+All characters, branding, art, sound, and show presentation must be original or properly licensed. Snake Show is a working title whose availability remains unverified. Team names are localized through the experience’s translation table rather than left to automatic translation, which would render an invented noun such as “Loyals” unpredictably [7]. “Loyal” has a plain native word in most supported languages, but its transliteration in Japanese and Korean reads as “royal”, so those two need a native term; and its French and German forms coincide with the team name used by local editions of the reality format The Traitors, so the name should be reviewed for format proximity together with the working title. The proposed visual treatment is a design direction, not evidence that assets, a name, or platform approval have been secured.
 
 ## Decisions the prototype must resolve
 
 The two-heist target, the 1½-second Rig hold, the five-second Rig burst and its multipliers, the three-second Catch window and quarter-second zone, the motor force and speed limits, the capsule’s friction and start offset, the pool depth, receipt coverage, runoff length, and episode length are test settings. Two Prize Lift rules remain open from its review: whether the Snake team keeps one attempt per act or each Snake gets one, and whether a caught capsule returns to the center or to the edge it fell from. The core question is whether players enjoy cooperation, notice a plausible betrayal, reason about evidence, and feel fairly treated when wrong.
 
-The House Pot must be understandable as a temporary performance score alongside the heist objective. Backstage must earn voluntary attention. Cosmetics need demonstrated desirability. If any of these systems confuse players or fail to add value, simplify them before expanding. A new challenge needs a complete description of normal play, sabotage, prevention, evidence, and rewards before it enters the backlog.
+The Prize Pot must be understandable as a temporary performance score alongside the heist objective. Backstage must earn voluntary attention. Cosmetics need demonstrated desirability. If any of these systems confuse players or fail to add value, simplify them before expanding. A new challenge needs a complete description of normal play, sabotage, prevention, evidence, and rewards before it enters the backlog.
 
 # Sources and interpretation
 
@@ -374,6 +374,10 @@ Retrospective on searches, established and new games, shared events, and device 
 
 Authoritative reference to check before implementing native capture. In-game reconstruction is a separate proposed feature.
 
+**[7]** [Roblox Creator Hub — Localization](https://create.roblox.com/docs/production/localization)
+
+Automatic translation of in-game text, precedence of manual translation-table entries, and the AutoLocalize property for text that must not be translated.
+
 ## How to use this brief
 
 This document is the complete proposed concept for a Product Owner evaluating and organizing Snake Show. It explains the player experience before commercial strategy and delivery constraints. It is sufficiently concrete to scope and test the first playable, while leaving unvalidated timing and balance values open to revision.
@@ -386,7 +390,7 @@ This annex explains changes from the initial concept and subsequent Prize Lift r
 
 ## What stayed: the cast and the show fantasy
 
-The cast remains **eight contestants: six House players plus two Snakes**. The opening now states the total first. “Heists: x/2” explicitly counts thefts, never remaining Snakes; the worked example states both team sizes after removals. The reality-show fantasy, short episodes, secret betrayal, persistent cosmetic identity, and fair role assignment remain central.
+The cast remains **eight contestants: six Loyals plus two Snakes**. The opening now states the total first. “Heists: x/2” explicitly counts thefts, never remaining Snakes; the worked example states both team sizes after removals. The reality-show fantasy, short episodes, secret betrayal, persistent cosmetic identity, and fair role assignment remain central.
 
 ## Challenge sabotage replaces free-roam attacks
 
@@ -408,7 +412,7 @@ The revised chapter replaces the paced motor with one motor per cable, constant 
 
 ## Win conditions and duration are explicit
 
-The original draft left victory and removal limits incomplete. One Snake attempt per act, two heists, and a surviving Snake define the objective and its risks. Ties, early wins, and the shrinking cast are explicit. A tie originally removed nobody. A vote simulation with House votes landing on a Snake between 30% and 60% of the time showed that rule skipping more than one of the three eliminations per episode, which also withholds team reveals from the House. A runoff among the tied contestants replaced it, with a deadlock removing nobody only if the runoff ties again. The threshold and all Prize Lift timings still need testing.
+The original draft left victory and removal limits incomplete. One Snake attempt per act, two heists, and a surviving Snake define the objective and its risks. Ties, early wins, and the shrinking cast are explicit. A tie originally removed nobody. A vote simulation with Loyal votes landing on a Snake between 30% and 60% of the time showed that rule skipping more than one of the three eliminations per episode, which also withholds team reveals from the Loyals. A runoff among the tied contestants replaced it, with a deadlock removing nobody only if the runoff ties again. The threshold and all Prize Lift timings still need testing.
 
 The original four-minute loop contained 325 seconds before its reveal: 10 + 3 × (75 + 30). The revised budget is 270 seconds including a 20-second finale, or 300 seconds if every act needs a runoff, so about 4½ to 5 minutes. A six-minute comparison checks whether more time improves tension and deduction.
 
@@ -442,13 +446,13 @@ The initial reveal focused on the Snake’s identity and animation. The proposal
 
 ## Extra personas and conflicting goals are deferred
 
-The initial role deck included investigative abilities, double votes, and personal wins for ties or early elimination. The proposed first game has only House and Snake roles. Style and identity remain available through cosmetics and achievements. Removing additional victory conditions makes team incentives easier to explain and reduces situations where optimal personal play undermines everyone else’s match.
+The initial role deck included investigative abilities, double votes, and personal wins for ties or early elimination. The proposed first game has only Loyal and Snake roles. Style and identity remain available through cosmetics and achievements. Removing additional victory conditions makes team incentives easier to explain and reduces situations where optimal personal play undermines everyone else’s match.
 
 This gives up some immediate variety. A role or ability should return only when it adds a distinct decision that players can understand, with equal gameplay access. More combinations alone are not evidence of deeper deduction or longer retention.
 
 ## Progress and skill are separated
 
-The initial Fame system combined experience, leaderboard status, and rewards from several activities. The proposal uses Fame for career progress, Show Credits for earned cosmetics, and a separate rating if competitive play is later introduced. The House Pot stays an episode-only performance score. This makes the meaning of each number clearer and avoids presenting playtime or audience activity as competitive skill.
+The initial Fame system combined experience, leaderboard status, and rewards from several activities. The proposal uses Fame for career progress, Show Credits for earned cosmetics, and a separate rating if competitive play is later introduced. The Prize Pot stays an episode-only performance score. This makes the meaning of each number clearer and avoids presenting playtime or audience activity as competitive skill.
 
 Even this separation may introduce too many indicators. The prototype must show that players understand the team objective and the temporary Pot before more progression is displayed. Reward values and cosmetic demand remain unproven.
 

@@ -298,7 +298,7 @@
     </div>
     <div>
       <h3>The Catch is the bottleneck</h3>
-      <p>One tap from the House partner saves the case. A heist needs that one tap to miss, twice in three attempts. Against an average partner the Snakes win <span class="num">16%</span> of episodes.</p>
+      <p>One tap from the Loyal partner saves the case. A heist needs that one tap to miss, twice in three attempts. Against an average partner the Snakes win <span class="num">16%</span> of episodes.</p>
     </div>
     <div>
       <h3>The change</h3>
@@ -494,9 +494,9 @@
 <!-- ============ 3. THE TOY ============ -->
 <section>
   <p class="eyebrow">Try it</p>
-  <h2>Run one lift as the House operator</h2>
+  <h2>Run one lift as the Loyal operator</h2>
   <div class="prose">
-    <p>You hold cable 1. Hold <strong>Pull</strong> when your corner sags, let go when it's high. Watch the partner's lever. When the case faults, tap <strong>Catch</strong> once while the needle is in the zone. Switch the partner to <strong>Snake</strong> to see the heist attempt from the House side.</p>
+    <p>You hold cable 1. Hold <strong>Pull</strong> when your corner sags, let go when it's high. Watch the partner's lever. When the case faults, tap <strong>Catch</strong> once while the needle is in the zone. Switch the partner to <strong>Snake</strong> to see the heist attempt from the Loyal side.</p>
   </div>
 
   <div class="toy" id="toy">
@@ -654,7 +654,7 @@
   <div class="tabled">
     <table>
       <thead>
-        <tr><th>House partner</th><th class="num">Single-tap hit</th><th class="num">Heist per attempt</th><th class="num">2 heists from 3 team attempts</th><th class="num">2 heists from 6 per-Snake attempts</th></tr>
+        <tr><th>Loyal partner</th><th class="num">Single-tap hit</th><th class="num">Heist per attempt</th><th class="num">2 heists from 3 team attempts</th><th class="num">2 heists from 6 per-Snake attempts</th></tr>
       </thead>
       <tbody>
         <tr><td>Novice</td><td class="num">50%</td><td class="num">50%</td><td class="num">50%</td><td class="num">89%</td></tr>
@@ -671,7 +671,7 @@
   <p class="eyebrow">Whole episodes</p>
   <h2>What each option does to the Snake win rate</h2>
   <div class="prose">
-    <p>Simulated full episodes: three acts, random pairings, the runoff tie rule from problem 1, House votes landing on a Snake 45% of the time. Snakes attempt whenever they can and stop at two heists. A healthy hidden-team win rate sits around 35% to 50%.</p>
+    <p>Simulated full episodes: three acts, random pairings, the runoff tie rule from problem 1, Loyal votes landing on a Snake 45% of the time. Snakes attempt whenever they can and stop at two heists. A healthy hidden-team win rate sits around 35% to 50%.</p>
   </div>
   <div class="chart" id="chart">
     <div class="legend">
@@ -750,14 +750,14 @@
     <li><strong>State the winch model.</strong> Each cable moves its corner within a limited reach. A load shift sags a corner by more than the red boundary. Correcting it needs the loaded corner pulled and the other corner released. A partner who holds Pull through a shift toward the other corner forces a fault, visibly.</li>
     <li><strong>Schedule at least one shift toward each corner in every lift</strong>, so both operators must act and every Snake gets a window.</li>
     <li><strong>One Rig attempt per Snake per act.</strong> Remove the reservation, priority, and teammate status rules. Keep the private "Rig armed" confirmation.</li>
-    <li><strong>Early House victory</strong> triggers when completed heists plus remaining attempts, counting only living Snakes, can't reach two.</li>
+    <li><strong>Early Loyal victory</strong> triggers when completed heists plus remaining attempts, counting only living Snakes, can't reach two.</li>
     <li><strong>Vary the Catch needle speed</strong> per fault among a small fixed set of patterns, to narrow the gap between novice and practiced hit rates. Window width stays a test setting.</li>
     <li><strong>Replace the acceptance wording</strong> "if experienced players stop every heist, revise" with a measurable target: heist success per attempt between 40% and 60% against average partners.</li>
   </ol>
 </section>
 
 <footer>
-  Simulation: 30,000 episodes per cell, House votes independent with fixed accuracy, Snakes never coordinate votes, no rescuers, fault forced in 90% of attempts. Scripts: <code>tiesim.py</code> and <code>heistsim.py</code> in the session scratchpad. Source brief: <code>concepts/snake-show/snake-show-design-brief-v2.md</code>.
+  Simulation: 30,000 episodes per cell, Loyal votes independent with fixed accuracy, Snakes never coordinate votes, no rescuers, fault forced in 90% of attempts. Scripts: <code>tiesim.py</code> and <code>heistsim.py</code> in the session scratchpad. Source brief: <code>concepts/snake-show/snake-show-design-brief-v2.md</code>.
 </footer>
 </div>
 
@@ -1031,7 +1031,7 @@
     ui.pull.disabled = true;
     ui.pull.classList.remove('active');
     S.pull = false;
-    receipt('Delivered. One delivery banked in the House Pot.');
+    receipt('Delivered. One delivery banked in the Prize Pot.');
     if (S.rig === 'armed') setRig('defeated', 'defeated — safe delivery, attempt spent');
     setStatus('Delivered. The case reached the shelf level.', 'good');
     ui.start.textContent = 'Run it again';

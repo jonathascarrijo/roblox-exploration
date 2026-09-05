@@ -13,7 +13,7 @@ Engine: **social deduction + persistent progression + collection and status + sh
 ## The loop: one episode in about four minutes
 
 1. **Cast (10 seconds).** Each player gets a secret persona card. Two players are Snakes. Everyone makes a themed entrance with their equipped walk-on animation.
-2. **Day (about 75 seconds).** Contestants play quick two-person or group challenges in shared rooms to fill the House Pot. Challenges are small games, not chores: keep a tray balanced, memory match, tug of war. Snakes can "snake" a contestant when they're alone. The victim vanishes in a puff of confetti and leaves a snakeskin clue.
+2. **Day (about 75 seconds).** Contestants play quick two-person or group challenges in shared rooms to fill the Prize Pot. Challenges are small games, not chores: keep a tray balanced, memory match, tug of war. Snakes can "snake" a contestant when they're alone. The victim vanishes in a puff of confetti and leaves a snakeskin clue.
 3. **Live vote (30 seconds).** No typing required. Players tap a face to accuse and attach one "receipt" from a wheel: *"Saw them near the pool"*, *"Was with me"*, *"They're lying"*. The vote is shown as a broadcast graphic, and one contestant is sent to the audience.
 4. **Repeat Day and Vote three times**, then a cinematic **Snake reveal** with the Snake's own elimination animation. Fame is paid out to everyone, including the audience.
 

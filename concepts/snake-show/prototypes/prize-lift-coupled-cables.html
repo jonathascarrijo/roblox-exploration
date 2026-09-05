@@ -919,7 +919,7 @@
     ui.duR.className = 'v ' + (!running ? '' : nR > 1 ? 'crit' : dR < nR - 0.05 ? 'warn' : 'good');
     const rigTxt = side => { const r = S.rig[side]; if (rigOn(side)) return `ON ${(r.until - S.t).toFixed(1)} s`; return r.used ? 'spent' : 'ready'; };
     ui.rgL.textContent = rigTxt('L'); ui.rgL.className = 'v ' + (rigOn('L') ? 'snake' : '');
-    ui.rgR.textContent = mode === 'snake' ? 'not shown to the House' : rigTxt('R'); ui.rgR.className = 'v ' + (mode !== 'snake' && rigOn('R') ? 'snake' : '');
+    ui.rgR.textContent = mode === 'snake' ? 'not shown to the Loyals' : rigTxt('R'); ui.rgR.className = 'v ' + (mode !== 'snake' && rigOn('R') ? 'snake' : '');
     ui.rigL.disabled = !running || S.rig.L.used; ui.rigL.classList.toggle('on', rigOn('L'));
     ui.rigL.innerHTML = rigOn('L') ? `Rig on · ${(S.rig.L.until - S.t).toFixed(1)} s` : S.rig.L.used ? 'Rig spent · motor 1' : 'Arm motor 1 <kbd>R</kbd>';
     ui.rigR.disabled = !running || mode === 'snake' || S.rig.R.used; ui.rigR.classList.toggle('on', mode !== 'snake' && rigOn('R'));
