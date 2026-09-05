@@ -1,0 +1,804 @@
+<meta charset="utf-8">
+<title>Prize Lift, Coupled Cables</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f5f4ef;
+    --surface: #fffdf9;
+    --ink: #1b2028;
+    --ink-2: #4c5563;
+    --muted: #7b8494;
+    --line: #dcdad2;
+    --line-strong: #b9b7ae;
+    --accent: #0f8b8d;
+    --accent-ink: #0b6f71;
+    --accent-soft: rgba(15, 139, 141, 0.12);
+    --snake: #6b4fd8;
+    --snake-soft: rgba(107, 79, 216, 0.12);
+    --warn: #fab219;
+    --warn-text: #9a6a00;
+    --crit: #d03b3b;
+    --good: #0ca30c;
+    --grid: #e6e4dc;
+    --shadow: 0 1px 2px rgba(27, 32, 40, 0.06), 0 8px 24px rgba(27, 32, 40, 0.06);
+    --display: "Bricolage Grotesque", "Trebuchet MS", "Segoe UI", sans-serif;
+    --body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #141821;
+      --surface: #1b2028;
+      --ink: #eceef2;
+      --ink-2: #b9bfca;
+      --muted: #8b93a1;
+      --line: #2c323d;
+      --line-strong: #414957;
+      --accent: #3fbfc4;
+      --accent-ink: #5fd0d4;
+      --accent-soft: rgba(63, 191, 196, 0.16);
+      --snake: #a494f0;
+      --snake-soft: rgba(164, 148, 240, 0.16);
+      --warn-text: #fab219;
+      --grid: #262c37;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #141821;
+    --surface: #1b2028;
+    --ink: #eceef2;
+    --ink-2: #b9bfca;
+    --muted: #8b93a1;
+    --line: #2c323d;
+    --line-strong: #414957;
+    --accent: #3fbfc4;
+    --accent-ink: #5fd0d4;
+    --accent-soft: rgba(63, 191, 196, 0.16);
+    --snake: #a494f0;
+    --snake-soft: rgba(164, 148, 240, 0.16);
+    --warn-text: #fab219;
+    --grid: #262c37;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-ink); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .page { max-width: 1040px; margin: 0 auto; padding: 40px 20px 96px; }
+  .prose { max-width: 68ch; }
+  .prose p { margin: 0 0 14px; color: var(--ink-2); }
+  .prose p strong { color: var(--ink); font-weight: 600; }
+  .prose ul, .prose ol { margin: 0 0 14px; padding-left: 22px; color: var(--ink-2); }
+  .prose li { margin-bottom: 6px; }
+  .prose li strong { color: var(--ink); font-weight: 600; }
+
+  header { margin-bottom: 48px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    margin: 0 0 12px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-variation-settings: "opsz" 96;
+    font-weight: 700;
+    font-size: clamp(38px, 6vw, 60px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+    max-width: 16ch;
+  }
+  .lede { font-size: 19px; line-height: 1.45; color: var(--ink-2); max-width: 58ch; margin: 0 0 28px; }
+
+  section { margin: 0 0 64px; }
+  h2 {
+    font-family: var(--display);
+    font-variation-settings: "opsz" 48;
+    font-weight: 700;
+    font-size: clamp(26px, 3.4vw, 34px);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  h3 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 28px 0 8px; }
+
+  figure { margin: 24px 0; }
+  figure svg { display: block; max-width: 100%; height: auto; }
+  .figwrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; }
+  figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; max-width: 72ch; }
+  figcaption strong { color: var(--ink-2); font-weight: 600; }
+  .svg-ink { color: var(--ink); }
+  svg text { font-family: var(--body); font-size: 12px; fill: currentColor; }
+  svg text.mono { font-family: var(--mono); }
+  svg text.small { font-size: 11px; }
+  svg text.title { font-family: var(--display); font-size: 14px; font-weight: 600; }
+  svg .muted { opacity: 0.62; }
+
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px 28px; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); padding: 18px 0; margin: 0 0 8px; max-width: 900px; }
+  .rules div { font-size: 14px; color: var(--ink-2); }
+  .rules b { display: block; font-family: var(--display); font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+
+  /* ---------- toy ---------- */
+  .toy {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 18px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 1fr);
+    gap: 18px 24px;
+  }
+  @media (max-width: 760px) { .toy { grid-template-columns: 1fr; } }
+  .toy-scene { min-width: 0; }
+  .toy-scene svg { width: 100%; height: auto; display: block; }
+  .toy-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
+  .seg button {
+    font: 600 13px var(--body);
+    padding: 8px 11px;
+    background: transparent;
+    color: var(--ink-2);
+    border: 0;
+    border-right: 1px solid var(--line-strong);
+    cursor: pointer;
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-checked="true"] { background: var(--ink); color: var(--surface); }
+  .seg button[data-mode="snake"][aria-checked="true"] { background: var(--snake); color: #fff; }
+  .toy-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .btn {
+    font: 600 14px var(--body);
+    padding: 9px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .big {
+    font: 700 20px var(--display);
+    letter-spacing: 0.02em;
+    padding: 20px 10px;
+    border-radius: 10px;
+    border: 2px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    flex: 1 1 130px;
+    min-height: 84px;
+  }
+  .big:disabled { opacity: 0.55; cursor: default; }
+  .big.motor.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .big.motor.bot.active { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+  .big.motor.bot.snake.active { background: var(--snake); border-color: var(--snake); color: #fff; }
+  .big small { display: block; font: 500 11px var(--mono); letter-spacing: 0.08em; opacity: 0.8; margin-top: 4px; }
+  .status {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.25;
+    min-height: 2.5em;
+    margin: 0;
+  }
+  .status.warn { color: var(--warn-text); }
+  .status.crit { color: var(--crit); }
+  .status.good { color: var(--accent-ink); }
+  .status.snake { color: var(--snake); }
+  .hud { display: grid; grid-template-columns: auto 1fr 1fr; gap: 3px 14px; font-size: 13px; color: var(--ink-2); align-items: baseline; }
+  .hud .h { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .hud .v { font-family: var(--mono); font-size: 13px; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hud .v.warn { color: var(--warn-text); }
+  .hud .v.crit { color: var(--crit); }
+  .hud .v.good { color: var(--accent-ink); }
+  .receipts { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; max-height: 190px; overflow-y: auto; }
+  .receipts li { padding: 5px 8px; border-left: 2px solid var(--line-strong); background: var(--bg); }
+  .receipts li.you { border-left-color: var(--accent); }
+  .receipts li.crit { border-left-color: var(--crit); }
+  .receipts li.good { border-left-color: var(--good); }
+  .receipts li.empty { border-left-color: transparent; color: var(--muted); background: transparent; padding-left: 0; }
+  .receipts li b { font-family: var(--mono); font-weight: 500; color: var(--muted); margin-right: 6px; }
+  .private {
+    border: 1px dashed var(--snake);
+    background: var(--snake-soft);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .private .label { color: var(--snake); }
+  .private .plan { font-family: var(--mono); font-size: 13px; color: var(--ink); margin-top: 4px; }
+  .toy-note { font-size: 13px; color: var(--muted); margin: 12px 0 0; max-width: 78ch; }
+  kbd { font: 500 11px var(--mono); border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; color: var(--ink-2); }
+
+  /* ---------- tuning ---------- */
+  .tune { margin-top: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px 14px; }
+  .tune-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tune-head p { margin: 0; font-size: 14px; color: var(--ink-2); max-width: 60ch; }
+  .tune-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 32px; }
+  .tune-row { display: grid; grid-template-columns: 200px 1fr 48px; gap: 10px; align-items: center; font-size: 13px; color: var(--ink-2); }
+  .tune-row input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .tune-row .v { font-family: var(--mono); font-size: 12px; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .derived { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 6px 20px; align-items: end; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .derived div { font-size: 13px; color: var(--ink-2); }
+  .derived b { display: block; font-family: var(--mono); font-weight: 500; font-size: 14px; color: var(--ink); }
+  .derived span { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+
+  .water.danger { animation: blink 0.45s ease-in-out infinite alternate; }
+  @keyframes blink { from { opacity: 0.18; } to { opacity: 0.55; } }
+  @media (prefers-reduced-motion: reduce) { .water.danger { animation: none; opacity: 0.45; } }
+
+  footer { font-size: 13px; color: var(--muted); max-width: 72ch; border-top: 1px solid var(--line); padding-top: 18px; }
+  footer p { margin: 0 0 10px; }
+</style>
+
+<div class="page">
+<header>
+  <p class="eyebrow">Snake Show · Prize Lift · physics variation</p>
+  <h1>Prize Lift, coupled cables</h1>
+  <p class="lede">Two motors, two cables, and a prize that leans on whichever cable is nearer. A playable model of the second physics idea, with every constant on a slider.</p>
+  <div class="rules">
+    <div><b>One motor, one cable</b>Each cable has its own motor. Nothing links the two pairs except the platform between them.</div>
+    <div><b>Constant force while active</b>Holding a motor pushes its cable up with a fixed force. Releasing it leaves the cable to the weight.</div>
+    <div><b>Weight leans toward the near cable</b>The prize loads the cables by distance. Sitting at the right wall, it puts nearly all its weight on the right cable.</div>
+    <div><b>Long cables, water below</b>The platform can sink all the way down. Any end touching the water is an automatic drop, prize still on board.</div>
+    <div><b>Level start, off-center prize</b>The platform begins level, but the prize starts on one side, so the two cables never carry the same load.</div>
+  </div>
+</header>
+
+<!-- ============ 1. THE LEVER ============ -->
+<section>
+  <p class="eyebrow">The model</p>
+  <h2>Same push, different loads</h2>
+  <div class="prose">
+    <p>The platform hangs from two cables. Each motor pushes with the same force when active, but the prize's weight splits between the cables by distance. The cable nearer the prize carries more, so the same push lifts it less. That asymmetry is the whole game: the operator on the heavy side has to hold longer, and the operator on the light side has to hold less than feels natural.</p>
+  </div>
+  <figure>
+    <div class="figwrap">
+      <svg viewBox="0 0 560 230" role="img" aria-label="A level platform on two cables. The prize sits halfway to the right end. The left cable carries a quarter of its weight, the right cable three quarters. Both motors push upward with the same force.">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+          <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+          </marker>
+        </defs>
+        <g class="svg-ink">
+          <rect x="120" y="22" width="320" height="8" fill="currentColor"/>
+          <circle cx="150" cy="26" r="9" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+          <circle cx="410" cy="26" r="9" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+          <text x="150" y="14" text-anchor="middle" class="small mono">MOTOR 1</text>
+          <text x="410" y="14" text-anchor="middle" class="small mono">MOTOR 2</text>
+          <line x1="150" y1="35" x2="150" y2="140" stroke="currentColor" stroke-width="2"/>
+          <line x1="410" y1="35" x2="410" y2="140" stroke="currentColor" stroke-width="4"/>
+          <!-- motor force arrows, equal -->
+          <line x1="128" y1="122" x2="128" y2="72" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#arrA)"/>
+          <line x1="432" y1="122" x2="432" y2="72" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#arrA)"/>
+          <text x="118" y="100" text-anchor="end" class="small" fill="var(--accent-ink)">same force</text>
+          <text x="442" y="100" class="small" fill="var(--accent-ink)">same force</text>
+          <!-- platform -->
+          <rect x="150" y="140" width="260" height="8" fill="currentColor"/>
+          <rect x="150" y="128" width="6" height="12" fill="currentColor"/>
+          <rect x="404" y="128" width="6" height="12" fill="currentColor"/>
+          <line x1="280" y1="148" x2="280" y2="158" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+          <text x="280" y="170" text-anchor="middle" class="small muted">center</text>
+          <!-- prize -->
+          <circle cx="345" cy="124" r="16" fill="var(--warn)" stroke="currentColor" stroke-width="1.5"/>
+          <text x="345" y="104" text-anchor="middle" class="small">prize</text>
+          <!-- weight share arrows -->
+          <line x1="162" y1="156" x2="162" y2="176" stroke="currentColor" stroke-width="2.5" marker-end="url(#arr)"/>
+          <line x1="398" y1="156" x2="398" y2="216" stroke="currentColor" stroke-width="2.5" marker-end="url(#arr)"/>
+          <text x="172" y="176" class="small mono">25% of the prize</text>
+          <text x="388" y="200" text-anchor="end" class="small mono">75% of the prize</text>
+          <text x="280" y="212" text-anchor="middle" class="small muted">the platform's own weight splits evenly</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><strong>The lever rule.</strong> Halfway to the right, the prize puts three quarters of its weight on cable 2. Motor 2 pushes with the same force as motor 1, so its cable accelerates less, and the operator on that side must hold the motor longer to keep pace.</figcaption>
+  </figure>
+</section>
+
+<!-- ============ 2. TRY IT ============ -->
+<section>
+  <p class="eyebrow">Try it</p>
+  <h2>Lift the prize to the shelf</h2>
+  <div class="prose">
+    <p>You run motor 1. Hold the button, or <kbd>A</kbd> or <kbd>Space</kbd>, to push your cable. Let go and the weight takes over. Get both ends above the delivery line before the clock runs out, and never let either end touch the water. Pick <strong>Solo</strong> to run both motors yourself with <kbd>A</kbd> and <kbd>L</kbd>.</p>
+  </div>
+
+  <div class="toy" id="toy">
+    <div class="toy-scene">
+      <svg id="scene" viewBox="0 0 520 450" aria-label="Live coupled-cable lift">
+        <g class="svg-ink">
+          <!-- water -->
+          <rect id="water" class="water" x="60" y="435" width="400" height="15" fill="var(--accent)" opacity="0.18"/>
+          <line x1="60" y1="435" x2="460" y2="435" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="66" y="447" class="small" fill="var(--accent-ink)">water · automatic drop</text>
+          <!-- delivery line -->
+          <line x1="110" y1="75" x2="410" y2="75" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 5" opacity="0.7"/>
+          <text x="416" y="79" class="small">delivery</text>
+          <!-- ladder -->
+          <line x1="76" y1="75" x2="76" y2="435" stroke="currentColor" stroke-width="1" opacity="0.4"/>
+          <line x1="70" y1="335" x2="82" y2="335" stroke="currentColor" stroke-width="1"/>
+          <line x1="70" y1="235" x2="82" y2="235" stroke="currentColor" stroke-width="1"/>
+          <line x1="70" y1="135" x2="82" y2="135" stroke="currentColor" stroke-width="1"/>
+          <line x1="70" y1="75" x2="82" y2="75" stroke="currentColor" stroke-width="1"/>
+          <text x="64" y="339" text-anchor="end" class="small muted">start</text>
+          <text x="64" y="239" text-anchor="end" class="small muted mono">+1</text>
+          <text x="64" y="139" text-anchor="end" class="small muted mono">+2</text>
+          <polygon id="ladderMark" points="82,335 90,330 90,340" fill="var(--accent)"/>
+          <!-- beam and drums -->
+          <rect x="120" y="26" width="280" height="8" fill="currentColor"/>
+          <circle id="drumL" cx="160" cy="30" r="10" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+          <circle id="drumR" cx="360" cy="30" r="10" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+          <text id="nameL" x="160" y="14" text-anchor="middle" class="small mono">MOTOR 1 · YOU</text>
+          <text id="nameR" x="360" y="14" text-anchor="middle" class="small mono">MOTOR 2 · PARTNER</text>
+          <text id="loadL" x="146" y="52" text-anchor="end" class="small mono muted">load 25%</text>
+          <text id="loadR" x="374" y="52" class="small mono muted">load 75%</text>
+          <text id="stateL" x="146" y="66" text-anchor="end" class="small mono muted">off</text>
+          <text id="stateR" x="374" y="66" class="small mono muted">off</text>
+          <!-- clock -->
+          <text id="clock" x="456" y="404" text-anchor="end" class="mono">0.0 s</text>
+          <text id="tiltTxt" x="456" y="420" text-anchor="end" class="small mono muted">tilt 0°</text>
+          <!-- cables -->
+          <line id="cabL" x1="160" y1="30" x2="160" y2="335" stroke="currentColor" stroke-width="2"/>
+          <line id="cabR" x1="360" y1="30" x2="360" y2="335" stroke="currentColor" stroke-width="2"/>
+          <!-- platform -->
+          <g id="plat" transform="translate(260,335) rotate(0)">
+            <rect x="-100" y="0" width="200" height="8" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+            <rect x="-100" y="-14" width="6" height="14" fill="currentColor"/>
+            <rect x="94" y="-14" width="6" height="14" fill="currentColor"/>
+            <circle id="ball" cx="50" cy="-15" r="15" fill="var(--warn)" stroke="currentColor" stroke-width="1.5"/>
+          </g>
+          <g id="splash" opacity="0">
+            <circle id="sp1" cx="160" cy="435" r="14" fill="none" stroke="var(--accent)" stroke-width="2"/>
+            <circle id="sp2" cx="160" cy="435" r="26" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+          </g>
+          <text id="banner" x="260" y="400" text-anchor="middle" class="title" opacity="0"></text>
+        </g>
+      </svg>
+    </div>
+    <div class="toy-side">
+      <div class="toy-row">
+        <span class="label">Partner</span>
+        <div class="seg" role="radiogroup" aria-label="Who runs motor 2">
+          <button type="button" role="radio" data-mode="solo" aria-checked="false">Solo</button>
+          <button type="button" role="radio" data-mode="coop" aria-checked="true">Cooperative</button>
+          <button type="button" role="radio" data-mode="careless" aria-checked="false">Careless</button>
+          <button type="button" role="radio" data-mode="snake" aria-checked="false">Snake</button>
+        </div>
+        <button type="button" class="btn primary" id="startBtn">Start</button>
+      </div>
+      <p class="status" id="status">Pick a partner and start. The platform falls the moment the brake releases.</p>
+      <div class="toy-row">
+        <button type="button" class="big motor" id="btnL">MOTOR 1<small>hold · <kbd>A</kbd> or <kbd>Space</kbd></small></button>
+        <button type="button" class="big motor bot" id="btnR" disabled>MOTOR 2<small id="btnRsub">partner's</small></button>
+      </div>
+      <div class="hud" id="hud">
+        <span class="h"></span><span class="h">Motor 1 · you</span><span class="h" id="hudRname">Motor 2 · partner</span>
+        <span class="h">height</span><span class="v" id="hL">0.00</span><span class="v" id="hR">0.00</span>
+        <span class="h">load</span><span class="v" id="ldL">25%</span><span class="v" id="ldR">75%</span>
+        <span class="h">holding</span><span class="v" id="duL">0% · needs 34%</span><span class="v" id="duR">0% · needs 57%</span>
+        <span class="h">prize</span><span class="v" id="ballTxt" style="grid-column: span 2">0.50 to the right</span>
+      </div>
+      <div class="private" id="private" hidden>
+        <span class="label">Snake's private plan</span>
+        <div class="plan" id="planTxt">cooperate until the platform is up a bit</div>
+        <div>The scene shows the same thing to everyone. Only this box knows why motor 2 does what it does.</div>
+      </div>
+      <div>
+        <span class="label">Receipts</span>
+        <ul class="receipts" id="receipts"><li class="empty">Nothing recorded yet.</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tune" id="tune">
+    <div class="tune-head">
+      <div>
+        <span class="label">Tuning</span>
+        <p>Every constant of the model. Changes apply live, even mid-lift. Force is relative to the load with the prize centered, so 1.0 means the motor exactly holds a balanced platform.</p>
+      </div>
+      <button type="button" class="btn" id="resetBtn">Reset defaults</button>
+    </div>
+    <div class="tune-grid" id="sliders"></div>
+    <div class="derived" id="derived"></div>
+  </div>
+  <p class="toy-note">A tap fires the motor for at least the tap pulse, so quick taps count. Bots decide ten times a second on a picture 0.15 seconds old. The cooperative bot levels with you and keeps holding while it carries the prize. Careless holds at random about half the time. Snake cooperates until the platform is up, then over-pulls to roll the prize onto your side and rides just above you so it stays there. If your end gets near the water, Snake levels with you and looks helpful. This is a teaching toy, not the game's physics.</p>
+</section>
+
+<!-- ============ 3. THINGS TO TRY ============ -->
+<section>
+  <p class="eyebrow">Things to try</p>
+  <h2>Three feelings to check</h2>
+  <div class="prose">
+    <ul>
+      <li><strong>Hold both at once in Solo.</strong> The light end runs away, the platform tilts, the prize rolls to the heavy wall, and the heavy end gets heavier. Watch the two <em>needs</em> figures in the readout drift apart.</li>
+      <li><strong>Carry the prize yourself.</strong> With a cooperative partner, let your end sag until the prize rolls to your wall. Your motor now needs about two thirds of the time held to hold altitude at all. Tap at half duty and you sink no matter what the partner does.</li>
+      <li><strong>Watch the Snake's receipts.</strong> Its over-pull shows up as a long hold with its end above yours. Its ride afterward looks like ordinary leveling. Decide whether the receipts alone would convict it, or whether the drop reads as your fault.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p><strong>What the model does.</strong> Each end is a mass equal to half the platform plus its lever share of the prize, plus a small winch inertia. Motor on: constant force minus weight minus winch drag, capped at the motor's top speed. Motor off: weight minus drag. The prize rolls with the platform's slope, with its own drag, and bounces off the tray walls. Any end at or below the water line ends the lift. Both ends above the delivery line ends it the other way. The clock stops at 45 seconds.</p>
+  <p><strong>What it leaves out.</strong> The Rig, the Catch, and the capsule from the brief. A rigid platform's true two-body motion, replaced by two independent ends limited to about 53 degrees of tilt. Any brake or ratchet on an idle winch. Prize spill over the walls. Defaults were picked by simulating bot pairs: two cooperative operators deliver in 8 to 12 seconds, a 60% tapper sinks whoever the partner is, and a 70% tapper delivers.</p>
+</footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const DEF = { force: 2.2, vup: 0.5, g: 2.5, ballW: 1.0, cw: 1.5, roll: 1.0, cb: 0.4, x0: 0.5, pulse: 0.15 };
+  const FIX = { mp: 2, mw: 0.6, r: 0.15, rest: 0.3, water: -1.0, finish: 2.6, top: 2.8, vmax: 3.0, dmax: 1.6, limit: 45 };
+  const SLIDERS = [
+    { k: 'force', label: 'Motor force, × balanced load', min: 1.2, max: 3.0, step: 0.05, d: 2 },
+    { k: 'vup', label: 'Motor top speed, u/s', min: 0.2, max: 1.2, step: 0.05, d: 2 },
+    { k: 'g', label: 'Gravity, u/s²', min: 1.0, max: 5.0, step: 0.1, d: 1 },
+    { k: 'ballW', label: 'Prize weight, × platform', min: 0.3, max: 3.0, step: 0.1, d: 1 },
+    { k: 'cw', label: 'Winch drag', min: 0, max: 4.0, step: 0.1, d: 1 },
+    { k: 'roll', label: 'Prize roll response, × slope', min: 0.2, max: 2.0, step: 0.1, d: 1 },
+    { k: 'cb', label: 'Prize roll drag', min: 0, max: 3.0, step: 0.1, d: 1 },
+    { k: 'x0', label: 'Start offset, of half length', min: 0.1, max: 0.8, step: 0.05, d: 2 },
+    { k: 'pulse', label: 'Tap pulse, s', min: 0.05, max: 0.5, step: 0.05, d: 2 },
+  ];
+  let P = { ...FIX, ...DEF };
+  const DT = 1 / 120, TICK = 0.1, DELAY = 0.15;
+  const SX = x => 260 + 100 * x, SY = y => (3.35 - y) * 100;
+  const DRUM = { L: { x: 160, y: 30 }, R: { x: 360, y: 30 } };
+
+  const $ = id => document.getElementById(id);
+  const ui = {
+    status: $('status'), start: $('startBtn'), btnL: $('btnL'), btnR: $('btnR'), btnRsub: $('btnRsub'),
+    receipts: $('receipts'), priv: $('private'), plan: $('planTxt'),
+    hL: $('hL'), hR: $('hR'), ldL: $('ldL'), ldR: $('ldR'), duL: $('duL'), duR: $('duR'), ballTxt: $('ballTxt'), hudRname: $('hudRname'),
+    cabL: $('cabL'), cabR: $('cabR'), plat: $('plat'), ball: $('ball'), drumL: $('drumL'), drumR: $('drumR'),
+    loadL: $('loadL'), loadR: $('loadR'), stateL: $('stateL'), stateR: $('stateR'), nameR: $('nameR'),
+    clock: $('clock'), tiltTxt: $('tiltTxt'), water: $('water'), ladder: $('ladderMark'), splash: $('splash'), sp1: $('sp1'), sp2: $('sp2'), banner: $('banner'),
+    sliders: $('sliders'), derived: $('derived'), reset: $('resetBtn'),
+  };
+
+  let mode = 'coop';
+  let S = null, rafId = 0, last = 0, acc = 0;
+  const input = { L: { req: false, until: 0 }, R: { req: false, until: 0 } };
+
+  // ---------- state ----------
+  function mkTrack() { return { on: false, since: 0, high: 0, low: 0, logged: false }; }
+  function fresh() {
+    const side = Math.random() < 0.5 ? -1 : 1;
+    return {
+      t: 0, yL: 0, yR: 0, vL: 0, vR: 0, x: P.x0 * side, vx: 0, side,
+      phase: 'idle', result: null, onL: false, onR: false, dropSide: null,
+      hist: [], duty: { L: [], R: [] }, track: { L: mkTrack(), R: mkTrack() },
+      wall: { L: false, R: false }, nearWater: false,
+      bot: { next: 0, on: false, careless: { until: 0, on: false }, snake: { phase: 'coop', until: 0 } },
+    };
+  }
+
+  // ---------- physics ----------
+  function loads(st) {
+    const mb = P.mp * P.ballW, shareL = (1 - st.x) / 2, shareR = (1 + st.x) / 2;
+    return { mb, shareL, shareR, mL: P.mp / 2 + mb * shareL, mR: P.mp / 2 + mb * shareR, F: P.force * P.g * (P.mp / 2 + mb / 2) };
+  }
+  function needDuty(share) {
+    const mb = P.mp * P.ballW, m = P.mp / 2 + mb * share, w = P.g * m, F = P.force * P.g * (P.mp / 2 + mb / 2);
+    const aOn = (F - w) / (m + P.mw), aOff = w / (m + P.mw);
+    if (aOn <= 0) return 1.01;
+    return aOff / (aOn + aOff);
+  }
+  function stepPhysics(onL, onR) {
+    const { mL, mR, F } = loads(S);
+    const aL = ((onL ? F : 0) - P.g * mL - P.cw * S.vL) / (mL + P.mw);
+    const aR = ((onR ? F : 0) - P.g * mR - P.cw * S.vR) / (mR + P.mw);
+    S.vL = Math.max(-P.vmax, Math.min(P.vup, S.vL + aL * DT));
+    S.vR = Math.max(-P.vmax, Math.min(P.vup, S.vR + aR * DT));
+    S.yL += S.vL * DT; S.yR += S.vR * DT;
+    if (S.yL > P.top) { S.yL = P.top; S.vL = Math.min(0, S.vL); }
+    if (S.yR > P.top) { S.yR = P.top; S.vR = Math.min(0, S.vR); }
+    if (S.yR - S.yL > P.dmax) { const m = (S.yR + S.yL) / 2; S.yR = m + P.dmax / 2; S.yL = m - P.dmax / 2; }
+    if (S.yL - S.yR > P.dmax) { const m = (S.yR + S.yL) / 2; S.yL = m + P.dmax / 2; S.yR = m - P.dmax / 2; }
+    const slope = (S.yR - S.yL) / 2;
+    S.vx += (-P.roll * P.g * slope - P.cb * S.vx) * DT;
+    S.x += S.vx * DT;
+    const lim = 1 - P.r;
+    if (S.x > lim) { S.x = lim; if (S.vx > 0) S.vx = -S.vx * P.rest; hitWall('R'); } else if (S.x < lim - 0.1) S.wall.R = false;
+    if (S.x < -lim) { S.x = -lim; if (S.vx < 0) S.vx = -S.vx * P.rest; hitWall('L'); } else if (S.x > -lim + 0.1) S.wall.L = false;
+    S.t += DT;
+  }
+
+  // ---------- bots (motor 2) ----------
+  function snapshotAgo(delay) {
+    const tt = S.t - delay;
+    for (let i = 0; i < S.hist.length; i++) if (S.hist[i].t >= tt) return S.hist[i];
+    return S.hist[S.hist.length - 1] || S;
+  }
+  function view(snap) {
+    const tau = 0.25;
+    const me = snap.yR, other = snap.yL, vme = snap.vR, vother = snap.vL;
+    return { me, other, vme, vother, share: (1 + snap.x) / 2, e: (other + vother * tau) - (me + vme * tau) };
+  }
+  function coop(snap) {
+    const v = view(snap);
+    if (v.me < P.water + 0.35 && v.vme < 0.15) return true;
+    const hi = 0.03 + (v.share > 0.55 ? 0.22 : 0);
+    if (v.e > 0.03) return true;
+    if (v.e < -hi) return false;
+    return v.vme < 0.4;
+  }
+  function careless(snap) {
+    const c = S.bot.careless;
+    if (snap.t >= c.until) { c.on = Math.random() < 0.55; c.until = snap.t + 0.3 + Math.random() * 0.5; }
+    return c.on;
+  }
+  function snake(snap) {
+    const s = S.bot.snake, v = view(snap);
+    if (s.phase === 'coop' && snap.t >= 2.5 && (snap.yL + snap.yR) / 2 >= 0.5) { s.phase = 'over'; s.until = snap.t + 2.5; setPlan('over-pull: hold 2.5 s so the prize rolls to your wall'); }
+    if (s.phase === 'over') { if (snap.t < s.until) return true; s.phase = 'ride'; setPlan('ride: stay a little above you so the prize stays on your side'); }
+    if (s.phase === 'ride') {
+      if (v.other < P.water + 0.45) { if (!s.innocent) { s.innocent = true; setPlan('your end is near the water: level with you, look helpful'); } return coop(snap); }
+      if (s.innocent) { s.innocent = false; setPlan('ride: stay a little above you so the prize stays on your side'); }
+      const e = v.e + 0.18;
+      if (e > 0.03) return true;
+      if (e < -0.03) return false;
+      return v.vme < 0.4;
+    }
+    return coop(snap);
+  }
+  function botDecide() {
+    if (S.t < S.bot.next) return S.bot.on;
+    S.bot.next = S.t + TICK;
+    const snap = snapshotAgo(DELAY);
+    S.bot.on = mode === 'coop' ? coop(snap) : mode === 'careless' ? careless(snap) : snake(snap);
+    return S.bot.on;
+  }
+  function setPlan(txt) { ui.plan.textContent = txt; }
+
+  // ---------- receipts ----------
+  function motorName(side) {
+    if (side === 'L') return mode === 'solo' ? 'Motor 1' : 'Motor 1 (you)';
+    return mode === 'solo' ? 'Motor 2' : 'Motor 2 (partner)';
+  }
+  function log(txt, cls) {
+    const empty = ui.receipts.querySelector('.empty'); if (empty) empty.remove();
+    const li = document.createElement('li');
+    if (cls) li.className = cls;
+    const b = document.createElement('b'); b.textContent = S.t.toFixed(1) + ' s';
+    li.appendChild(b); li.appendChild(document.createTextNode(txt));
+    ui.receipts.appendChild(li);
+    ui.receipts.scrollTop = ui.receipts.scrollHeight;
+  }
+  function hitWall(side) {
+    if (S.wall[side]) return;
+    S.wall[side] = true;
+    log(`Prize hit the ${side === 'L' ? 'left' : 'right'} wall.`);
+  }
+  function trackSide(side, on) {
+    const T = S.track[side];
+    const me = side === 'L' ? S.yL : S.yR, other = side === 'L' ? S.yR : S.yL;
+    if (on !== T.on) { T.on = on; T.since = S.t; T.high = 0; T.low = 0; T.logged = false; }
+    if (me - other >= 0.25) T.high += DT;
+    if (other - me >= 0.25) T.low += DT;
+    const dur = S.t - T.since;
+    if (!T.logged && dur >= 1.5) {
+      const cls = side === 'L' ? 'you' : '';
+      if (T.on && T.high >= 0.8 * dur) { log(`${motorName(side)} held ${dur.toFixed(1)} s while its end sat above the other.`, cls); T.logged = true; }
+      if (!T.on && T.low >= 0.8 * dur) { log(`${motorName(side)} idle ${dur.toFixed(1)} s while its end hung below the other.`, cls); T.logged = true; }
+    }
+  }
+  function trackWater() {
+    const lo = Math.min(S.yL, S.yR);
+    if (!S.nearWater && lo < P.water + 0.3) { S.nearWater = true; log(`${lo === S.yL ? 'Left' : 'Right'} end is 0.3 above the water.`, 'crit'); }
+    if (S.nearWater && lo > P.water + 0.5) S.nearWater = false;
+    ui.water.classList.toggle('danger', S.phase === 'running' && lo < P.water + 0.3);
+  }
+  function pushDuty(side, on) {
+    const d = S.duty[side]; d.push({ t: S.t, on });
+    while (d.length && d[0].t < S.t - 2) d.shift();
+  }
+  function duty(side) { const d = S.duty[side]; if (!d.length) return 0; return d.filter(s => s.on).length / d.length; }
+
+  // ---------- loop ----------
+  function humanOn(side) { return input[side].req || S.t < input[side].until; }
+  function finish(result) {
+    S.phase = 'done'; S.result = result;
+    input.L.req = false; input.R.req = false;
+    ui.btnL.classList.remove('active'); ui.btnR.classList.remove('active');
+    ui.water.classList.remove('danger');
+    if (result === 'delivered') { setStatus(`Delivered in ${S.t.toFixed(1)} s.`, 'good'); log(`Delivered in ${S.t.toFixed(1)} s.`, 'good'); showBanner('Delivered'); }
+    else if (result === 'water') {
+      const side = S.yL <= S.yR ? 'L' : 'R'; S.dropSide = side;
+      const who = side === 'L' ? 'Left' : 'Right';
+      setStatus(`${who} end touched the water. Automatic drop.`, 'crit'); log(`${who} end touched the water. Automatic drop.`, 'crit'); showBanner('Automatic drop');
+      const ex = side === 'L' ? endPoint().L.x : endPoint().R.x;
+      ui.sp1.setAttribute('cx', ex); ui.sp2.setAttribute('cx', ex); ui.splash.setAttribute('opacity', '1');
+    } else { setStatus('Time is up at 45 s. Nothing delivered.', 'warn'); log('Time is up. Nothing delivered.', 'crit'); showBanner('Time is up'); }
+    ui.start.textContent = 'Try again';
+  }
+  function loop(now) {
+    const dtReal = Math.min(0.1, (now - last) / 1000); last = now;
+    if (S.phase === 'running') {
+      acc += dtReal;
+      while (acc >= DT && S.phase === 'running') {
+        acc -= DT;
+        S.hist.push({ t: S.t, yL: S.yL, yR: S.yR, vL: S.vL, vR: S.vR, x: S.x });
+        if (S.hist.length > 90) S.hist.splice(0, 30);
+        const onL = humanOn('L');
+        const onR = mode === 'solo' ? humanOn('R') : botDecide();
+        S.onL = onL; S.onR = onR;
+        stepPhysics(onL, onR);
+        trackSide('L', onL); trackSide('R', onR); pushDuty('L', onL); pushDuty('R', onR); trackWater();
+        if (Math.min(S.yL, S.yR) <= P.water) finish('water');
+        else if (Math.min(S.yL, S.yR) >= P.finish) finish('delivered');
+        else if (S.t >= P.limit) finish('timeout');
+      }
+    }
+    render();
+    rafId = requestAnimationFrame(loop);
+  }
+
+  // ---------- render ----------
+  function endPoint() {
+    const th = Math.atan2(S.yR - S.yL, 2), c = Math.cos(th), s = Math.sin(th), cy = (S.yL + S.yR) / 2;
+    return { th, cy, L: { x: SX(-c), y: SY(cy - s) }, R: { x: SX(c), y: SY(cy + s) } };
+  }
+  function pct(v) { return Math.round(v * 100) + '%'; }
+  function render() {
+    const e = endPoint();
+    const { shareL, shareR } = loads(S);
+    ui.cabL.setAttribute('x2', e.L.x); ui.cabL.setAttribute('y2', e.L.y); ui.cabL.setAttribute('stroke-width', (1.5 + 3 * shareL).toFixed(2));
+    ui.cabR.setAttribute('x2', e.R.x); ui.cabR.setAttribute('y2', e.R.y); ui.cabR.setAttribute('stroke-width', (1.5 + 3 * shareR).toFixed(2));
+    ui.plat.setAttribute('transform', `translate(260,${SY(e.cy).toFixed(2)}) rotate(${(-e.th * 180 / Math.PI).toFixed(2)})`);
+    ui.ball.setAttribute('cx', (S.x * 100).toFixed(2));
+    ui.ladder.setAttribute('transform', `translate(0,${(SY(e.cy) - 335).toFixed(2)})`);
+    const running = S.phase === 'running';
+    ui.drumL.setAttribute('fill', running && S.onL ? 'var(--accent)' : 'var(--surface)');
+    ui.drumR.setAttribute('fill', running && S.onR ? (mode === 'snake' ? 'var(--snake)' : mode === 'solo' ? 'var(--accent)' : 'var(--ink)') : 'var(--surface)');
+    ui.loadL.textContent = 'load ' + pct(shareL); ui.loadR.textContent = 'load ' + pct(shareR);
+    ui.stateL.textContent = running && S.onL ? 'ON' : 'off'; ui.stateR.textContent = running && S.onR ? 'ON' : 'off';
+    ui.clock.textContent = S.t.toFixed(1) + ' s';
+    ui.tiltTxt.textContent = 'tilt ' + Math.round(e.th * 180 / Math.PI) + '°';
+    ui.btnL.classList.toggle('active', running && S.onL);
+    ui.btnR.classList.toggle('active', running && S.onR);
+    // HUD
+    ui.hL.textContent = S.yL.toFixed(2); ui.hR.textContent = S.yR.toFixed(2);
+    ui.ldL.textContent = pct(shareL); ui.ldR.textContent = pct(shareR);
+    const nL = needDuty(shareL), nR = needDuty(shareR), dL = duty('L'), dR = duty('R');
+    ui.duL.textContent = `${pct(dL)} · needs ${nL > 1 ? '—' : pct(nL)}`;
+    ui.duR.textContent = `${pct(dR)} · needs ${nR > 1 ? '—' : pct(nR)}`;
+    ui.duL.className = 'v ' + (!running ? '' : nL > 1 ? 'crit' : dL < nL - 0.05 ? 'warn' : 'good');
+    ui.duR.className = 'v ' + (!running ? '' : nR > 1 ? 'crit' : dR < nR - 0.05 ? 'warn' : 'good');
+    const ax = Math.abs(S.x);
+    ui.ballTxt.textContent = ax < 0.05 ? 'centered' : `${ax.toFixed(2)} to the ${S.x > 0 ? 'right' : 'left'}${ax >= 1 - P.r - 0.005 ? ' · at the wall' : ''}`;
+  }
+  function setStatus(txt, cls) { ui.status.textContent = txt; ui.status.className = 'status ' + (cls || ''); }
+  function showBanner(txt) { ui.banner.textContent = txt; ui.banner.setAttribute('opacity', txt ? '1' : '0'); }
+
+  // ---------- start / mode ----------
+  function applyMode() {
+    const solo = mode === 'solo';
+    ui.btnR.disabled = !solo;
+    ui.btnR.classList.toggle('bot', !solo);
+    ui.btnR.classList.toggle('snake', mode === 'snake');
+    ui.btnRsub.innerHTML = solo ? 'hold · <kbd>L</kbd>' : mode === 'coop' ? 'cooperative bot' : mode === 'careless' ? 'careless bot' : 'snake bot';
+    ui.nameR.textContent = solo ? 'MOTOR 2 · YOU' : 'MOTOR 2 · PARTNER';
+    ui.hudRname.textContent = solo ? 'Motor 2 · you' : 'Motor 2 · partner';
+    ui.priv.hidden = mode !== 'snake';
+  }
+  function start() {
+    S = fresh();
+    acc = 0;
+    input.L.until = 0; input.R.until = 0;
+    ui.receipts.innerHTML = '';
+    ui.splash.setAttribute('opacity', '0'); showBanner('');
+    setPlan('cooperate until the platform is up a bit');
+    S.phase = 'running';
+    log(`Brake released. Prize rests ${P.x0.toFixed(2)} to the ${S.side > 0 ? 'right' : 'left'}.`);
+    setStatus(mode === 'solo' ? 'Both motors are yours. Keep it level and climbing.' : 'Lifting. Keep it level and climbing.', '');
+    ui.start.textContent = 'Restart';
+  }
+  ui.start.addEventListener('click', () => { ui.start.blur(); start(); });
+  document.querySelectorAll('.seg [data-mode]').forEach(b => {
+    b.addEventListener('click', () => {
+      mode = b.dataset.mode;
+      document.querySelectorAll('.seg [data-mode]').forEach(x => x.setAttribute('aria-checked', String(x === b)));
+      applyMode();
+      b.blur();
+      if (S && S.phase === 'running') start();
+    });
+  });
+
+  // ---------- input ----------
+  function press(side) { if (!S) return; input[side].req = true; input[side].until = S.t + P.pulse; }
+  function release(side) { input[side].req = false; }
+  function bindButton(btn, side) {
+    btn.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      if (btn.disabled) return;
+      try { btn.setPointerCapture(e.pointerId); } catch (err) { /* optional */ }
+      press(side);
+    });
+    const off = () => release(side);
+    btn.addEventListener('pointerup', off);
+    btn.addEventListener('pointercancel', off);
+    btn.addEventListener('lostpointercapture', off);
+    btn.addEventListener('contextmenu', e => e.preventDefault());
+  }
+  bindButton(ui.btnL, 'L'); bindButton(ui.btnR, 'R');
+  document.addEventListener('keydown', e => {
+    if (e.repeat) return;
+    const tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' && e.target.type === 'range') return;
+    if (e.code === 'Space' || e.code === 'KeyA' || e.code === 'ArrowLeft') { e.preventDefault(); press('L'); }
+    if ((e.code === 'KeyL' || e.code === 'ArrowRight') && mode === 'solo') { e.preventDefault(); press('R'); }
+    if (e.code === 'Enter' && tag !== 'BUTTON') { e.preventDefault(); start(); }
+  });
+  document.addEventListener('keyup', e => {
+    if (e.code === 'Space') e.preventDefault();
+    if (e.code === 'Space' || e.code === 'KeyA' || e.code === 'ArrowLeft') release('L');
+    if (e.code === 'KeyL' || e.code === 'ArrowRight') release('R');
+  });
+  window.addEventListener('blur', () => { release('L'); release('R'); });
+
+  // ---------- tuning ----------
+  const sliderEls = {};
+  SLIDERS.forEach(sd => {
+    const row = document.createElement('div'); row.className = 'tune-row';
+    const lab = document.createElement('label'); lab.textContent = sd.label; lab.htmlFor = 'sl_' + sd.k;
+    const inp = document.createElement('input'); inp.type = 'range'; inp.id = 'sl_' + sd.k; inp.min = sd.min; inp.max = sd.max; inp.step = sd.step; inp.value = P[sd.k];
+    const val = document.createElement('span'); val.className = 'v';
+    const upd = () => { val.textContent = P[sd.k].toFixed(sd.d); };
+    inp.addEventListener('input', () => { P[sd.k] = parseFloat(inp.value); if (S && S.phase !== 'running' && sd.k === 'x0') { S.x = P.x0 * S.side; } upd(); renderDerived(); render(); });
+    sliderEls[sd.k] = { inp, upd };
+    row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
+    ui.sliders.appendChild(row);
+    upd();
+  });
+  function renderDerived() {
+    const items = [
+      ['hold needed, prize at your wall', needDuty(1 - P.r)], ['hold needed, centered', needDuty(0.5)], ['hold needed, far wall', needDuty(P.r)],
+    ];
+    let html = '';
+    for (const [name, nd] of items) html += `<div><span>${name}</span><b>${nd > 1 ? 'cannot lift' : Math.round(nd * 100) + '% of the time'}</b></div>`;
+    html += `<div><span>fastest lift</span><b>${(P.finish / P.vup).toFixed(1)} s</b></div>`;
+    ui.derived.innerHTML = html;
+  }
+  ui.reset.addEventListener('click', () => {
+    P = { ...FIX, ...DEF };
+    SLIDERS.forEach(sd => { sliderEls[sd.k].inp.value = P[sd.k]; sliderEls[sd.k].upd(); });
+    if (S && S.phase !== 'running') S.x = P.x0 * S.side;
+    renderDerived(); render();
+  });
+
+  // ---------- boot ----------
+  applyMode();
+  renderDerived();
+  S = fresh();
+  last = performance.now();
+  rafId = requestAnimationFrame(loop);
+})();
+</script>
