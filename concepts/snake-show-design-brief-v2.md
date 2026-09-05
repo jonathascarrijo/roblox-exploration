@@ -14,7 +14,7 @@ A **heist** is a successful act of sabotage that diverts a challenge’s prize t
 
 Contestants move around the villa, cooperate in short physical or timing challenges, watch for suspicious behavior, and inspect **receipts**: event cards showing limited, factual observations. They then vote to remove a suspected Snake from the competition. Removed players can follow the episode from a backstage lounge or join another match.
 
-An episode contains up to three challenge-and-vote **acts** and lasts about 4½ minutes. Snakes win only if they complete at least two heists and keep one Snake in the competition after the final vote. The House wins if either condition is prevented. The finale reveals the roles and reconstructs the key sabotage moments.
+An episode contains up to three challenge-and-vote **acts** and lasts about 4½ to 5 minutes. Snakes win only if they complete at least two heists and keep one Snake in the competition after the final vote. The House wins if either condition is prevented. The finale reveals the roles and reconstructs the key sabotage moments.
 
 ## The experience and the business
 
@@ -58,17 +58,17 @@ All contestants still competing enter the next cooperative challenge. Movement, 
 
 The Snake team has **one armed heist attempt per act**. At Prize Lift, beginning a private Rig hold temporarily reserves it; the first accepted hold gets priority. Completing the hold consumes the attempt. Canceling before completion releases the reservation. A stopped or unsuccessful armed attempt cannot be retried that act. The other Snake sees the team’s attempt status privately.
 
-## Evidence: 10 seconds; voting: 25 seconds
+## Evidence: 10 seconds; voting: 25 seconds, plus a 10-second runoff when tied
 
 At the challenge’s end, the show announces whether a heist succeeded and updates **Heists: x/2**. It then presents a small set of receipts. Players examine the evidence before voting opens. Each active contestant has one secret vote for another active contestant; totals appear together when voting closes. A missing vote is an abstention.
 
-The contestant with the most votes leaves the competition and their team is revealed. A tie for the most votes removes nobody and still uses that act’s vote. The same process repeats for up to three acts. Without ties or early endings, the active cast shrinks from eight to seven to six to five.
+The contestant with the most votes leaves the competition and their team is revealed. A tie for the most votes opens a 10-second **runoff**: only the tied contestants are selectable, every active contestant votes again, including the tied ones, and nobody can vote for themself. Receipts stay open, and a missing vote is an abstention. If the runoff also ties, the show announces a **deadlock** and nobody leaves; that act’s vote is still used. The same process repeats for up to three acts. Without deadlocks or early endings, the active cast shrinks from eight to seven to six to five.
 
 ## Winning and the finale: 20 seconds
 
 After the third vote, Snakes win if they have at least two successful heists and at least one Snake remains active. Otherwise the House wins. Catching both Snakes ends the episode early with a House victory. Two unsuccessful heist opportunities also trigger an early House victory because reaching two successes is then impossible.
 
-The finale reveals all roles, shows a short factual reconstruction, and awards progress. All original team members share their team’s result, including those voted out. Active survivors do not win individually. The full timing is **10 + 3 × (45 + 10 + 25) + 20 = 270 seconds**. Queue time is additional; transitions are included in the phase budgets.
+The finale reveals all roles, shows a short factual reconstruction, and awards progress. All original team members share their team’s result, including those voted out. Active survivors do not win individually. The full timing is **10 + 3 × (45 + 10 + 25) + 20 = 270 seconds**, plus 10 seconds for each act that needs a runoff, so an episode runs 270 to 300 seconds. Queue time is additional; transitions are included in the phase budgets.
 
 # Prize Lift — the normal controls
 
@@ -162,7 +162,7 @@ No player can purchase an extra vote, clearer evidence, a different role probabi
 
 ## What the reveal proves
 
-The finale can identify the actual operator, the rig, the missed or successful response, and the resulting heist. It can show relevant ballots as historical actions. It cannot claim that a player saw something, lied in conversation, or intended a betrayal unless that information is explicitly supported by recorded game actions.
+The finale can identify the actual operator, the rig, the missed or successful response, and the resulting heist. It can show relevant ballots, including runoff ballots, as historical actions. It cannot claim that a player saw something, lied in conversation, or intended a betrayal unless that information is explicitly supported by recorded game actions.
 
 # A complete example episode
 
@@ -186,7 +186,7 @@ This time the group votes out Leo, and his card reveals Snake. Six contestants r
 
 Nia chooses to play cooperatively in the final challenge. She already has the two team heists required and now wants to avoid suspicion. Not using this act’s attempt does not erase either previous success.
 
-The remaining players revisit the second act’s receipts and connect Nia with that station’s suspicious adjustment. They vote her out. With both Snakes exposed, the House wins despite the two stolen capsules. If they had instead removed a House player or tied, Nia would have survived and the Snakes would have won.
+The remaining players revisit the second act’s receipts and connect Nia with that station’s suspicious adjustment. They vote her out. With both Snakes exposed, the House wins despite the two stolen capsules. If they had instead removed a House player or deadlocked, Nia would have survived and the Snakes would have won.
 
 ## The payoff
 
@@ -278,7 +278,7 @@ Run repeated sessions with roughly 40–60 appropriately recruited target-age pl
 
 Proposed initial screening gates are that 80% explain their team objective, 70% identify relevant evidence, and 60% voluntarily start another episode when free to stop. Compare suspect accuracy against a random choice among eligible contestants. Team win rates alone may reflect sabotage difficulty. These small-sample gates are internal proposals, not population retention estimates.
 
-Compare 4½- and six-minute episodes, easier and harder Catch timing, and permitted chat on or off. Change one major factor at a time. Test idle stations, constant holds, tap spam, intentional imbalance, extra rescuers, coordinated friend votes, and newcomer targeting. Measure heist success against novice and practiced House players; tune two- and three-person stations separately. A dominant low-effort strategy requires revision.
+Compare 4½- and six-minute episodes, easier and harder Catch timing, and permitted chat on or off. Change one major factor at a time. Test idle stations, constant holds, tap spam, intentional imbalance, extra rescuers, coordinated friend votes, and newcomer targeting. Measure heist success against novice and practiced House players; tune two- and three-person stations separately. A dominant low-effort strategy requires revision. Record the tie rate per vote and how each runoff resolved; if deadlocks stay common, revisit the vote structure rather than the tie rule.
 
 ## Do unfamiliar players return?
 
@@ -308,7 +308,7 @@ All characters, branding, art, sound, and show presentation must be original or 
 
 ## Decisions the prototype must resolve
 
-The two-heist target, 1½-second Rig hold, one-second danger threshold, three-second Catch window, catch-zone width, receipt coverage, and episode length are test settings. The core question is whether players enjoy cooperation, notice a plausible betrayal, reason about evidence, and feel fairly treated when wrong.
+The two-heist target, 1½-second Rig hold, one-second danger threshold, three-second Catch window, catch-zone width, receipt coverage, runoff length, and episode length are test settings. The core question is whether players enjoy cooperation, notice a plausible betrayal, reason about evidence, and feel fairly treated when wrong.
 
 The House Pot must be understandable as a temporary performance score alongside the heist objective. Backstage must earn voluntary attention. Cosmetics need demonstrated desirability. If any of these systems confuse players or fail to add value, simplify them before expanding. A new challenge needs a complete description of normal play, sabotage, prevention, evidence, and rewards before it enters the backlog.
 
@@ -372,9 +372,9 @@ Rig now arms concealed routing rather than creating a mandatory disturbance. Its
 
 ## Win conditions and duration are explicit
 
-The original draft left victory and removal limits incomplete. One Snake attempt per act, two heists, and a surviving Snake define the objective and its risks. Ties, early wins, and the shrinking cast are explicit. The threshold and all Prize Lift timings still need testing.
+The original draft left victory and removal limits incomplete. One Snake attempt per act, two heists, and a surviving Snake define the objective and its risks. Ties, early wins, and the shrinking cast are explicit. A tie originally removed nobody. A vote simulation with House votes landing on a Snake between 30% and 60% of the time showed that rule skipping more than one of the three eliminations per episode, which also withholds team reveals from the House. A runoff among the tied contestants replaced it, with a deadlock removing nobody only if the runoff ties again. The threshold and all Prize Lift timings still need testing.
 
-The original four-minute loop contained 325 seconds before its reveal: 10 + 3 × (75 + 30). The revised budget is 270 seconds including a 20-second finale, or about 4½ minutes. A six-minute comparison checks whether more time improves tension and deduction.
+The original four-minute loop contained 325 seconds before its reveal: 10 + 3 × (75 + 30). The revised budget is 270 seconds including a 20-second finale, or 300 seconds if every act needs a runoff, so about 4½ to 5 minutes. A six-minute comparison checks whether more time improves tension and deduction.
 
 # Annex A · Evidence and participation
 
