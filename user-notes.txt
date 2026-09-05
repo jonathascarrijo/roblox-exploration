@@ -1,0 +1,15 @@
+# IMPORTANT: USER NOTES that only the user can edit. AI agents should never edit this file, but are allowed to include it in commits.
+
+I like the idea of an interactive lobby like in 99 noites na floresta.
+players could:
+- choose who to play with repeatedly, and who not to play with
+- enter a dual training arena with a bot or another player
+
+
+we created a prototype for the prize lift. what other crucial parts of the game could be prototyped?
+
+votos deveriam ser dados como "palpite" ou "certeza" pra indicar grau de confiança, já que nem sempre teremos chat?
+
+anteriormente eu disse que a faixa etaria era entre 13 e 16, agora lendo melhor a política do Roblox, quero alinhar pra faixa de 9-15 em todos os docs.
+
+aumentar drama: lava ao inves de agua, e algo valioso ou vivo ao invés de um premio generico.
