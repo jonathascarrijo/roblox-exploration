@@ -85,6 +85,7 @@
   .prose ul, .prose ol { margin: 0 0 14px; padding-left: 22px; color: var(--ink-2); }
   .prose li { margin-bottom: 6px; }
   .prose li strong { color: var(--ink); font-weight: 600; }
+  .prose code, td code { font-family: var(--mono); font-size: 12.5px; background: var(--accent-soft); padding: 1px 5px; border-radius: 3px; color: var(--ink); }
 
   header { margin-bottom: 48px; }
   .eyebrow {
@@ -180,7 +181,7 @@
   .big {
     font: 700 20px var(--display);
     letter-spacing: 0.02em;
-    padding: 20px 10px;
+    padding: 18px 10px;
     border-radius: 10px;
     border: 2px solid var(--line-strong);
     background: var(--surface);
@@ -190,13 +191,21 @@
     -webkit-user-select: none;
     touch-action: none;
     flex: 1 1 130px;
-    min-height: 84px;
+    min-height: 80px;
   }
   .big:disabled { opacity: 0.55; cursor: default; }
   .big.motor.active { background: var(--accent); border-color: var(--accent); color: #fff; }
   .big.motor.bot.active { background: var(--ink); border-color: var(--ink); color: var(--surface); }
   .big.motor.bot.snake.active { background: var(--snake); border-color: var(--snake); color: #fff; }
+  .big.catch { border-color: var(--crit); color: var(--crit); min-height: 60px; padding: 12px 10px; flex-basis: 100%; }
+  .big.catch:disabled { opacity: 0.4; }
+  .big.catch.armed { background: var(--crit); color: #fff; animation: pulse 0.6s ease-in-out infinite alternate; }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.02); } }
   .big small { display: block; font: 500 11px var(--mono); letter-spacing: 0.08em; opacity: 0.8; margin-top: 4px; }
+  .rigs { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--ink-2); }
+  .rigs label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .rigs input { accent-color: var(--snake); margin: 0; }
+  .rigs label.off { opacity: 0.55; cursor: default; }
   .status {
     font-family: var(--display);
     font-size: 18px;
@@ -215,6 +224,7 @@
   .hud .v.warn { color: var(--warn-text); }
   .hud .v.crit { color: var(--crit); }
   .hud .v.good { color: var(--accent-ink); }
+  .hud .v.snake { color: var(--snake); }
   .receipts { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; max-height: 190px; overflow-y: auto; }
   .receipts li { padding: 5px 8px; border-left: 2px solid var(--line-strong); background: var(--bg); }
   .receipts li.you { border-left-color: var(--accent); }
@@ -240,6 +250,8 @@
   .tune-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
   .tune-head p { margin: 0; font-size: 14px; color: var(--ink-2); max-width: 60ch; }
   .tune-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 32px; }
+  .tune-group { grid-column: 1 / -1; margin-top: 8px; }
+  .tune-group:first-child { margin-top: 0; }
   .tune-row { display: grid; grid-template-columns: 200px 1fr 48px; gap: 10px; align-items: center; font-size: 13px; color: var(--ink-2); }
   .tune-row input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
   .tune-row .v { font-family: var(--mono); font-size: 12px; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -250,7 +262,17 @@
 
   .water.danger { animation: blink 0.45s ease-in-out infinite alternate; }
   @keyframes blink { from { opacity: 0.18; } to { opacity: 0.55; } }
-  @media (prefers-reduced-motion: reduce) { .water.danger { animation: none; opacity: 0.45; } }
+  @media (prefers-reduced-motion: reduce) { .water.danger { animation: none; opacity: 0.45; } .big.catch.armed { animation: none; } }
+
+  /* ---------- constants table ---------- */
+  .tabled { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 16px 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 8px 0 0; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+  td.code { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color: var(--ink); }
+  tr.grp td { font-family: var(--display); font-weight: 600; color: var(--ink); background: var(--bg); padding-top: 10px; }
+  .chip { display: inline-block; font: 500 10px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-ink); border: 1px solid var(--accent); border-radius: 999px; padding: 0 7px; vertical-align: middle; margin-left: 6px; }
 
   footer { font-size: 13px; color: var(--muted); max-width: 72ch; border-top: 1px solid var(--line); padding-top: 18px; }
   footer p { margin: 0 0 10px; }
@@ -260,13 +282,14 @@
 <header>
   <p class="eyebrow">Snake Show · Prize Lift · physics variation</p>
   <h1>Prize Lift, coupled cables</h1>
-  <p class="lede">Two motors, two cables, and a prize that leans on whichever cable is nearer. A playable model of the second physics idea, with every constant on a slider.</p>
+  <p class="lede">Two motors, two cables, and a prize that leans on whichever cable is nearer. A playable model of the second physics idea, with the Catch, the Rig, and every constant on a slider.</p>
   <div class="rules">
     <div><b>One motor, one cable</b>Each cable has its own motor. Nothing links the two pairs except the platform between them.</div>
-    <div><b>Constant force while active</b>Holding a motor pushes its cable up with a fixed force. Releasing it leaves the cable to the weight.</div>
-    <div><b>Weight leans toward the near cable</b>The prize loads the cables by distance. Sitting at the right wall, it puts nearly all its weight on the right cable.</div>
-    <div><b>Long cables, water below</b>The platform can sink all the way down. Any end touching the water is an automatic drop, prize still on board.</div>
-    <div><b>Level start, off-center prize</b>The platform begins level, but the prize starts on one side, so the two cables never carry the same load.</div>
+    <div><b>Constant force, changing weight</b>A held motor pushes its cable with a fixed force. The weight on that cable changes with where the prize sits. Acceleration is the difference.</div>
+    <div><b>Weight leans toward the near cable</b>The prize loads the cables by distance. Near the right end, it puts almost all its weight on the right cable.</div>
+    <div><b>Long cables, water below</b>The platform can sink all the way down. Any end touching the water is an automatic drop, no Catch offered.</div>
+    <div><b>No walls, one Catch</b>The prize sticks below a tilt threshold, then slides, and leaves off either end. When it does, the winch freezes, the prize falls for the Catch window, and each operator gets one tap.</div>
+    <div><b>The Rig, doubled</b>An armed Rig doubles a motor's force and doubles the pull on its cable, so that end moves twice as fast both ways.</div>
   </div>
 </header>
 
@@ -275,7 +298,7 @@
   <p class="eyebrow">The model</p>
   <h2>Same push, different loads</h2>
   <div class="prose">
-    <p>The platform hangs from two cables. Each motor pushes with the same force when active, but the prize's weight splits between the cables by distance. The cable nearer the prize carries more, so the same push lifts it less. That asymmetry is the whole game: the operator on the heavy side has to hold longer, and the operator on the light side has to hold less than feels natural.</p>
+    <p>The platform hangs from two cables. Each motor pushes with the same force when active, but the prize's weight splits between the cables by distance. The cable nearer the prize carries more, so the same push accelerates it less, and in this build its speed settles where push, weight, and winch drag balance. That makes the difference visible: the heavy end climbs slowly and sinks fast, the light end climbs fast and sinks slowly. The prize is not a perfect ball either. Static friction holds it still until the tilt passes a threshold, and sliding friction slows it once it moves. The operator on the heavy side has to hold longer, and the operator on the light side has to hold less than feels natural.</p>
   </div>
   <figure>
     <div class="figwrap">
@@ -296,30 +319,24 @@
           <text x="410" y="14" text-anchor="middle" class="small mono">MOTOR 2</text>
           <line x1="150" y1="35" x2="150" y2="140" stroke="currentColor" stroke-width="2"/>
           <line x1="410" y1="35" x2="410" y2="140" stroke="currentColor" stroke-width="4"/>
-          <!-- motor force arrows, equal -->
           <line x1="128" y1="122" x2="128" y2="72" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#arrA)"/>
           <line x1="432" y1="122" x2="432" y2="72" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#arrA)"/>
           <text x="118" y="100" text-anchor="end" class="small" fill="var(--accent-ink)">same force</text>
           <text x="442" y="100" class="small" fill="var(--accent-ink)">same force</text>
-          <!-- platform -->
           <rect x="150" y="140" width="260" height="8" fill="currentColor"/>
-          <rect x="150" y="128" width="6" height="12" fill="currentColor"/>
-          <rect x="404" y="128" width="6" height="12" fill="currentColor"/>
           <line x1="280" y1="148" x2="280" y2="158" stroke="currentColor" stroke-width="1" opacity="0.5"/>
           <text x="280" y="170" text-anchor="middle" class="small muted">center</text>
-          <!-- prize -->
           <circle cx="345" cy="124" r="16" fill="var(--warn)" stroke="currentColor" stroke-width="1.5"/>
           <text x="345" y="104" text-anchor="middle" class="small">prize</text>
-          <!-- weight share arrows -->
           <line x1="162" y1="156" x2="162" y2="176" stroke="currentColor" stroke-width="2.5" marker-end="url(#arr)"/>
           <line x1="398" y1="156" x2="398" y2="216" stroke="currentColor" stroke-width="2.5" marker-end="url(#arr)"/>
           <text x="172" y="176" class="small mono">25% of the prize</text>
           <text x="388" y="200" text-anchor="end" class="small mono">75% of the prize</text>
-          <text x="280" y="212" text-anchor="middle" class="small muted">the platform's own weight splits evenly</text>
+          <text x="280" y="212" text-anchor="middle" class="small muted">the platform's own weight splits evenly · no walls at the ends</text>
         </g>
       </svg>
     </div>
-    <figcaption><strong>The lever rule.</strong> Halfway to the right, the prize puts three quarters of its weight on cable 2. Motor 2 pushes with the same force as motor 1, so its cable accelerates less, and the operator on that side must hold the motor longer to keep pace.</figcaption>
+    <figcaption><strong>The lever rule.</strong> Halfway to the right, the prize puts three quarters of its weight on cable 2. Motor 2 pushes with the same force as motor 1, so its cable accelerates less and settles at a lower speed. Past either end there is nothing to stop the prize.</figcaption>
   </figure>
 </section>
 
@@ -328,21 +345,18 @@
   <p class="eyebrow">Try it</p>
   <h2>Lift the prize to the shelf</h2>
   <div class="prose">
-    <p>You run motor 1. Hold the button, or <kbd>A</kbd> or <kbd>Space</kbd>, to push your cable. Let go and the weight takes over. Get both ends above the delivery line before the clock runs out, and never let either end touch the water. Pick <strong>Solo</strong> to run both motors yourself with <kbd>A</kbd> and <kbd>L</kbd>.</p>
+    <p>You run motor 1. Hold the button, or <kbd>A</kbd> or <kbd>Space</kbd>, to push your cable. Let go and the weight takes over. Get both ends above the delivery line before the clock runs out. If the prize rolls off, tap <strong>Catch</strong> once while the needle is in the zone. Pick <strong>Solo</strong> to run both motors yourself with <kbd>A</kbd> and <kbd>L</kbd>. The Rig boxes give a motor the doubled force and pull; in Snake mode the Snake arms its own.</p>
   </div>
 
   <div class="toy" id="toy">
     <div class="toy-scene">
       <svg id="scene" viewBox="0 0 520 450" aria-label="Live coupled-cable lift">
         <g class="svg-ink">
-          <!-- water -->
           <rect id="water" class="water" x="60" y="435" width="400" height="15" fill="var(--accent)" opacity="0.18"/>
           <line x1="60" y1="435" x2="460" y2="435" stroke="var(--accent)" stroke-width="1.5"/>
           <text x="66" y="447" class="small" fill="var(--accent-ink)">water · automatic drop</text>
-          <!-- delivery line -->
           <line x1="110" y1="75" x2="410" y2="75" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 5" opacity="0.7"/>
           <text x="416" y="79" class="small">delivery</text>
-          <!-- ladder -->
           <line x1="76" y1="75" x2="76" y2="435" stroke="currentColor" stroke-width="1" opacity="0.4"/>
           <line x1="70" y1="335" x2="82" y2="335" stroke="currentColor" stroke-width="1"/>
           <line x1="70" y1="235" x2="82" y2="235" stroke="currentColor" stroke-width="1"/>
@@ -352,34 +366,38 @@
           <text x="64" y="239" text-anchor="end" class="small muted mono">+1</text>
           <text x="64" y="139" text-anchor="end" class="small muted mono">+2</text>
           <polygon id="ladderMark" points="82,335 90,330 90,340" fill="var(--accent)"/>
-          <!-- beam and drums -->
           <rect x="120" y="26" width="280" height="8" fill="currentColor"/>
           <circle id="drumL" cx="160" cy="30" r="10" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
           <circle id="drumR" cx="360" cy="30" r="10" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+          <circle id="rigRingL" cx="160" cy="30" r="15" fill="none" stroke="var(--snake)" stroke-width="2" stroke-dasharray="4 3" opacity="0"/>
+          <circle id="rigRingR" cx="360" cy="30" r="15" fill="none" stroke="var(--snake)" stroke-width="2" stroke-dasharray="4 3" opacity="0"/>
           <text id="nameL" x="160" y="14" text-anchor="middle" class="small mono">MOTOR 1 · YOU</text>
           <text id="nameR" x="360" y="14" text-anchor="middle" class="small mono">MOTOR 2 · PARTNER</text>
-          <text id="loadL" x="146" y="52" text-anchor="end" class="small mono muted">load 25%</text>
-          <text id="loadR" x="374" y="52" class="small mono muted">load 75%</text>
-          <text id="stateL" x="146" y="66" text-anchor="end" class="small mono muted">off</text>
-          <text id="stateR" x="374" y="66" class="small mono muted">off</text>
-          <!-- clock -->
-          <text id="clock" x="456" y="404" text-anchor="end" class="mono">0.0 s</text>
-          <text id="tiltTxt" x="456" y="420" text-anchor="end" class="small mono muted">tilt 0°</text>
-          <!-- cables -->
+          <text id="loadL" x="140" y="52" text-anchor="end" class="small mono muted">load 25%</text>
+          <text id="loadR" x="380" y="52" class="small mono muted">load 75%</text>
+          <text id="stateL" x="140" y="66" text-anchor="end" class="small mono muted">off</text>
+          <text id="stateR" x="380" y="66" class="small mono muted">off</text>
           <line id="cabL" x1="160" y1="30" x2="160" y2="335" stroke="currentColor" stroke-width="2"/>
           <line id="cabR" x1="360" y1="30" x2="360" y2="335" stroke="currentColor" stroke-width="2"/>
-          <!-- platform -->
           <g id="plat" transform="translate(260,335) rotate(0)">
             <rect x="-100" y="0" width="200" height="8" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
-            <rect x="-100" y="-14" width="6" height="14" fill="currentColor"/>
-            <rect x="94" y="-14" width="6" height="14" fill="currentColor"/>
             <circle id="ball" cx="50" cy="-15" r="15" fill="var(--warn)" stroke="currentColor" stroke-width="1.5"/>
           </g>
+          <circle id="ballFree" cx="0" cy="0" r="15" fill="var(--warn)" stroke="currentColor" stroke-width="1.5" opacity="0"/>
           <g id="splash" opacity="0">
             <circle id="sp1" cx="160" cy="435" r="14" fill="none" stroke="var(--accent)" stroke-width="2"/>
             <circle id="sp2" cx="160" cy="435" r="26" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
           </g>
-          <text id="banner" x="260" y="400" text-anchor="middle" class="title" opacity="0"></text>
+          <g id="catchTrack" opacity="0">
+            <rect x="150" y="388" width="220" height="14" fill="none" stroke="var(--crit)" stroke-width="1.5"/>
+            <rect id="zone" x="282" y="388" width="73" height="14" fill="var(--crit)" opacity="0.35"/>
+            <line id="needle" x1="150" y1="382" x2="150" y2="408" stroke="currentColor" stroke-width="3"/>
+            <text x="142" y="399" text-anchor="end" class="small mono" fill="var(--crit)">CATCH</text>
+            <text id="catchT" x="378" y="399" class="small mono">3.0 s</text>
+          </g>
+          <text id="clock" x="456" y="404" text-anchor="end" class="mono">0.0 s</text>
+          <text id="tiltTxt" x="456" y="420" text-anchor="end" class="small mono muted">tilt 0°</text>
+          <text id="banner" x="260" y="112" text-anchor="middle" class="title" opacity="0"></text>
         </g>
       </svg>
     </div>
@@ -398,12 +416,19 @@
       <div class="toy-row">
         <button type="button" class="big motor" id="btnL">MOTOR 1<small>hold · <kbd>A</kbd> or <kbd>Space</kbd></small></button>
         <button type="button" class="big motor bot" id="btnR" disabled>MOTOR 2<small id="btnRsub">partner's</small></button>
+        <button type="button" class="big catch" id="btnC" disabled>CATCH<small>one tap · <kbd>C</kbd> or <kbd>Enter</kbd></small></button>
+      </div>
+      <div class="rigs">
+        <span class="label">Rig</span>
+        <label><input type="checkbox" id="rigL"> motor 1</label>
+        <label id="rigRwrap"><input type="checkbox" id="rigR"> motor 2</label>
       </div>
       <div class="hud" id="hud">
         <span class="h"></span><span class="h">Motor 1 · you</span><span class="h" id="hudRname">Motor 2 · partner</span>
         <span class="h">height</span><span class="v" id="hL">0.00</span><span class="v" id="hR">0.00</span>
         <span class="h">load</span><span class="v" id="ldL">25%</span><span class="v" id="ldR">75%</span>
         <span class="h">holding</span><span class="v" id="duL">0% · needs 34%</span><span class="v" id="duR">0% · needs 57%</span>
+        <span class="h">rig</span><span class="v" id="rgL">off</span><span class="v" id="rgR">off</span>
         <span class="h">prize</span><span class="v" id="ballTxt" style="grid-column: span 2">0.50 to the right</span>
       </div>
       <div class="private" id="private" hidden>
@@ -422,65 +447,153 @@
     <div class="tune-head">
       <div>
         <span class="label">Tuning</span>
-        <p>Every constant of the model. Changes apply live, even mid-lift. Force is relative to the load with the prize centered, so 1.0 means the motor exactly holds a balanced platform.</p>
+        <p>Every slider constant of the model. Changes apply live, even mid-lift. Force is relative to the load with the prize centered, so 1.0 means the motor exactly holds a balanced platform.</p>
       </div>
       <button type="button" class="btn" id="resetBtn">Reset defaults</button>
     </div>
     <div class="tune-grid" id="sliders"></div>
     <div class="derived" id="derived"></div>
   </div>
-  <p class="toy-note">A tap fires the motor for at least the tap pulse, so quick taps count. Bots decide ten times a second on a picture 0.15 seconds old. The cooperative bot levels with you and keeps holding while it carries the prize. Careless holds at random about half the time. Snake cooperates until the platform is up, then over-pulls to roll the prize onto your side and rides just above you so it stays there. If your end gets near the water, Snake levels with you and looks helpful. This is a teaching toy, not the game's physics.</p>
+  <p class="toy-note">A tap fires the motor for at least the tap pulse, so quick taps count. Bots decide ten times a second on a picture 0.15 seconds old. The cooperative bot levels with you and keeps holding while it carries the prize, and catches 70% of the time. Careless holds at random about half the time and catches 40%. Snake cooperates until the platform is up, arms its Rig, then either over-pulls so the prize slides off your end or, if the prize sits on its own side, lets its end drop so the prize slides off before you can level. It taps Catch outside the zone on purpose. This is a teaching toy, not the game's physics.</p>
 </section>
 
-<!-- ============ 3. THINGS TO TRY ============ -->
+<!-- ============ 3. CONSTANTS ============ -->
+<section>
+  <p class="eyebrow">Constants</p>
+  <h2>Everything you can turn</h2>
+  <div class="prose">
+    <p>The sliders above edit the first group live. All of them live at the top of the page's script in two objects, <code>DEF</code> for the slider constants and <code>FIX</code> for the rest, followed by <code>BOT</code> and <code>TELL</code>. Edit the file, reload, and the table below updates itself from the same values.</p>
+  </div>
+  <div class="tabled">
+    <table id="constTable">
+      <thead><tr><th>Constant</th><th>In the code</th><th class="num">Default</th><th>What it does</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 4. THINGS TO TRY ============ -->
 <section>
   <p class="eyebrow">Things to try</p>
-  <h2>Three feelings to check</h2>
+  <h2>Four feelings to check</h2>
   <div class="prose">
     <ul>
-      <li><strong>Hold both at once in Solo.</strong> The light end runs away, the platform tilts, the prize rolls to the heavy wall, and the heavy end gets heavier. Watch the two <em>needs</em> figures in the readout drift apart.</li>
-      <li><strong>Carry the prize yourself.</strong> With a cooperative partner, let your end sag until the prize rolls to your wall. Your motor now needs about two thirds of the time held to hold altitude at all. Tap at half duty and you sink no matter what the partner does.</li>
-      <li><strong>Watch the Snake's receipts.</strong> Its over-pull shows up as a long hold with its end above yours. Its ride afterward looks like ordinary leveling. Decide whether the receipts alone would convict it, or whether the drop reads as your fault.</li>
+      <li><strong>Hold both at once in Solo.</strong> The light end runs away, the platform tilts, the prize rolls toward the heavy end and makes it heavier. With no walls it keeps going. Watch the two <em>needs</em> figures drift apart before it drops.</li>
+      <li><strong>Carry the prize yourself.</strong> With a cooperative partner, let your end sag until the prize sits near your end. Your motor now needs roughly two thirds of the time held to hold altitude at all. Tap at half duty and you sink no matter what the partner does.</li>
+      <li><strong>Arm your own Rig in Solo.</strong> Tick <em>motor 1</em> under Rig. That end now moves twice as fast both ways. See how quickly a doubled end can throw the prize off the other end, and how the receipts call out an end moving faster than a plain motor can.</li>
+      <li><strong>Face the Snake.</strong> Its over-pull is fast enough to beat your counter-hold. The lift then rests on your single Catch tap, which is the same bottleneck the first mockup found. Decide whether the speed tell in the receipts is enough to convict it.</li>
     </ul>
   </div>
 </section>
 
 <footer>
-  <p><strong>What the model does.</strong> Each end is a mass equal to half the platform plus its lever share of the prize, plus a small winch inertia. Motor on: constant force minus weight minus winch drag, capped at the motor's top speed. Motor off: weight minus drag. The prize rolls with the platform's slope, with its own drag, and bounces off the tray walls. Any end at or below the water line ends the lift. Both ends above the delivery line ends it the other way. The clock stops at 45 seconds.</p>
-  <p><strong>What it leaves out.</strong> The Rig, the Catch, and the capsule from the brief. A rigid platform's true two-body motion, replaced by two independent ends limited to about 53 degrees of tilt. Any brake or ratchet on an idle winch. Prize spill over the walls. Defaults were picked by simulating bot pairs: two cooperative operators deliver in 8 to 12 seconds, a 60% tapper sinks whoever the partner is, and a 70% tapper delivers.</p>
+  <p><strong>What the model does.</strong> Each end is a mass equal to half the platform plus its lever share of the prize, plus a small winch inertia. Motor on: constant force minus weight minus winch drag, limited by the motor's top speed. Motor off: weight minus drag, limited by the fall cap. The Rig multiplies that motor's force, the pull on its cable, and both speed limits. The prize holds still until the slope beats static friction, then moves with the slope against sliding friction and drag, and leaves the platform when its center passes an end. A fault freezes the winch for the Catch window while the prize falls; two needle passes, one tap per operator, one hit saves it and returns it to the center. Any end at or below the water line ends the lift with no Catch. Both ends above the delivery line ends it the other way. The clock stops at 45 seconds.</p>
+  <p><strong>What it leaves out.</strong> The capsule and the Rig's 1.5-second arming hold from the brief. A rigid platform's true two-body motion, replaced by two independent ends limited to about 53 degrees of tilt. Any brake or ratchet on an idle winch. Whether a caught prize should return to the center or to the edge it fell from.</p>
 </footer>
 </div>
 
 <script>
 (() => {
   'use strict';
-  const DEF = { force: 2.2, vup: 0.5, g: 2.5, ballW: 1.0, cw: 1.5, roll: 1.0, cb: 0.4, x0: 0.5, pulse: 0.15 };
-  const FIX = { mp: 2, mw: 0.6, r: 0.15, rest: 0.3, water: -1.0, finish: 2.6, top: 2.8, vmax: 3.0, dmax: 1.6, limit: 45 };
+  // ---------- constants ----------
+  // Slider constants. Edit here or move the sliders on the page.
+  const DEF = {
+    force: 1.7,     // motor force, × the load with the prize centered
+    vup: 1.2,       // motor top speed, units per second
+    vdown: 0.6,     // fall speed cap, units per second
+    g: 2.5,         // gravity, units per second squared
+    ballW: 1.0,     // prize weight, × platform weight
+    cw: 4.0,        // winch drag, force per unit of speed
+    roll: 1.0,      // prize roll response, × slope × gravity
+    cb: 0.4,        // prize roll drag
+    mus: 0.15,      // static friction: the prize holds still until slope × roll exceeds this
+    muk: 0.08,      // sliding friction once the prize moves
+    x0: 0.5,        // start offset, fraction of half length
+    pulse: 0.15,    // tap pulse, seconds
+    rigForce: 2.0,  // Rig: motor force multiplier
+    rigDown: 2.0,   // Rig: pull-down multiplier
+    catchWin: 3.0,  // Catch window, seconds, two needle passes
+    catchZone: 0.5, // Catch zone, seconds per pass
+  };
+  // Fixed constants. Edit here.
+  const FIX = {
+    mp: 2,          // platform mass
+    mw: 0.6,        // winch inertia added to each end
+    r: 0.15,        // prize radius, in half lengths
+    edge: 1.0,      // prize leaves the platform when its center passes this
+    water: -1.0,    // water line, height below the start
+    finish: 2.6,    // delivery line, height above the start
+    top: 2.8,       // cable fully wound
+    dmax: 1.6,      // max height difference between the ends
+    limit: 45,      // clock, seconds
+    zoneAt: 0.6,    // where the Catch zone starts along the track, fraction
+  };
+  const BOT = { tick: 0.1, delay: 0.15, climb: 0.5, catchHit: { coop: 0.7, careless: 0.4, snake: 0 }, snakeAt: 2.0, snakeHeight: 0.4, snakeLatest: 1.0, snakeOver: 2.2, snakeWait: 4 };
+  const TELL = { longHold: 1.5, gap: 0.25, speed: 1.1 };
+
   const SLIDERS = [
-    { k: 'force', label: 'Motor force, × balanced load', min: 1.2, max: 3.0, step: 0.05, d: 2 },
-    { k: 'vup', label: 'Motor top speed, u/s', min: 0.2, max: 1.2, step: 0.05, d: 2 },
+    { group: 'Motors' },
+    { k: 'force', label: 'Motor force, × balanced load', min: 1.0, max: 3.0, step: 0.05, d: 2 },
+    { k: 'vup', label: 'Motor top speed, u/s', min: 0.2, max: 2.0, step: 0.05, d: 2 },
+    { k: 'vdown', label: 'Fall speed cap, u/s', min: 0.1, max: 2.0, step: 0.05, d: 2 },
+    { k: 'cw', label: 'Winch drag', min: 0, max: 8.0, step: 0.1, d: 1 },
     { k: 'g', label: 'Gravity, u/s²', min: 1.0, max: 5.0, step: 0.1, d: 1 },
+    { k: 'pulse', label: 'Tap pulse, s', min: 0.05, max: 0.5, step: 0.05, d: 2 },
+    { group: 'Prize' },
     { k: 'ballW', label: 'Prize weight, × platform', min: 0.3, max: 3.0, step: 0.1, d: 1 },
-    { k: 'cw', label: 'Winch drag', min: 0, max: 4.0, step: 0.1, d: 1 },
     { k: 'roll', label: 'Prize roll response, × slope', min: 0.2, max: 2.0, step: 0.1, d: 1 },
     { k: 'cb', label: 'Prize roll drag', min: 0, max: 3.0, step: 0.1, d: 1 },
+    { k: 'mus', label: 'Static friction', min: 0, max: 0.6, step: 0.01, d: 2 },
+    { k: 'muk', label: 'Sliding friction', min: 0, max: 0.6, step: 0.01, d: 2 },
     { k: 'x0', label: 'Start offset, of half length', min: 0.1, max: 0.8, step: 0.05, d: 2 },
-    { k: 'pulse', label: 'Tap pulse, s', min: 0.05, max: 0.5, step: 0.05, d: 2 },
+    { group: 'Rig and Catch' },
+    { k: 'rigForce', label: 'Rig force multiplier', min: 1.0, max: 4.0, step: 0.1, d: 1 },
+    { k: 'rigDown', label: 'Rig pull-down multiplier', min: 1.0, max: 4.0, step: 0.1, d: 1 },
+    { k: 'catchWin', label: 'Catch window, s', min: 1.0, max: 6.0, step: 0.5, d: 1 },
+    { k: 'catchZone', label: 'Catch zone, s per pass', min: 0.1, max: 1.5, step: 0.05, d: 2 },
   ];
+  const NOTES = {
+    force: 'Push of a held motor. 1.0 exactly holds a balanced platform; the heavy end needs more than its own share.',
+    vup: 'Speed limit of a motor winding in. The Rig multiplies it.',
+    vdown: 'Speed limit of an end falling. The Rig multiplies it.',
+    cw: 'Drag in the winch. Higher makes each end settle faster at the speed where push, weight, and drag balance.',
+    g: 'Scales every weight and the prize roll.',
+    pulse: 'Minimum motor-on time per tap.',
+    ballW: 'Prize weight relative to the platform. Heavier makes the lever effect stronger.',
+    roll: 'How hard the prize accelerates per unit of slope.',
+    cb: 'Speed-dependent resistance once the prize moves. Zero lets it run.',
+    mus: 'The prize holds still until the slope, times roll response, exceeds this. Sets the dead zone of tilt.',
+    muk: 'Constant resistance while the prize moves. Keep it below the static value.',
+    x0: 'Where the prize starts, on a random side.',
+    rigForce: 'Held force multiplier on an armed motor.',
+    rigDown: 'Multiplier on the pull-down of an armed motor\'s cable, on or off.',
+    catchWin: 'How long the prize falls before it is lost. The needle crosses twice.',
+    catchZone: 'How long per pass the needle sits in the zone.',
+    mp: 'Platform mass, split evenly between the ends.', mw: 'Extra inertia each motor has to move.', r: 'Prize radius, for drawing and the lever share.',
+    edge: 'Half length at which the prize is off the platform.', water: 'Automatic drop line.', finish: 'Both ends above this deliver the prize.',
+    top: 'Highest an end can go.', dmax: 'Rigid-platform limit on tilt.', limit: 'Episode clock for one lift.', zoneAt: 'Start of the Catch zone as a fraction of the track.',
+    'BOT.tick': 'Seconds between bot decisions.', 'BOT.delay': 'Age of the picture a bot decides on.', 'BOT.climb': 'Speed the cooperative bot aims for when level.',
+    'BOT.catchHit': 'Catch hit chance per partner: coop, careless, snake.', 'BOT.snakeAt': 'Earliest second the Snake acts.', 'BOT.snakeHeight': 'Mean height the Snake waits for.', 'BOT.snakeOver': 'Seconds the Snake over-pulls, or lets its end drop, with the Rig.', 'BOT.snakeLatest': 'Mean height at which the Snake acts even with the prize on its own side.', 'BOT.snakeWait': 'Seconds the Snake waits for the prize to sit on your side before acting anyway.',
+    'TELL.longHold': 'Hold or idle length that earns a receipt.', 'TELL.gap': 'Height gap that makes a hold or idle suspicious.', 'TELL.speed': 'Speed above a plain motor\'s limit that earns a receipt, as a multiplier.',
+  };
+
   let P = { ...FIX, ...DEF };
-  const DT = 1 / 120, TICK = 0.1, DELAY = 0.15;
+  const DT = 1 / 120;
   const SX = x => 260 + 100 * x, SY = y => (3.35 - y) * 100;
   const DRUM = { L: { x: 160, y: 30 }, R: { x: 360, y: 30 } };
+  const TRACK = { x: 150, w: 220 };
 
   const $ = id => document.getElementById(id);
   const ui = {
-    status: $('status'), start: $('startBtn'), btnL: $('btnL'), btnR: $('btnR'), btnRsub: $('btnRsub'),
+    status: $('status'), start: $('startBtn'), btnL: $('btnL'), btnR: $('btnR'), btnRsub: $('btnRsub'), btnC: $('btnC'),
+    rigL: $('rigL'), rigR: $('rigR'), rigRwrap: $('rigRwrap'),
     receipts: $('receipts'), priv: $('private'), plan: $('planTxt'),
-    hL: $('hL'), hR: $('hR'), ldL: $('ldL'), ldR: $('ldR'), duL: $('duL'), duR: $('duR'), ballTxt: $('ballTxt'), hudRname: $('hudRname'),
-    cabL: $('cabL'), cabR: $('cabR'), plat: $('plat'), ball: $('ball'), drumL: $('drumL'), drumR: $('drumR'),
+    hL: $('hL'), hR: $('hR'), ldL: $('ldL'), ldR: $('ldR'), duL: $('duL'), duR: $('duR'), rgL: $('rgL'), rgR: $('rgR'), ballTxt: $('ballTxt'), hudRname: $('hudRname'),
+    cabL: $('cabL'), cabR: $('cabR'), plat: $('plat'), ball: $('ball'), ballFree: $('ballFree'), drumL: $('drumL'), drumR: $('drumR'), rigRingL: $('rigRingL'), rigRingR: $('rigRingR'),
     loadL: $('loadL'), loadR: $('loadR'), stateL: $('stateL'), stateR: $('stateR'), nameR: $('nameR'),
     clock: $('clock'), tiltTxt: $('tiltTxt'), water: $('water'), ladder: $('ladderMark'), splash: $('splash'), sp1: $('sp1'), sp2: $('sp2'), banner: $('banner'),
-    sliders: $('sliders'), derived: $('derived'), reset: $('resetBtn'),
+    catchTrack: $('catchTrack'), zone: $('zone'), needle: $('needle'), catchT: $('catchT'),
+    sliders: $('sliders'), derived: $('derived'), reset: $('resetBtn'), constBody: document.querySelector('#constTable tbody'),
   };
 
   let mode = 'coop';
@@ -493,9 +606,10 @@
     const side = Math.random() < 0.5 ? -1 : 1;
     return {
       t: 0, yL: 0, yR: 0, vL: 0, vR: 0, x: P.x0 * side, vx: 0, side,
-      phase: 'idle', result: null, onL: false, onR: false, dropSide: null,
-      hist: [], duty: { L: [], R: [] }, track: { L: mkTrack(), R: mkTrack() },
-      wall: { L: false, R: false }, nearWater: false,
+      phase: 'idle', result: null, onL: false, onR: false, catches: 0, catch: null,
+      rig: { L: ui.rigL.checked, R: mode === 'snake' ? false : ui.rigR.checked },
+      hist: [], duty: { L: [], R: [] }, track: { L: mkTrack(), R: mkTrack() }, speedTold: { L: false, R: false },
+      nearWater: false, rollTold: -1,
       bot: { next: 0, on: false, careless: { until: 0, on: false }, snake: { phase: 'coop', until: 0 } },
     };
   }
@@ -505,30 +619,93 @@
     const mb = P.mp * P.ballW, shareL = (1 - st.x) / 2, shareR = (1 + st.x) / 2;
     return { mb, shareL, shareR, mL: P.mp / 2 + mb * shareL, mR: P.mp / 2 + mb * shareR, F: P.force * P.g * (P.mp / 2 + mb / 2) };
   }
-  function needDuty(share) {
-    const mb = P.mp * P.ballW, m = P.mp / 2 + mb * share, w = P.g * m, F = P.force * P.g * (P.mp / 2 + mb / 2);
-    const aOn = (F - w) / (m + P.mw), aOff = w / (m + P.mw);
-    if (aOn <= 0) return 1.01;
-    return aOff / (aOn + aOff);
+  function speeds(share, rig) {
+    const mb = P.mp * P.ballW, m = P.mp / 2 + mb * share;
+    const w = P.g * m * (rig ? P.rigDown : 1), Fm = P.force * P.g * (P.mp / 2 + mb / 2) * (rig ? P.rigForce : 1);
+    const upCap = P.vup * (rig ? P.rigForce : 1), downCap = P.vdown * (rig ? P.rigDown : 1);
+    const up = Fm <= w ? 0 : (P.cw > 0.05 ? Math.min(upCap, (Fm - w) / P.cw) : upCap);
+    const down = P.cw > 0.05 ? Math.min(downCap, w / P.cw) : downCap;
+    return { up, down, need: up <= 0 ? 1.01 : down / (up + down) };
+  }
+  function endStep(side, on, m, F) {
+    const rig = S.rig[side];
+    const fm = on ? F * (rig ? P.rigForce : 1) : 0;
+    const w = P.g * m * (rig ? P.rigDown : 1);
+    let v = side === 'L' ? S.vL : S.vR;
+    const a = (fm - w - P.cw * v) / (m + P.mw);
+    const upCap = P.vup * (rig ? P.rigForce : 1), downCap = P.vdown * (rig ? P.rigDown : 1);
+    v = Math.max(-downCap, Math.min(upCap, v + a * DT));
+    if (side === 'L') { S.vL = v; S.yL += v * DT; } else { S.vR = v; S.yR += v * DT; }
   }
   function stepPhysics(onL, onR) {
     const { mL, mR, F } = loads(S);
-    const aL = ((onL ? F : 0) - P.g * mL - P.cw * S.vL) / (mL + P.mw);
-    const aR = ((onR ? F : 0) - P.g * mR - P.cw * S.vR) / (mR + P.mw);
-    S.vL = Math.max(-P.vmax, Math.min(P.vup, S.vL + aL * DT));
-    S.vR = Math.max(-P.vmax, Math.min(P.vup, S.vR + aR * DT));
-    S.yL += S.vL * DT; S.yR += S.vR * DT;
+    endStep('L', onL, mL, F); endStep('R', onR, mR, F);
     if (S.yL > P.top) { S.yL = P.top; S.vL = Math.min(0, S.vL); }
     if (S.yR > P.top) { S.yR = P.top; S.vR = Math.min(0, S.vR); }
     if (S.yR - S.yL > P.dmax) { const m = (S.yR + S.yL) / 2; S.yR = m + P.dmax / 2; S.yL = m - P.dmax / 2; }
     if (S.yL - S.yR > P.dmax) { const m = (S.yR + S.yL) / 2; S.yL = m + P.dmax / 2; S.yR = m - P.dmax / 2; }
     const slope = (S.yR - S.yL) / 2;
-    S.vx += (-P.roll * P.g * slope - P.cb * S.vx) * DT;
+    const drive = -P.roll * P.g * slope;
+    const moving = Math.abs(S.vx) > 1e-3;
+    if (!moving && Math.abs(drive) <= P.mus * P.g) { S.vx = 0; }
+    else {
+      const dir = moving ? Math.sign(S.vx) : Math.sign(drive);
+      let vx = S.vx + (drive - dir * P.muk * P.g - P.cb * S.vx) * DT;
+      if (moving && Math.sign(vx) !== Math.sign(S.vx)) vx = 0;
+      if (!moving && vx !== 0 && S.t - S.rollTold > 0.5) { S.rollTold = S.t; log(`Prize started ${P.roll >= 0.99 && P.mus === 0 ? 'rolling' : 'sliding'} toward the ${vx > 0 ? 'right' : 'left'}.`); }
+      S.vx = vx;
+    }
     S.x += S.vx * DT;
-    const lim = 1 - P.r;
-    if (S.x > lim) { S.x = lim; if (S.vx > 0) S.vx = -S.vx * P.rest; hitWall('R'); } else if (S.x < lim - 0.1) S.wall.R = false;
-    if (S.x < -lim) { S.x = -lim; if (S.vx < 0) S.vx = -S.vx * P.rest; hitWall('L'); } else if (S.x > -lim + 0.1) S.wall.L = false;
     S.t += DT;
+    if (S.x > P.edge) fault('R');
+    else if (S.x < -P.edge) fault('L');
+  }
+
+  // ---------- fault and Catch ----------
+  function prizeWorld(x) {
+    const th = Math.atan2(S.yR - S.yL, 2), c = Math.cos(th), s = Math.sin(th), cy = (S.yL + S.yR) / 2;
+    return { x: x * c - P.r * s, y: cy + x * s + P.r * c };
+  }
+  function fault(side) {
+    const p = prizeWorld(S.x);
+    S.phase = 'fault';
+    S.catch = { t0: S.t, side, px: p.x, py0: p.y, tapped: { L: false, R: false }, botAt: 0.3 + Math.random() * (P.catchWin - 0.5), botHit: Math.random() < (BOT.catchHit[mode] || 0), botDone: mode === 'solo' };
+    if (mode === 'snake' && (S.bot.snake.phase === 'over' || S.bot.snake.phase === 'drop')) { S.bot.snake.phase = 'ride'; setPlan('the prize is off. Tap Catch outside the zone, look unlucky'); }
+    ui.btnC.disabled = false; ui.btnC.classList.add('armed');
+    ui.catchTrack.setAttribute('opacity', '1');
+    log(`Prize rolled off the ${side === 'L' ? 'left' : 'right'} end. Catch!`, 'crit');
+    setStatus('The prize is falling. One tap each, needle in the zone.', 'crit');
+  }
+  function needle() {
+    const tau = S.t - S.catch.t0, pass = P.catchWin / 2;
+    const k = Math.floor(tau / pass), f = (tau - k * pass) / pass;
+    const pos = k % 2 === 0 ? f : 1 - f;
+    const zw = Math.min(1 - P.zoneAt, P.catchZone / pass);
+    return { tau, pos, inZone: pos >= P.zoneAt && pos <= P.zoneAt + zw, zw };
+  }
+  function tapCatch() {
+    if (!S || S.phase !== 'fault' || S.catch.tapped.L) return;
+    S.catch.tapped.L = true;
+    const n = needle();
+    if (n.inZone) { log(`${motorName('L')} tapped Catch in the zone. Caught.`, 'good'); resolveCatch(mode === 'solo' ? 'you' : 'you'); }
+    else { log(`${motorName('L')} tapped Catch outside the zone. Miss.`, 'you'); ui.btnC.disabled = true; ui.btnC.classList.remove('armed'); }
+  }
+  function stepFault() {
+    S.t += DT;
+    const c = S.catch, tau = S.t - c.t0;
+    if (!c.botDone && tau >= c.botAt) {
+      c.botDone = true;
+      if (c.botHit) { log('Partner tapped Catch in the zone. Caught.', 'good'); resolveCatch('the partner'); return; }
+      log('Partner tapped Catch outside the zone. Miss.', '');
+    }
+    if (tau >= P.catchWin) finish('lost');
+  }
+  function resolveCatch(who) {
+    S.catches++;
+    S.x = 0; S.vx = 0; S.catch = null; S.phase = 'running';
+    ui.btnC.disabled = true; ui.btnC.classList.remove('armed');
+    ui.catchTrack.setAttribute('opacity', '0'); ui.ballFree.setAttribute('opacity', '0');
+    setStatus(`Caught by ${who}. Prize back at the center. Keep lifting.`, 'good');
   }
 
   // ---------- bots (motor 2) ----------
@@ -539,8 +716,7 @@
   }
   function view(snap) {
     const tau = 0.25;
-    const me = snap.yR, other = snap.yL, vme = snap.vR, vother = snap.vL;
-    return { me, other, vme, vother, share: (1 + snap.x) / 2, e: (other + vother * tau) - (me + vme * tau) };
+    return { me: snap.yR, other: snap.yL, vme: snap.vR, vother: snap.vL, share: (1 + snap.x) / 2, e: (snap.yL + snap.vL * tau) - (snap.yR + snap.vR * tau) };
   }
   function coop(snap) {
     const v = view(snap);
@@ -548,7 +724,7 @@
     const hi = 0.03 + (v.share > 0.55 ? 0.22 : 0);
     if (v.e > 0.03) return true;
     if (v.e < -hi) return false;
-    return v.vme < 0.4;
+    return v.vme < BOT.climb;
   }
   function careless(snap) {
     const c = S.bot.careless;
@@ -556,23 +732,22 @@
     return c.on;
   }
   function snake(snap) {
-    const s = S.bot.snake, v = view(snap);
-    if (s.phase === 'coop' && snap.t >= 2.5 && (snap.yL + snap.yR) / 2 >= 0.5) { s.phase = 'over'; s.until = snap.t + 2.5; setPlan('over-pull: hold 2.5 s so the prize rolls to your wall'); }
-    if (s.phase === 'over') { if (snap.t < s.until) return true; s.phase = 'ride'; setPlan('ride: stay a little above you so the prize stays on your side'); }
-    if (s.phase === 'ride') {
-      if (v.other < P.water + 0.45) { if (!s.innocent) { s.innocent = true; setPlan('your end is near the water: level with you, look helpful'); } return coop(snap); }
-      if (s.innocent) { s.innocent = false; setPlan('ride: stay a little above you so the prize stays on your side'); }
-      const e = v.e + 0.18;
-      if (e > 0.03) return true;
-      if (e < -0.03) return false;
-      return v.vme < 0.4;
+    const s = S.bot.snake;
+    const mean = (snap.yL + snap.yR) / 2;
+    if (s.phase === 'coop' && snap.t >= BOT.snakeAt && mean >= BOT.snakeHeight && (snap.x <= 0 || mean >= BOT.snakeLatest || snap.t >= BOT.snakeAt + BOT.snakeWait)) {
+      S.rig.R = true; syncRigUI();
+      s.until = snap.t + BOT.snakeOver;
+      if (snap.x <= 0) { s.phase = 'over'; setPlan(`rig armed: ${P.rigForce.toFixed(1)}× force. Over-pull so the prize slides off your end`); }
+      else { s.phase = 'drop'; setPlan(`rig armed: ${P.rigDown.toFixed(1)}× pull. Let my end drop so the prize slides off before you can level`); }
     }
+    if (s.phase === 'over') { if (snap.t < s.until) return true; s.phase = 'ride'; setPlan('attempt spent. Level with you; the rig stays on'); }
+    if (s.phase === 'drop') { if (snap.t < s.until && snap.yR > P.water + 0.5) return false; s.phase = 'ride'; setPlan('attempt spent. Level with you; the rig stays on'); }
     return coop(snap);
   }
   function botDecide() {
     if (S.t < S.bot.next) return S.bot.on;
-    S.bot.next = S.t + TICK;
-    const snap = snapshotAgo(DELAY);
+    S.bot.next = S.t + BOT.tick;
+    const snap = snapshotAgo(BOT.delay);
     S.bot.on = mode === 'coop' ? coop(snap) : mode === 'careless' ? careless(snap) : snake(snap);
     return S.bot.on;
   }
@@ -592,22 +767,21 @@
     ui.receipts.appendChild(li);
     ui.receipts.scrollTop = ui.receipts.scrollHeight;
   }
-  function hitWall(side) {
-    if (S.wall[side]) return;
-    S.wall[side] = true;
-    log(`Prize hit the ${side === 'L' ? 'left' : 'right'} wall.`);
-  }
   function trackSide(side, on) {
     const T = S.track[side];
-    const me = side === 'L' ? S.yL : S.yR, other = side === 'L' ? S.yR : S.yL;
+    const me = side === 'L' ? S.yL : S.yR, other = side === 'L' ? S.yR : S.yL, v = side === 'L' ? S.vL : S.vR;
     if (on !== T.on) { T.on = on; T.since = S.t; T.high = 0; T.low = 0; T.logged = false; }
-    if (me - other >= 0.25) T.high += DT;
-    if (other - me >= 0.25) T.low += DT;
+    if (me - other >= TELL.gap) T.high += DT;
+    if (other - me >= TELL.gap) T.low += DT;
     const dur = S.t - T.since;
-    if (!T.logged && dur >= 1.5) {
-      const cls = side === 'L' ? 'you' : '';
+    const cls = side === 'L' ? 'you' : '';
+    if (!T.logged && dur >= TELL.longHold) {
       if (T.on && T.high >= 0.8 * dur) { log(`${motorName(side)} held ${dur.toFixed(1)} s while its end sat above the other.`, cls); T.logged = true; }
       if (!T.on && T.low >= 0.8 * dur) { log(`${motorName(side)} idle ${dur.toFixed(1)} s while its end hung below the other.`, cls); T.logged = true; }
+    }
+    if (!S.speedTold[side] && (v > P.vup * TELL.speed || v < -P.vdown * TELL.speed)) {
+      S.speedTold[side] = true;
+      log(`${motorName(side)}'s end moved at ${Math.abs(v).toFixed(1)} u/s, ${v > 0 ? 'up' : 'down'}, more than a plain motor allows.`, side === 'L' ? 'you' : 'crit');
     }
   }
   function trackWater() {
@@ -628,23 +802,29 @@
     S.phase = 'done'; S.result = result;
     input.L.req = false; input.R.req = false;
     ui.btnL.classList.remove('active'); ui.btnR.classList.remove('active');
+    ui.btnC.disabled = true; ui.btnC.classList.remove('armed');
+    ui.catchTrack.setAttribute('opacity', '0');
     ui.water.classList.remove('danger');
-    if (result === 'delivered') { setStatus(`Delivered in ${S.t.toFixed(1)} s.`, 'good'); log(`Delivered in ${S.t.toFixed(1)} s.`, 'good'); showBanner('Delivered'); }
+    if (result === 'delivered') { setStatus(`Delivered in ${S.t.toFixed(1)} s${S.catches ? `, after ${S.catches} catch${S.catches > 1 ? 'es' : ''}` : ''}.`, 'good'); log(`Delivered in ${S.t.toFixed(1)} s.`, 'good'); showBanner('Delivered'); }
     else if (result === 'water') {
-      const side = S.yL <= S.yR ? 'L' : 'R'; S.dropSide = side;
+      const side = S.yL <= S.yR ? 'L' : 'R';
       const who = side === 'L' ? 'Left' : 'Right';
       setStatus(`${who} end touched the water. Automatic drop.`, 'crit'); log(`${who} end touched the water. Automatic drop.`, 'crit'); showBanner('Automatic drop');
-      const ex = side === 'L' ? endPoint().L.x : endPoint().R.x;
-      ui.sp1.setAttribute('cx', ex); ui.sp2.setAttribute('cx', ex); ui.splash.setAttribute('opacity', '1');
+      splashAt(endPoint()[side].x);
+    } else if (result === 'lost') {
+      setStatus('Nobody caught it. The prize is in the water.', 'crit'); log('Nobody caught it. Prize lost.', 'crit'); showBanner('Prize lost');
+      splashAt(SX(S.catch.px)); ui.ballFree.setAttribute('opacity', '0');
     } else { setStatus('Time is up at 45 s. Nothing delivered.', 'warn'); log('Time is up. Nothing delivered.', 'crit'); showBanner('Time is up'); }
     ui.start.textContent = 'Try again';
   }
+  function splashAt(x) { ui.sp1.setAttribute('cx', x); ui.sp2.setAttribute('cx', x); ui.splash.setAttribute('opacity', '1'); }
   function loop(now) {
     const dtReal = Math.min(0.1, (now - last) / 1000); last = now;
-    if (S.phase === 'running') {
+    if (S.phase === 'running' || S.phase === 'fault') {
       acc += dtReal;
-      while (acc >= DT && S.phase === 'running') {
+      while (acc >= DT && (S.phase === 'running' || S.phase === 'fault')) {
         acc -= DT;
+        if (S.phase === 'fault') { stepFault(); continue; }
         S.hist.push({ t: S.t, yL: S.yL, yR: S.yR, vL: S.vL, vR: S.vR, x: S.x });
         if (S.hist.length > 90) S.hist.splice(0, 30);
         const onL = humanOn('L');
@@ -652,6 +832,7 @@
         S.onL = onL; S.onR = onR;
         stepPhysics(onL, onR);
         trackSide('L', onL); trackSide('R', onR); pushDuty('L', onL); pushDuty('R', onR); trackWater();
+        if (S.phase !== 'running') continue;
         if (Math.min(S.yL, S.yR) <= P.water) finish('water');
         else if (Math.min(S.yL, S.yR) >= P.finish) finish('delivered');
         else if (S.t >= P.limit) finish('timeout');
@@ -673,32 +854,44 @@
     ui.cabL.setAttribute('x2', e.L.x); ui.cabL.setAttribute('y2', e.L.y); ui.cabL.setAttribute('stroke-width', (1.5 + 3 * shareL).toFixed(2));
     ui.cabR.setAttribute('x2', e.R.x); ui.cabR.setAttribute('y2', e.R.y); ui.cabR.setAttribute('stroke-width', (1.5 + 3 * shareR).toFixed(2));
     ui.plat.setAttribute('transform', `translate(260,${SY(e.cy).toFixed(2)}) rotate(${(-e.th * 180 / Math.PI).toFixed(2)})`);
-    ui.ball.setAttribute('cx', (S.x * 100).toFixed(2));
     ui.ladder.setAttribute('transform', `translate(0,${(SY(e.cy) - 335).toFixed(2)})`);
-    const running = S.phase === 'running';
+    const running = S.phase === 'running', fault = S.phase === 'fault';
+    ui.ball.setAttribute('opacity', fault || S.result === 'lost' ? '0' : '1');
+    ui.ball.setAttribute('cx', (S.x * 100).toFixed(2));
+    if (fault) {
+      const n = needle();
+      const py = S.catch.py0 - (S.catch.py0 - P.water) * Math.min(1, n.tau / P.catchWin) ** 2;
+      ui.ballFree.setAttribute('cx', SX(S.catch.px).toFixed(1)); ui.ballFree.setAttribute('cy', SY(py).toFixed(1)); ui.ballFree.setAttribute('opacity', '1');
+      ui.needle.setAttribute('x1', (TRACK.x + TRACK.w * n.pos).toFixed(1)); ui.needle.setAttribute('x2', (TRACK.x + TRACK.w * n.pos).toFixed(1));
+      ui.zone.setAttribute('x', (TRACK.x + TRACK.w * P.zoneAt).toFixed(1)); ui.zone.setAttribute('width', (TRACK.w * n.zw).toFixed(1));
+      ui.catchT.textContent = Math.max(0, P.catchWin - n.tau).toFixed(1) + ' s';
+    }
     ui.drumL.setAttribute('fill', running && S.onL ? 'var(--accent)' : 'var(--surface)');
     ui.drumR.setAttribute('fill', running && S.onR ? (mode === 'snake' ? 'var(--snake)' : mode === 'solo' ? 'var(--accent)' : 'var(--ink)') : 'var(--surface)');
+    ui.rigRingL.setAttribute('opacity', S.rig.L ? '1' : '0'); ui.rigRingR.setAttribute('opacity', S.rig.R ? '1' : '0');
     ui.loadL.textContent = 'load ' + pct(shareL); ui.loadR.textContent = 'load ' + pct(shareR);
     ui.stateL.textContent = running && S.onL ? 'ON' : 'off'; ui.stateR.textContent = running && S.onR ? 'ON' : 'off';
     ui.clock.textContent = S.t.toFixed(1) + ' s';
     ui.tiltTxt.textContent = 'tilt ' + Math.round(e.th * 180 / Math.PI) + '°';
     ui.btnL.classList.toggle('active', running && S.onL);
     ui.btnR.classList.toggle('active', running && S.onR);
-    // HUD
     ui.hL.textContent = S.yL.toFixed(2); ui.hR.textContent = S.yR.toFixed(2);
     ui.ldL.textContent = pct(shareL); ui.ldR.textContent = pct(shareR);
-    const nL = needDuty(shareL), nR = needDuty(shareR), dL = duty('L'), dR = duty('R');
+    const nL = speeds(shareL, S.rig.L).need, nR = speeds(shareR, S.rig.R).need, dL = duty('L'), dR = duty('R');
     ui.duL.textContent = `${pct(dL)} · needs ${nL > 1 ? '—' : pct(nL)}`;
     ui.duR.textContent = `${pct(dR)} · needs ${nR > 1 ? '—' : pct(nR)}`;
     ui.duL.className = 'v ' + (!running ? '' : nL > 1 ? 'crit' : dL < nL - 0.05 ? 'warn' : 'good');
     ui.duR.className = 'v ' + (!running ? '' : nR > 1 ? 'crit' : dR < nR - 0.05 ? 'warn' : 'good');
+    ui.rgL.textContent = S.rig.L ? `ON ×${P.rigForce.toFixed(1)} / ×${P.rigDown.toFixed(1)}` : 'off'; ui.rgL.className = 'v ' + (S.rig.L ? 'snake' : '');
+    ui.rgR.textContent = S.rig.R ? `ON ×${P.rigForce.toFixed(1)} / ×${P.rigDown.toFixed(1)}` : 'off'; ui.rgR.className = 'v ' + (S.rig.R ? 'snake' : '');
     const ax = Math.abs(S.x);
-    ui.ballTxt.textContent = ax < 0.05 ? 'centered' : `${ax.toFixed(2)} to the ${S.x > 0 ? 'right' : 'left'}${ax >= 1 - P.r - 0.005 ? ' · at the wall' : ''}`;
+    ui.ballTxt.textContent = fault ? 'falling' : S.result === 'lost' ? 'lost' : ax < 0.05 ? 'centered' : `${ax.toFixed(2)} to the ${S.x > 0 ? 'right' : 'left'}`;
   }
   function setStatus(txt, cls) { ui.status.textContent = txt; ui.status.className = 'status ' + (cls || ''); }
   function showBanner(txt) { ui.banner.textContent = txt; ui.banner.setAttribute('opacity', txt ? '1' : '0'); }
 
-  // ---------- start / mode ----------
+  // ---------- start / mode / rig ----------
+  function syncRigUI() { ui.rigL.checked = S.rig.L; ui.rigR.checked = S.rig.R; }
   function applyMode() {
     const solo = mode === 'solo';
     ui.btnR.disabled = !solo;
@@ -708,6 +901,11 @@
     ui.nameR.textContent = solo ? 'MOTOR 2 · YOU' : 'MOTOR 2 · PARTNER';
     ui.hudRname.textContent = solo ? 'Motor 2 · you' : 'Motor 2 · partner';
     ui.priv.hidden = mode !== 'snake';
+    ui.rigR.disabled = mode === 'snake';
+    ui.rigRwrap.classList.toggle('off', mode === 'snake');
+    ui.rigRwrap.title = mode === 'snake' ? 'The Snake arms its own Rig' : '';
+    if (mode === 'snake') ui.rigR.checked = false;
+    if (S) { S.rig.L = ui.rigL.checked; if (mode !== 'snake') S.rig.R = ui.rigR.checked; else if (S.phase !== 'running' && S.phase !== 'fault') S.rig.R = false; }
   }
   function start() {
     S = fresh();
@@ -715,9 +913,13 @@
     input.L.until = 0; input.R.until = 0;
     ui.receipts.innerHTML = '';
     ui.splash.setAttribute('opacity', '0'); showBanner('');
+    ui.catchTrack.setAttribute('opacity', '0'); ui.ballFree.setAttribute('opacity', '0');
+    ui.btnC.disabled = true; ui.btnC.classList.remove('armed');
     setPlan('cooperate until the platform is up a bit');
     S.phase = 'running';
     log(`Brake released. Prize rests ${P.x0.toFixed(2)} to the ${S.side > 0 ? 'right' : 'left'}.`);
+    if (S.rig.L) log(`${motorName('L')} starts with the Rig armed.`, 'you');
+    if (S.rig.R) log(`${motorName('R')} starts with the Rig armed.`, '');
     setStatus(mode === 'solo' ? 'Both motors are yours. Keep it level and climbing.' : 'Lifting. Keep it level and climbing.', '');
     ui.start.textContent = 'Restart';
   }
@@ -728,9 +930,11 @@
       document.querySelectorAll('.seg [data-mode]').forEach(x => x.setAttribute('aria-checked', String(x === b)));
       applyMode();
       b.blur();
-      if (S && S.phase === 'running') start();
+      if (S && (S.phase === 'running' || S.phase === 'fault')) start();
     });
   });
+  ui.rigL.addEventListener('change', () => { if (S) { S.rig.L = ui.rigL.checked; if (S.phase === 'running') log(`${motorName('L')} ${S.rig.L ? 'armed' : 'dropped'} the Rig.`, 'you'); } });
+  ui.rigR.addEventListener('change', () => { if (S && mode !== 'snake') { S.rig.R = ui.rigR.checked; if (S.phase === 'running') log(`${motorName('R')} ${S.rig.R ? 'armed' : 'dropped'} the Rig.`, ''); } });
 
   // ---------- input ----------
   function press(side) { if (!S) return; input[side].req = true; input[side].until = S.t + P.pulse; }
@@ -749,13 +953,15 @@
     btn.addEventListener('contextmenu', e => e.preventDefault());
   }
   bindButton(ui.btnL, 'L'); bindButton(ui.btnR, 'R');
+  ui.btnC.addEventListener('pointerdown', e => { e.preventDefault(); tapCatch(); });
   document.addEventListener('keydown', e => {
     if (e.repeat) return;
     const tag = (e.target && e.target.tagName) || '';
-    if (tag === 'INPUT' && e.target.type === 'range') return;
+    if (tag === 'INPUT') return;
     if (e.code === 'Space' || e.code === 'KeyA' || e.code === 'ArrowLeft') { e.preventDefault(); press('L'); }
     if ((e.code === 'KeyL' || e.code === 'ArrowRight') && mode === 'solo') { e.preventDefault(); press('R'); }
-    if (e.code === 'Enter' && tag !== 'BUTTON') { e.preventDefault(); start(); }
+    if (e.code === 'KeyC') { tapCatch(); }
+    if (e.code === 'Enter' && tag !== 'BUTTON') { e.preventDefault(); if (S && S.phase === 'fault') tapCatch(); else start(); }
   });
   document.addEventListener('keyup', e => {
     if (e.code === 'Space') e.preventDefault();
@@ -767,12 +973,13 @@
   // ---------- tuning ----------
   const sliderEls = {};
   SLIDERS.forEach(sd => {
+    if (sd.group) { const h = document.createElement('div'); h.className = 'tune-group label'; h.textContent = sd.group; ui.sliders.appendChild(h); return; }
     const row = document.createElement('div'); row.className = 'tune-row';
     const lab = document.createElement('label'); lab.textContent = sd.label; lab.htmlFor = 'sl_' + sd.k;
     const inp = document.createElement('input'); inp.type = 'range'; inp.id = 'sl_' + sd.k; inp.min = sd.min; inp.max = sd.max; inp.step = sd.step; inp.value = P[sd.k];
     const val = document.createElement('span'); val.className = 'v';
     const upd = () => { val.textContent = P[sd.k].toFixed(sd.d); };
-    inp.addEventListener('input', () => { P[sd.k] = parseFloat(inp.value); if (S && S.phase !== 'running' && sd.k === 'x0') { S.x = P.x0 * S.side; } upd(); renderDerived(); render(); });
+    inp.addEventListener('input', () => { P[sd.k] = parseFloat(inp.value); if (S && S.phase === 'idle' && sd.k === 'x0') S.x = P.x0 * S.side; upd(); renderDerived(); renderConsts(); render(); });
     sliderEls[sd.k] = { inp, upd };
     row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
     ui.sliders.appendChild(row);
@@ -780,23 +987,46 @@
   });
   function renderDerived() {
     const items = [
-      ['hold needed, prize at your wall', needDuty(1 - P.r)], ['hold needed, centered', needDuty(0.5)], ['hold needed, far wall', needDuty(P.r)],
+      ['hold needed, prize at your end', speeds((1 + P.edge) / 2, false)], ['hold needed, centered', speeds(0.5, false)], ['hold needed, far end', speeds((1 - P.edge) / 2, false)],
     ];
     let html = '';
-    for (const [name, nd] of items) html += `<div><span>${name}</span><b>${nd > 1 ? 'cannot lift' : Math.round(nd * 100) + '% of the time'}</b></div>`;
-    html += `<div><span>fastest lift</span><b>${(P.finish / P.vup).toFixed(1)} s</b></div>`;
+    for (const [name, sp] of items) html += `<div><span>${name}</span><b>${sp.need > 1 ? 'cannot lift' : Math.round(sp.need * 100) + '% of the time'}</b></div>`;
+    const bal = speeds(0.5, false), heavy = speeds((1 + P.edge) / 2, false);
+    html += `<div><span>speeds up / down, centered</span><b>${bal.up.toFixed(2)} / ${bal.down.toFixed(2)} u/s</b></div>`;
+    html += `<div><span>speeds up / down, prize at your end</span><b>${heavy.up.toFixed(2)} / ${heavy.down.toFixed(2)} u/s</b></div>`;
+    const deg = Math.atan(P.mus / Math.max(0.01, P.roll)) * 180 / Math.PI;
+    html += `<div><span>prize holds still below</span><b>${deg.toFixed(1)}° of tilt</b></div>`;
+    html += `<div><span>fastest lift</span><b>${bal.up > 0 ? (P.finish / bal.up).toFixed(1) + ' s' : '—'}</b></div>`;
     ui.derived.innerHTML = html;
   }
   ui.reset.addEventListener('click', () => {
     P = { ...FIX, ...DEF };
-    SLIDERS.forEach(sd => { sliderEls[sd.k].inp.value = P[sd.k]; sliderEls[sd.k].upd(); });
-    if (S && S.phase !== 'running') S.x = P.x0 * S.side;
-    renderDerived(); render();
+    SLIDERS.forEach(sd => { if (sd.k) { sliderEls[sd.k].inp.value = P[sd.k]; sliderEls[sd.k].upd(); } });
+    if (S && S.phase === 'idle') S.x = P.x0 * S.side;
+    renderDerived(); renderConsts(); render();
   });
+
+  // ---------- constants table ----------
+  function renderConsts() {
+    const rows = [];
+    const add = (name, code, val, note, live) => rows.push({ name, code, val, note, live });
+    rows.push({ grp: 'Sliders · DEF' });
+    SLIDERS.forEach(sd => { if (sd.k) add(sd.label, `DEF.${sd.k}`, P[sd.k].toFixed(sd.d), NOTES[sd.k], P[sd.k] !== DEF[sd.k]); });
+    rows.push({ grp: 'Fixed · FIX' });
+    Object.keys(FIX).forEach(k => add(k, `FIX.${k}`, String(FIX[k]), NOTES[k] || ''));
+    rows.push({ grp: 'Bots · BOT' });
+    Object.keys(BOT).forEach(k => add(k, `BOT.${k}`, typeof BOT[k] === 'object' ? Object.values(BOT[k]).join(' / ') : String(BOT[k]), NOTES['BOT.' + k] || ''));
+    rows.push({ grp: 'Receipts · TELL' });
+    Object.keys(TELL).forEach(k => add(k, `TELL.${k}`, String(TELL[k]), NOTES['TELL.' + k] || ''));
+    ui.constBody.innerHTML = rows.map(r => r.grp
+      ? `<tr class="grp"><td colspan="4">${r.grp}</td></tr>`
+      : `<tr><td>${r.name}${r.live ? '<span class="chip">moved</span>' : ''}</td><td class="code">${r.code}</td><td class="num">${r.val}</td><td>${r.note}</td></tr>`).join('');
+  }
 
   // ---------- boot ----------
   applyMode();
   renderDerived();
+  renderConsts();
   S = fresh();
   last = performance.now();
   rafId = requestAnimationFrame(loop);
