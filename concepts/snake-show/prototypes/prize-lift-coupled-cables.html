@@ -482,7 +482,7 @@
     <ul>
       <li><strong>Hold both at once in Solo.</strong> The light end runs away, the platform tilts, the prize rolls toward the heavy end and makes it heavier. With no walls it keeps going. Watch the two <em>needs</em> figures drift apart before it drops.</li>
       <li><strong>Carry the prize yourself.</strong> With a cooperative partner, let your end sag until the prize sits near your end. Watch the <em>needs</em> figure for your motor climb as the prize gets closer, and feel how sluggishly a loaded end answers a tap. Fall below that duty and you sink no matter what the partner does.</li>
-      <li><strong>Arm your own Rig in Solo.</strong> Press <kbd>R</kbd> or the button while lifting. For a couple of seconds that end moves twice as fast both ways. See how quickly a doubled end can throw the prize off the other end, and what the receipts say about it afterward.</li>
+      <li><strong>Arm your own Rig in Solo.</strong> Press <kbd>R</kbd> or the button while lifting. For five seconds that end moves twice as fast both ways. See how quickly a doubled end can throw the prize off the other end, and what the receipts say about it afterward.</li>
       <li><strong>Face the Snake.</strong> Its Rig burst is fast enough to beat your counter-hold. The lift then rests on your single Catch tap, which is the same bottleneck the first mockup found. The receipts only show that its motor held or idled at an odd moment. Decide whether that would convict it.</li>
     </ul>
   </div>
@@ -506,7 +506,7 @@
     g: 1.5,         // gravity, units per second squared
     ballW: 1.0,     // prize weight, × platform weight
     cw: 4.0,        // winch drag, force per unit of speed
-    roll: 1.0,      // prize roll response, × slope × gravity
+    roll: 1.2,      // prize roll response, × slope × gravity
     cb: 0.1,        // prize roll drag
     mus: 0.02,      // static friction: the prize holds still until slope × roll exceeds this
     muk: 0.05,      // sliding friction once the prize moves
@@ -514,7 +514,7 @@
     pulse: 0.15,    // tap pulse, seconds
     rigForce: 2.0,  // Rig: motor force multiplier
     rigDown: 2.0,   // Rig: pull-down multiplier
-    rigTime: 2.2,   // Rig: seconds it stays on after arming, once per lift
+    rigTime: 5.0,   // Rig: seconds it stays on after arming, once per lift
     catchWin: 3.0,  // Catch window, seconds, two needle passes
     catchZone: 0.25, // Catch zone, seconds per pass
   };
