@@ -479,7 +479,7 @@
   <div class="prose">
     <ul>
       <li><strong>Hold both at once in Solo.</strong> The light end runs away, the platform tilts, the prize rolls toward the heavy end and makes it heavier. With no walls it keeps going. Watch the two <em>needs</em> figures drift apart before it drops.</li>
-      <li><strong>Carry the prize yourself.</strong> With a cooperative partner, let your end sag until the prize sits near your end. Your motor now needs roughly two thirds of the time held to hold altitude at all. Tap at half duty and you sink no matter what the partner does.</li>
+      <li><strong>Carry the prize yourself.</strong> With a cooperative partner, let your end sag until the prize sits near your end. Watch the <em>needs</em> figure for your motor climb as the prize gets closer, and feel how sluggishly a loaded end answers a tap. Fall below that duty and you sink no matter what the partner does.</li>
       <li><strong>Arm your own Rig in Solo.</strong> Tick <em>motor 1</em> under Rig. That end now moves twice as fast both ways. See how quickly a doubled end can throw the prize off the other end, and how the receipts call out an end moving faster than a plain motor can.</li>
       <li><strong>Face the Snake.</strong> Its over-pull is fast enough to beat your counter-hold. The lift then rests on your single Catch tap, which is the same bottleneck the first mockup found. Decide whether the speed tell in the receipts is enough to convict it.</li>
     </ul>
@@ -499,15 +499,15 @@
   // Slider constants. Edit here or move the sliders on the page.
   const DEF = {
     force: 1.7,     // motor force, × the load with the prize centered
-    vup: 1.2,       // motor top speed, units per second
-    vdown: 0.6,     // fall speed cap, units per second
-    g: 2.5,         // gravity, units per second squared
+    vup: 0.2,       // motor top speed, units per second
+    vdown: 0.2,     // fall speed cap, units per second
+    g: 1.5,         // gravity, units per second squared
     ballW: 1.0,     // prize weight, × platform weight
     cw: 4.0,        // winch drag, force per unit of speed
     roll: 1.0,      // prize roll response, × slope × gravity
-    cb: 0.4,        // prize roll drag
-    mus: 0.15,      // static friction: the prize holds still until slope × roll exceeds this
-    muk: 0.08,      // sliding friction once the prize moves
+    cb: 0.1,        // prize roll drag
+    mus: 0.02,      // static friction: the prize holds still until slope × roll exceeds this
+    muk: 0.05,      // sliding friction once the prize moves
     x0: 0.5,        // start offset, fraction of half length
     pulse: 0.15,    // tap pulse, seconds
     rigForce: 2.0,  // Rig: motor force multiplier
@@ -534,8 +534,8 @@
   const SLIDERS = [
     { group: 'Motors' },
     { k: 'force', label: 'Motor force, × balanced load', min: 1.0, max: 3.0, step: 0.05, d: 2 },
-    { k: 'vup', label: 'Motor top speed, u/s', min: 0.2, max: 2.0, step: 0.05, d: 2 },
-    { k: 'vdown', label: 'Fall speed cap, u/s', min: 0.1, max: 2.0, step: 0.05, d: 2 },
+    { k: 'vup', label: 'Motor top speed, u/s', min: 0.05, max: 2.0, step: 0.05, d: 2 },
+    { k: 'vdown', label: 'Fall speed cap, u/s', min: 0.05, max: 2.0, step: 0.05, d: 2 },
     { k: 'cw', label: 'Winch drag', min: 0, max: 8.0, step: 0.1, d: 1 },
     { k: 'g', label: 'Gravity, u/s²', min: 1.0, max: 5.0, step: 0.1, d: 1 },
     { k: 'pulse', label: 'Tap pulse, s', min: 0.05, max: 0.5, step: 0.05, d: 2 },
@@ -609,7 +609,7 @@
       phase: 'idle', result: null, onL: false, onR: false, catches: 0, catch: null,
       rig: { L: ui.rigL.checked, R: mode === 'snake' ? false : ui.rigR.checked },
       hist: [], duty: { L: [], R: [] }, track: { L: mkTrack(), R: mkTrack() }, speedTold: { L: false, R: false },
-      nearWater: false, rollTold: -1,
+      nearWater: false, rollTold: -1, restSince: 0,
       bot: { next: 0, on: false, careless: { until: 0, on: false }, snake: { phase: 'coop', until: 0 } },
     };
   }
@@ -626,6 +626,31 @@
     const up = Fm <= w ? 0 : (P.cw > 0.05 ? Math.min(upCap, (Fm - w) / P.cw) : upCap);
     const down = P.cw > 0.05 ? Math.min(downCap, w / P.cw) : downCap;
     return { up, down, need: up <= 0 ? 1.01 : down / (up + down) };
+  }
+  let pver = 0;
+  const needMemo = new Map();
+  function needDuty(share, rig) {
+    const key = pver + '|' + share.toFixed(2) + '|' + (rig ? 1 : 0);
+    if (needMemo.has(key)) return needMemo.get(key);
+    const mb = P.mp * P.ballW, m = P.mp / 2 + mb * share;
+    const w = P.g * m * (rig ? P.rigDown : 1), Fm = P.force * P.g * (P.mp / 2 + mb / 2) * (rig ? P.rigForce : 1);
+    const upCap = P.vup * (rig ? P.rigForce : 1), downCap = P.vdown * (rig ? P.rigDown : 1);
+    const period = 0.4, cycles = 5, n = Math.round(period * cycles / DT), skip = Math.round(period / DT);
+    const drift = duty => {
+      let v = 0, y = 0;
+      for (let i = 0; i < n; i++) {
+        const on = ((i * DT) % period) < duty * period;
+        const a = ((on ? Fm : 0) - w - P.cw * v) / (m + P.mw);
+        v = Math.max(-downCap, Math.min(upCap, v + a * DT));
+        if (i >= skip) y += v * DT;
+      }
+      return y;
+    };
+    let res;
+    if (drift(1) <= 0) res = 1.01;
+    else { let lo = 0, hi = 1; for (let k = 0; k < 10; k++) { const mid = (lo + hi) / 2; if (drift(mid) > 0) hi = mid; else lo = mid; } res = (lo + hi) / 2; }
+    needMemo.set(key, res);
+    return res;
   }
   function endStep(side, on, m, F) {
     const rig = S.rig[side];
@@ -647,12 +672,15 @@
     const slope = (S.yR - S.yL) / 2;
     const drive = -P.roll * P.g * slope;
     const moving = Math.abs(S.vx) > 1e-3;
-    if (!moving && Math.abs(drive) <= P.mus * P.g) { S.vx = 0; }
+    if (!moving && Math.abs(drive) <= P.mus * P.g) { S.vx = 0; if (S.restSince < 0) S.restSince = S.t; }
     else {
       const dir = moving ? Math.sign(S.vx) : Math.sign(drive);
       let vx = S.vx + (drive - dir * P.muk * P.g - P.cb * S.vx) * DT;
       if (moving && Math.sign(vx) !== Math.sign(S.vx)) vx = 0;
-      if (!moving && vx !== 0 && S.t - S.rollTold > 0.5) { S.rollTold = S.t; log(`Prize started ${P.roll >= 0.99 && P.mus === 0 ? 'rolling' : 'sliding'} toward the ${vx > 0 ? 'right' : 'left'}.`); }
+      if (!moving && vx !== 0) {
+        if (S.restSince >= 0 && S.t - S.restSince >= 0.4 && S.t - S.rollTold > 1.5) { S.rollTold = S.t; log(`Prize started sliding toward the ${vx > 0 ? 'right' : 'left'}.`); }
+        S.restSince = -1;
+      }
       S.vx = vx;
     }
     S.x += S.vx * DT;
@@ -781,7 +809,7 @@
     }
     if (!S.speedTold[side] && (v > P.vup * TELL.speed || v < -P.vdown * TELL.speed)) {
       S.speedTold[side] = true;
-      log(`${motorName(side)}'s end moved at ${Math.abs(v).toFixed(1)} u/s, ${v > 0 ? 'up' : 'down'}, more than a plain motor allows.`, side === 'L' ? 'you' : 'crit');
+      log(`${motorName(side)}'s end moved ${v > 0 ? 'up' : 'down'} at ${Math.abs(v).toFixed(2)} u/s. A plain motor tops out at ${(v > 0 ? P.vup : P.vdown).toFixed(2)}.`, side === 'L' ? 'you' : 'crit');
     }
   }
   function trackWater() {
@@ -877,7 +905,7 @@
     ui.btnR.classList.toggle('active', running && S.onR);
     ui.hL.textContent = S.yL.toFixed(2); ui.hR.textContent = S.yR.toFixed(2);
     ui.ldL.textContent = pct(shareL); ui.ldR.textContent = pct(shareR);
-    const nL = speeds(shareL, S.rig.L).need, nR = speeds(shareR, S.rig.R).need, dL = duty('L'), dR = duty('R');
+    const nL = needDuty(shareL, S.rig.L), nR = needDuty(shareR, S.rig.R), dL = duty('L'), dR = duty('R');
     ui.duL.textContent = `${pct(dL)} · needs ${nL > 1 ? '—' : pct(nL)}`;
     ui.duR.textContent = `${pct(dR)} · needs ${nR > 1 ? '—' : pct(nR)}`;
     ui.duL.className = 'v ' + (!running ? '' : nL > 1 ? 'crit' : dL < nL - 0.05 ? 'warn' : 'good');
@@ -979,7 +1007,7 @@
     const inp = document.createElement('input'); inp.type = 'range'; inp.id = 'sl_' + sd.k; inp.min = sd.min; inp.max = sd.max; inp.step = sd.step; inp.value = P[sd.k];
     const val = document.createElement('span'); val.className = 'v';
     const upd = () => { val.textContent = P[sd.k].toFixed(sd.d); };
-    inp.addEventListener('input', () => { P[sd.k] = parseFloat(inp.value); if (S && S.phase === 'idle' && sd.k === 'x0') S.x = P.x0 * S.side; upd(); renderDerived(); renderConsts(); render(); });
+    inp.addEventListener('input', () => { P[sd.k] = parseFloat(inp.value); pver++; if (S && S.phase === 'idle' && sd.k === 'x0') S.x = P.x0 * S.side; upd(); renderDerived(); renderConsts(); render(); });
     sliderEls[sd.k] = { inp, upd };
     row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
     ui.sliders.appendChild(row);
@@ -987,10 +1015,10 @@
   });
   function renderDerived() {
     const items = [
-      ['hold needed, prize at your end', speeds((1 + P.edge) / 2, false)], ['hold needed, centered', speeds(0.5, false)], ['hold needed, far end', speeds((1 - P.edge) / 2, false)],
+      ['hold needed, prize at your end', needDuty((1 + P.edge) / 2, false)], ['hold needed, centered', needDuty(0.5, false)], ['hold needed, far end', needDuty((1 - P.edge) / 2, false)],
     ];
     let html = '';
-    for (const [name, sp] of items) html += `<div><span>${name}</span><b>${sp.need > 1 ? 'cannot lift' : Math.round(sp.need * 100) + '% of the time'}</b></div>`;
+    for (const [name, nd] of items) html += `<div><span>${name}</span><b>${nd > 1 ? 'cannot lift' : Math.round(nd * 100) + '% of the time'}</b></div>`;
     const bal = speeds(0.5, false), heavy = speeds((1 + P.edge) / 2, false);
     html += `<div><span>speeds up / down, centered</span><b>${bal.up.toFixed(2)} / ${bal.down.toFixed(2)} u/s</b></div>`;
     html += `<div><span>speeds up / down, prize at your end</span><b>${heavy.up.toFixed(2)} / ${heavy.down.toFixed(2)} u/s</b></div>`;
@@ -1000,7 +1028,7 @@
     ui.derived.innerHTML = html;
   }
   ui.reset.addEventListener('click', () => {
-    P = { ...FIX, ...DEF };
+    P = { ...FIX, ...DEF }; pver++;
     SLIDERS.forEach(sd => { if (sd.k) { sliderEls[sd.k].inp.value = P[sd.k]; sliderEls[sd.k].upd(); } });
     if (S && S.phase === 'idle') S.x = P.x0 * S.side;
     renderDerived(); renderConsts(); render();
