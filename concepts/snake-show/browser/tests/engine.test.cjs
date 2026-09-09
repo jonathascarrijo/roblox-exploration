@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { Episode, assignGroups, tally, winner, makeStation, shares, rng, inCatchZone } = require('../engine.js');
+const { Episode, POSITIONS, assignGroups, chooseSpotter, tally, winner, makeStation, shares, rng, inCatchZone } = require('../engine.js');
 
 function fixture(ids = [0, 1]) {
   const g = new Episode({ seed: 11, mode: 'play' }); g.start(); g.nextPhase();
@@ -21,40 +21,51 @@ test('casting gives exactly two random Snakes, six Loyals, and seven labeled bot
   assert.ok(pairs.size > 15);
 });
 
-test('the active cast rotates into pairs and a three-cable lift when odd', () => {
-  for (let size = 5; size <= 8; size++) {
+test('every Prize Lift has exactly two operators; an odd cast is rejected without a spotter', () => {
+  for (const size of [4, 6, 8]) {
     const ids = Array.from({ length: size }, (_, i) => i);
     for (let act = 1; act <= 3; act++) {
       const groups = assignGroups(ids, act);
       assert.deepEqual(groups.flat().sort(), ids);
-      assert.equal(groups.filter(g => g.length === 3).length, size % 2);
-      assert.ok(groups.every(g => [2, 3].includes(g.length)));
+      assert.ok(groups.every(g => g.length === 2));
     }
   }
   assert.notDeepEqual(assignGroups([0, 1, 2, 3, 4, 5, 6, 7], 1), assignGroups([0, 1, 2, 3, 4, 5, 6, 7], 2));
+  assert.throws(() => assignGroups([0, 1, 2, 3, 4, 5, 6], 2), /spotter/);
+  assert.throws(() => makeStation([0, 1, 2], 0, rng(1)), /two operators/);
 });
 
-test('two- and three-cable capsules trigger Catch on crossing the tray edge', () => {
-  for (const ids of [[0, 1], [0, 1, 2]]) {
-    const g = fixture(ids), s = g.stations[0];
-    s.x = 1.01;
-    assert.ok(shares(s).some(w => w < 0), 'edge detection must use unclamped shares');
-    g.tick(1 / 120); assert.equal(s.state, 'catch');
-  }
+test('the spotter is the removed contestant’s last partner; a deadlock keeps the spotter; roles are never consulted', () => {
+  const partners = { 0: 1, 1: 0, 2: 3, 3: 2, 4: 5, 5: 4, 6: 7, 7: 6 };
+  assert.equal(chooseSpotter([0, 1, 2, 3, 4, 5, 6, 7], null, {}, null), null, 'even cast: nobody spots');
+  assert.equal(chooseSpotter([0, 1, 2, 4, 5, 6, 7], 3, partners, null), 2, 'partner of the removed contestant');
+  assert.equal(chooseSpotter([0, 1, 2, 4, 5, 6, 7], null, partners, 2), 2, 'deadlock keeps the current spotter');
+  assert.equal(chooseSpotter([0, 1, 2, 3, 4, 5], 6, { ...partners, 6: 7 }, 2), null, 'an even cast after the spotter’s act: nobody spots');
+  assert.equal(chooseSpotter([0, 1, 2, 4, 5, 6, 7], 3, {}, null), 7, 'fixture fallback only: last active contestant');
+  assert.equal(chooseSpotter([0, 1, 2, 3, 4, 5], 7, partners, null), null, 'even cast after a removal: nobody spots');
+  assert.equal(chooseSpotter.length, 4);
 });
 
-test('station delivery requires every corner and banks only one prize', () => {
-  const g = fixture([0, 1, 2]), s = g.stations[0];
-  s.x = 0; s.h = [2.7, 2.7, 2.4]; g.players.forEach(p => { p.pulling = true; });
+test('the capsule triggers Catch on crossing the tray edge', () => {
+  const g = fixture([0, 1]), s = g.stations[0];
+  s.x = 1.01;
+  assert.ok(shares(s).some(w => w < 0), 'edge detection must use unclamped shares');
+  g.tick(1 / 120); assert.equal(s.state, 'catch');
+});
+
+test('station delivery requires both ends and banks only one prize', () => {
+  const g = fixture([0, 1]), s = g.stations[0];
+  s.x = 0; s.h = [2.7, 2.4]; g.players.forEach(p => { p.pulling = true; });
   g.tick(.01); assert.equal(s.delivered, false);
-  s.h = [2.7, 2.7, 2.7]; g.tick(.01); assert.equal(s.delivered, true); assert.equal(g.pot, 1);
+  s.h = [2.7, 2.7]; g.tick(.01); assert.equal(s.delivered, true); assert.equal(g.pot, 1);
   g.tick(5); assert.equal(g.pot, 1);
 });
 
-test('Rig reservation rejects Loyals, contends once, cancels, and consumes at 1.5s', () => {
-  const g = fixture([0, 1, 2]), s = g.stations[0];
+test('Rig reservation rejects Loyals and non-operators, contends once, cancels, and consumes at 1.5s', () => {
+  const g = fixture([0, 1]), s = g.stations[0];
   s.x = 0; g.players.forEach(p => { p.pulling = true; });
-  assert.equal(g.pressRig(2), false);
+  assert.equal(g.pressRig(2), false, 'not at a console and not the spotter');
+  g.players[0].role = 'Loyal'; assert.equal(g.pressRig(0), false, 'Loyals have no Rig'); g.players[0].role = 'Snake';
   assert.equal(g.pressRig(0), true); assert.equal(g.pressRig(1), false);
   g.tick(.7); g.releaseRig(0); assert.equal(g.attempt.reserved, null); assert.equal(g.attempt.spent, false);
   assert.equal(g.pressRig(1), true); g.tick(1.51);
@@ -113,6 +124,86 @@ test('Catch clears both the diverter and the burst, but keeps the attempt consum
   g.fault(s); g.tick(1.025); assert.equal(g.pressCatch(1, 0), 'saved');
   assert.equal(s.armedBy, null); assert.equal(s.burstUntil, 0); assert.equal(g.attempt.spent, true);
   g.fault(s); g.tick(3.01); assert.equal(s.heists, 0);
+});
+
+function spotterFixture(role = 'Snake') {
+  const g = fixture([0, 1]), p = g.players[2];
+  p.role = role; p.spotting = true; p.operated = false; p.station = -1; g.spotter = 2;
+  g.spotLog = { id: 2, seconds: [0], saves: 0, misses: 0 };
+  p.x = 0; p.y = 0; return g;
+}
+const rescueArea = index => ({ x: POSITIONS[index].x, y: POSITIONS[index].y + 60 });
+
+test('a Snake spotter arms a lift only from its rescue area, with no motor change; leaving the area cancels the hold', () => {
+  const g = spotterFixture(), s = g.stations[0], p = g.players[2];
+  g.players[0].pulling = true; g.players[1].pulling = true;
+  assert.equal(g.pressRig(2), false, 'outside every rescue area');
+  Object.assign(p, rescueArea(0));
+  assert.equal(g.pressRig(2), true); assert.equal(g.attempt.station, 0); assert.equal(g.attempt.reserved, 2);
+  g.tick(.5); p.x = 0; g.tick(1 / 120);
+  assert.equal(g.attempt.reserved, null); assert.equal(g.attempt.spent, false); assert.equal(p.rigging, false);
+  Object.assign(p, rescueArea(0)); assert.equal(g.pressRig(2), true);
+  const twin = fixture([0, 1]); twin.players[0].pulling = true; twin.players[1].pulling = true;
+  twin.tick(.5); twin.tick(1 / 120); g.tick(2); twin.tick(2);
+  assert.equal(g.attempt.spent, true); assert.equal(s.armedBy, 2); assert.equal(s.burstUntil, 0, 'no burst');
+  assert.deepEqual(s.h, twin.stations[0].h, 'arming from the rescue area leaves the physics untouched');
+  assert.equal(s.x, twin.stations[0].x);
+  assert.match(JSON.stringify(s.events.filter(e => e.private)), /rescue area.*no motor changed/);
+  g.fault(s); g.tick(3.01); assert.equal(s.heists, 1, 'an uncaught spill at the armed lift is a heist');
+});
+
+test('a Loyal spotter cannot arm; a spotter can Catch at the lift they stand beside and both taps are recorded', () => {
+  const loyal = spotterFixture('Loyal'); Object.assign(loyal.players[2], rescueArea(0));
+  assert.equal(loyal.pressRig(2), false);
+  const g = spotterFixture(), s = g.stations[0], p = g.players[2];
+  g.fault(s); g.tick(.3); assert.equal(g.pressCatch(2, 0), 'ineligible', 'not inside the rescue area');
+  Object.assign(p, rescueArea(0)); g.releaseCatch(2);
+  assert.equal(g.pressCatch(2, 0), 'miss'); assert.equal(g.spotLog.misses, 1);
+  g.releaseCatch(2); g.tick(.725); assert.equal(g.pressCatch(2, 0), 'ineligible', 'one tap per fault');
+  assert.equal(g.pressCatch(1, 0), 'saved');
+  g.fault(s); g.tick(1.025); g.releaseCatch(2); assert.equal(g.pressCatch(2, 0), 'saved'); assert.equal(g.spotLog.saves, 1);
+});
+
+test('a fault or the deadline at the targeted lift cancels an unfinished spotter hold', () => {
+  for (const reason of ['fault', 'timeout']) {
+    const g = spotterFixture(), s = g.stations[0]; Object.assign(g.players[2], rescueArea(0));
+    g.pressRig(2); g.tick(.5);
+    reason === 'fault' ? g.fault(s) : g.endStation(s, 'timeout');
+    assert.equal(g.attempt.reserved, null); assert.equal(g.attempt.spent, false);
+  }
+});
+
+test('the spotter receipt is public, names the longest stay and the taps, and leaks no role or Rig', () => {
+  const g = spotterFixture(), p = g.players[2]; Object.assign(p, rescueArea(0));
+  g.pressRig(2); g.tick(1.6); g.tick(2);
+  const review = g.reviewSnapshot(); assert.equal(review.spotter.kind, 'spotter');
+  assert.doesNotMatch(JSON.stringify(review), /SECRET|heists|events|role|armed|Rig|Snake/);
+  g.finishChallenge();
+  const card = g.history[0].spotter;
+  assert.equal(card.id, 2); assert.equal(card.station, 'East lift'); assert.ok(card.seconds > 3.5);
+  assert.match(card.text, /spotted this act without a console/); assert.match(card.text, /East lift rescue area/);
+  assert.doesNotMatch(JSON.stringify(card), /Rig|diverter|Snake|Loyal|armed|burst/);
+  const none = fixture([0, 1]); none.finishChallenge(); assert.equal(none.history[0].spotter, null);
+});
+
+test('a removal that leaves an odd cast makes the removed contestant’s last partner the spotter; a deadlock keeps them', () => {
+  const g = new Episode({ seed: 11, mode: 'watch' }); g.start(); g.nextPhase();
+  assert.equal(g.spotter, null); assert.equal(g.stations.length, 4);
+  const partners = { ...g.partners }; assert.equal(Object.keys(partners).length, 8);
+  while (g.phase === 'challenge') g.tick(1 / 120);
+  g.heists = 1; g.history[0].heists = 1;
+  for (const id of g.activeIds()) g.castVote(id, id === 3 ? 4 : 3);
+  g.finishVote(); assert.equal(g.lastRemoved, 3); g.nextPhase();
+  assert.equal(g.act, 2); assert.equal(g.spotter, partners[3]);
+  const spotter = g.players[g.spotter];
+  assert.equal(spotter.spotting, true); assert.equal(spotter.operated, false); assert.equal(spotter.station, -1);
+  assert.equal(g.stations.length, 3); assert.ok(g.stations.every(s => s.ids.length === 2 && !s.ids.includes(g.spotter)));
+  assert.deepEqual([...g.stations.flatMap(s => s.ids), g.spotter].sort(), g.activeIds().sort());
+  while (g.phase === 'challenge') g.tick(1 / 120);
+  assert.equal(g.history[1].spotter.id, spotter.id);
+  g.finishVote(); assert.equal(g.phase, 'runoff'); g.finishVote(); assert.equal(g.lastVote.removed, null);
+  g.nextPhase(); assert.equal(g.act, 3); assert.equal(g.spotter, spotter.id, 'deadlock: same spotter');
+  assert.equal(g.stations.length, 3);
 });
 
 test('burst expiry preserves the capsule diverter; lava, deadline, and delivery defeat it', () => {
@@ -175,7 +266,12 @@ test('seeded episodes at different bot skills finish, remain finite, respect one
     assert.equal(g.phase, 'finale', `seed ${seed}`); outcomes.add(g.outcome.team);
     assert.ok(g.history.length >= 1 && g.history.length <= 3);
     assert.ok(g.history.every(h => h.heists <= 1));
-    assert.ok(g.stations.every(s => [...s.h, ...s.v, s.x, s.z].every(Number.isFinite)));
+    for (const h of g.history) {
+      assert.ok(h.stations.every(s => s.ids.length === 2), `seed ${seed}: two operators per lift`);
+      assert.equal(!!h.spotter, h.cast % 2 === 1, `seed ${seed} act ${h.act}: a spotter exactly when the cast is odd`);
+      if (h.spotter) assert.ok(h.stations.every(s => !s.ids.includes(h.spotter.id)));
+    }
+    assert.ok(g.stations.every(s => [...s.h, ...s.v, s.x].every(Number.isFinite)));
     assert.equal(g.heists, g.history.reduce((sum, h) => sum + h.heists, 0));
   }
   assert.deepEqual([...outcomes].sort(), ['Loyals', 'Snakes']);
@@ -312,6 +408,13 @@ test('Rig hold and burst timers freeze independently without stopping cable phys
   g.setTimerPaused('rig',false);g.tick(.31);assert.equal(g.attempt.spent,true);g.releaseRig(0);
   const remaining=s.burstUntil-g.timerClock('rig');g.setTimerPaused('rig',true);g.tick(.1);
   assert.ok(Math.abs(s.burstUntil-g.timerClock('rig')-remaining)<1e-8);
+});
+test('a frozen Rig clock also holds the spotter\u2019s arm from the rescue area', () => {
+  const g=spotterFixture(),s=g.stations[0],p=g.players[2];g.players[0].pulling=true;g.players[1].pulling=true;
+  Object.assign(p,rescueArea(0));assert.equal(g.pressRig(2),true);g.tick(.5);
+  g.setTimerPaused('rig',true);const height=s.h[0];g.tick(2);
+  assert.equal(g.attempt.spent,false,'the hold does not complete while Rig is frozen');assert.equal(g.attempt.reserved,2);assert.notEqual(s.h[0],height,'cables keep moving');
+  g.setTimerPaused('rig',false);g.tick(1.01);assert.equal(g.attempt.spent,true);assert.equal(s.armedBy,2);assert.equal(s.burstUntil,0,'still no burst');
 });
 test('reload and post-Catch reset clocks resume from where they stopped', () => {
   const g=fixture(),s=g.stations[0];g.fault(s);g.lose(s);g.tick(1);g.setTimerPaused('reload',true);g.tick(5);

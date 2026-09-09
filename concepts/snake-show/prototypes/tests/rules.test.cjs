@@ -1,24 +1,47 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { CAST, role, tally, winner, groups, makeAct, Rescue, RewardLedger } = require('../rules.js');
+const { CAST, role, tally, winner, groups, chooseSpotter, makeAct, Rescue, RewardLedger } = require('../rules.js');
 const active = CAST.map((_,i)=>i);
 
-test('cast has eight members, two Snakes, and odd groups retain every operator', () => {
+test('cast has eight members and two Snakes; every lift pairs exactly two operators', () => {
   assert.equal(active.filter(id=>role(id)==='Snake').length,2);
-  for(let n=5;n<=8;n++) for(let act=1;act<=3;act++) {
+  for(const n of [4,6,8]) for(let act=1;act<=3;act++) {
     const pairs=groups(active.slice(0,n),act);
     assert.deepEqual(pairs.flat().sort(),active.slice(0,n));
-    assert.equal(pairs.filter(p=>p.length===3).length,n%2);
-    assert.ok(pairs.every(p=>p.length===2||p.length===3));
+    assert.ok(pairs.every(p=>p.length===2));
   }
   assert.notDeepEqual(groups(active,1),groups(active,2));
+  assert.throws(()=>groups(active.slice(0,7),1),/spotter/);
 });
-test('first Rig claim wins, cancellation releases it, completion consumes it', () => {
+test('an odd cast names the removed contestant’s last partner as spotter; a deadlock keeps the spotter', () => {
+  const partners={0:1,1:0,2:3,3:2,4:5,5:4,6:7,7:6};
+  assert.equal(chooseSpotter(active,null,partners,null),null);
+  assert.equal(chooseSpotter(active.filter(id=>id!==5),5,partners,null),4);
+  assert.equal(chooseSpotter(active.filter(id=>id!==5),null,partners,4),4);
+  assert.equal(chooseSpotter(active.filter(id=>id!==5&&id!==4),4,partners,4),null);
+  const one=makeAct(active,1), seven=active.filter(id=>id!==5);
+  const two=makeAct(seven,2,true,{removed:5,partners:one.partners});
+  assert.equal(two.spotter,one.partners[5]);
+  assert.ok(two.stations.every(ids=>ids.length===2&&!ids.includes(two.spotter)));
+  assert.deepEqual([...two.stations.flat(),two.spotter].sort(),seven);
+  assert.equal(two.publicCards.filter(c=>c.kind==='spotter').length,1);
+  assert.ok(!/(rig|diverter|snake|heist)/i.test(two.publicCards.find(c=>c.kind==='spotter').text));
+  const three=makeAct(seven,3,true,{removed:null,partners:two.partners,spotter:two.spotter});
+  assert.equal(three.spotter,two.spotter);
+  // A Snake spotter with no Snake at a console arms a lift from the rescue area, with no motor change.
+  const snakeSpots=makeAct([0,1,3,4,5,6,7],2,true,{removed:2,partners:{2:1,1:2}});
+  assert.equal(snakeSpots.spotter,1); assert.equal(snakeSpots.heist,1);
+  assert.match(snakeSpots.full.find(e=>e.private).text,/rescue area.*no motor changed/);
+});
+test('first Rig claim wins, cancellation releases it, completion consumes it; a spotter arms without a burst', () => {
   const r=new Rescue();assert.equal(r.reserve(0),false);
   assert.equal(r.reserve(1),true);assert.equal(r.reserve(2),false);
   r.tick(1);r.release(1);assert.equal(r.spent,false);
   assert.equal(r.reserve(2),true);r.tick(1.51);
   assert.equal(r.spent,true);assert.equal(r.armed,true);assert.equal(r.reserve(1),false);
+  assert.equal(r.burstUntil,r.time,'Nia spots: no motor burst');
+  assert.match(r.privateLog.at(-1).text,/rescue area/);
+  const console=new Rescue();console.reserve(1);console.tick(1.5);assert.equal(console.burstUntil,console.time+5);
 });
 test('fault during unfinished Rig cancels reservation without consuming attempt', () => {
   const r=new Rescue();r.reserve(1);r.tick(1);r.fault();
@@ -84,7 +107,7 @@ test('winner requires both thefts and a surviving Snake, with early impossibilit
 test('fixed evidence coverage includes innocent failures and never exposes Rig', () => {
   for(let act=1;act<=3;act++){
     const fixture=makeAct(active,act,act<3);
-    assert.equal(fixture.publicCards.length,fixture.stations.length*3);
+    assert.equal(fixture.publicCards.length,fixture.stations.length*3+(fixture.spotter===null?0:1));
     assert.ok(fixture.publicCards.every(card=>!('private' in card)));
     assert.ok(fixture.publicCards.every(card=>!/(rig|diverter|snake|heist|twice|speed)/i.test(card.text)));
     assert.equal(fixture.publicCards.filter(card=>card.kind==='outcome'&&card.text.includes('lost')).length,act<3?2:1);

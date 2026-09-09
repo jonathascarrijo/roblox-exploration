@@ -81,11 +81,11 @@
     const y = state === 'delivery' ? 43 : state === 'lava' ? 113 : 81;
     return svg(`<rect width="240" height="140" rx="14" fill="${state === 'delivery' ? '#dcf3da' : state === 'lava' ? '#ffe4cd' : '#e9e6f7'}"/><path d="M49 115V15h142v100" fill="none" stroke="#536f65" stroke-width="8" stroke-linecap="round"/><path d="M69 18v${y-18}m102 ${18-y}v${y-18}" fill="none" stroke="#536f65" stroke-width="3"/><path d="M68 ${y}h104" stroke="#536f65" stroke-width="8" stroke-linecap="round"/><path d="M24 123q16-14 32 0t32 0 32 0 32 0 32 0 32 0v17H24" fill="#ef9670"/>${state === 'lava' ? '<path d="m86 104-7-12m34 8 1-17m39 21 8-13" stroke="#d4603c" stroke-width="4" stroke-linecap="round"/>' : crown(state === 'delivery' ? 120 : 98, y-22)}${state === 'delivery' ? '<g stroke="#b69a35" stroke-width="3"><path d="m31 43-8-3m8 18-8 3m186-18 8-3m-8 18 8 3"/></g><path d="m164 67 11 11 21-25" fill="none" stroke="#3b7b5e" stroke-width="7" stroke-linecap="round"/>' : state === 'timeout' ? clock(186,64) : ''}`);
   }
-  function handlingScene(card, station, players) {
+  function handlingScene(card, players) {
     if (card.seconds < .2) return svg(`<rect width="240" height="140" rx="14" fill="#edf2ed"/><path d="M55 83h130M65 24v59m110-59v59" fill="none" stroke="#728880" stroke-width="5"/><circle cx="120" cy="51" r="16" fill="#fffaf0"/><path d="M113 51h14" stroke="#728880" stroke-width="3"/>`);
     const p = players[card.ids[0]], low = card.type === 'low-idle', holding = card.type === 'high-hold';
     const y = low ? 101 : 43;
-    return svg(`<rect width="240" height="140" rx="14" fill="#e8edf9"/>${person(p,40,45,.78)}<path d="M88 14h123M98 15v${y-15}m103 ${15-y}v${low ? 30 : 83}" fill="none" stroke="#728880" stroke-width="4"/><path d="M98 ${y} 201 ${low ? 45 : 98}" stroke="#425f58" stroke-width="8" stroke-linecap="round"/>${station.ids.length === 3 ? `<path d="M98 ${y} 156 111 201 ${low ? 45 : 98}M156 14v97" fill="none" stroke="#83978e" stroke-width="3" stroke-linejoin="round"/>` : ''}<circle cx="98" cy="${y}" r="8" fill="${esc(p.color)}" stroke="#fff" stroke-width="3"/>${holding ? '<path d="M78 91V52m-8 9 8-9 8 9" fill="none" stroke="#425e85" stroke-width="5" stroke-linecap="round"/>' : '<g transform="translate(65 71)" stroke="#425e85" stroke-width="3" stroke-linejoin="round" fill="#fff5df"><path d="M0 16V3q2-4 4 0v9-15q2-4 4 0v15-13q2-4 4 0v13-10q2-4 4 0v17q-4 15-14 5l-8-10q-1-5 4-2Z"/></g>'}<path d="M149 124h60" stroke="#c3ced8" stroke-width="4" stroke-linecap="round"/>`);
+    return svg(`<rect width="240" height="140" rx="14" fill="#e8edf9"/>${person(p,40,45,.78)}<path d="M88 14h123M98 15v${y-15}m103 ${15-y}v${low ? 30 : 83}" fill="none" stroke="#728880" stroke-width="4"/><path d="M98 ${y} 201 ${low ? 45 : 98}" stroke="#425f58" stroke-width="8" stroke-linecap="round"/><circle cx="98" cy="${y}" r="8" fill="${esc(p.color)}" stroke="#fff" stroke-width="3"/>${holding ? '<path d="M78 91V52m-8 9 8-9 8 9" fill="none" stroke="#425e85" stroke-width="5" stroke-linecap="round"/>' : '<g transform="translate(65 71)" stroke="#425e85" stroke-width="3" stroke-linejoin="round" fill="#fff5df"><path d="M0 16V3q2-4 4 0v9-15q2-4 4 0v15-13q2-4 4 0v13-10q2-4 4 0v17q-4 15-14 5l-8-10q-1-5 4-2Z"/></g>'}<path d="M149 124h60" stroke="#c3ced8" stroke-width="4" stroke-linecap="round"/>`);
   }
   function catchScene(card, players) {
     if (!card.ids.length) return svg('<rect width="240" height="140" rx="14" fill="#edf2ed"/><circle cx="120" cy="66" r="34" fill="#dbe5dc"/><path d="M103 66h34" stroke="#7c9485" stroke-width="6" stroke-linecap="round"/>');
@@ -96,7 +96,7 @@
     const [outcome, handling, response] = station.cards;
     return [
       { key: 'outcome', title: 'The finish', label: outcome.state === 'lava' ? 'Into the lava' : !outcome.failed ? 'Delivered!' : 'Time ran out', image: outcomeScene(outcome), text: outcome.text },
-      { key: 'handling', title: 'At the controls', label: handling.seconds < .2 ? 'No long hold or pause' : `${players[handling.ids[0]].name} ${({'high-hold':'pulled high','low-idle':'paused low','high-release':'let go high'})[handling.type]}`, image: handlingScene(handling, station, players), text: handling.text },
+      { key: 'handling', title: 'At the controls', label: handling.seconds < .2 ? 'No long hold or pause' : `${players[handling.ids[0]].name} ${({'high-hold':'pulled high','low-idle':'paused low','high-release':'let go high'})[handling.type]}`, image: handlingScene(handling, players), text: handling.text },
       { key: 'response', title: 'The last catch', label: !response.ids.length ? 'No catch tried' : `${players[response.ids[0]].name} ${response.saved ? 'caught it!' : 'missed'}`, image: catchScene(response, players), text: response.text }
     ];
   }
@@ -110,6 +110,18 @@
     const f = facts(station, players), [outcome] = station.cards;
     return '<article class="lift-memory receipt"><span class="memory-heading"><b>' + esc(station.name.replace(' lift','')) + '</b>' + icon('camera') + '</span>' + memoryCast(station, players) + '<button class="memory-details" data-receipt="' + index + '" aria-label="' + esc(station.name + ': ' + f.map(f=>f.label).join('. ') + '. See what happened.') + '"><span class="memory-pictures">' + f.slice(1).map(fact=>'<span>'+fact.image+'<b>'+esc(fact.label)+'</b></span>').join('') + '</span><span class="memory-outcome ' + (outcome.failed ? '' : 'delivered') + '">' + icon(outcome.state === 'lava' ? 'lava' : outcome.failed ? 'clock' : 'crown') + ' ' + f[0].label + '</span><span class="memory-foot">' + (outcome.losses ? icon('down')+' '+outcome.losses+' lost' : icon('crown')+' 0 lost') + '<span>Look closer +</span></span></button></article>';
   }
+  function spotterScene(card, p) {
+    // The spotter beside a rescue area: a dashed area, the gantry, and the
+    // contestant. Saves and misses are shown as the crown kept or dropped.
+    const stood = card.seconds >= .2;
+    return svg(`<rect width="240" height="140" rx="14" fill="${card.saves ? '#dcf3da' : card.misses ? '#f9e8d5' : '#eef1e6'}"/><path d="M150 118V22h72v96" fill="none" stroke="#536f65" stroke-width="7" stroke-linecap="round"/><path d="M160 60h52" stroke="#536f65" stroke-width="7" stroke-linecap="round"/><ellipse cx="72" cy="112" rx="58" ry="16" fill="none" stroke="${stood ? '#7c9485' : '#c3ced8'}" stroke-width="3" stroke-dasharray="7 6"/>${person(p, 72, 44, .9)}${card.saves ? crown(186, 40, .8) + '<path d="m196 26 7 7 13-16" fill="none" stroke="#3b7b5e" stroke-width="5" stroke-linecap="round"/>' : card.misses ? crown(186, 104, .8) : ''}`);
+  }
+  function spotterCard(card, players) {
+    const p = players[card.id], taps = card.saves + card.misses;
+    const label = card.station ? `Spotted the ${card.station.replace(' lift', '')} lift` : 'Kept moving';
+    const foot = !taps ? 'No catch tried' : `${card.saves} caught · ${card.misses} missed`;
+    return '<article class="lift-memory receipt spotter-memory"><span class="memory-heading"><b>Spotter</b>' + icon('camera') + '</span>' + memoryCast({ ids: [card.id] }, players) + '<div class="memory-details spotter-details" aria-label="' + esc(p.name + ' spotted this act. ' + card.text) + '"><span class="memory-pictures"><span>' + spotterScene(card, p) + '<b>' + esc(label) + '</b></span></span><span class="memory-outcome">' + icon('shield') + ' No console this act</span><span class="memory-foot">' + icon(card.saves ? 'check' : card.misses ? 'down' : 'question') + ' ' + esc(foot) + '<span>' + (card.station ? Math.round(card.seconds) + 's there' : '') + '</span></span></div></article>';
+  }
   function detail(station, players) {
     return `<div class="moment-strip">${facts(station, players).map(f=>`<article class="moment"><h3>${f.title}</h3>${f.image}<b>${esc(f.label)}</b></article>`).join('')}</div><details class="camera-notes"><summary>More detail</summary>${station.cards.map(c=>`<p>${esc(c.text)}</p>`).join('')}</details>`;
   }
@@ -119,7 +131,7 @@
     const totals = Object.entries(vote.totals).map(([id, count])=>`<div class="vote-total-person ${Number(id) === vote.removed ? 'removed' : ''}">${Number(id) === vote.removed ? rolePortrait(players[id]) : portrait(players[id])}<b>${esc(players[id].name)}</b><span class="vote-token-count" aria-label="${count} votes">${icon('envelope')} ${count}</span></div>`).join('');
     return `${hero}<div class="vote-totals" aria-label="Final vote totals">${totals}</div><p class="result-foot">${vote.abstentions ? `${vote.abstentions} skipped · ` : ''}Next up in <b id="resultCountdown">5</b>s</p>`;
   }
-  const api = { icon, portrait, rolePortrait, votingPortrait, pointingPose, candidateState, facts, stationCard, waitingStation, detail, result };
+  const api = { icon, portrait, rolePortrait, votingPortrait, pointingPose, candidateState, facts, stationCard, spotterCard, waitingStation, detail, result };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.VoteView = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

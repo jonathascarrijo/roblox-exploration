@@ -64,16 +64,16 @@ test('live edits affect both cables without replacing the current station', () =
 test('width changes the physical slope and distance to an edge while retaining relative prize placement', () => {
   const wide = episode({ width: 2, mus: 0, muk: 0 }), narrow = episode({ width: 1, mus: 0, muk: 0 });
   for (const g of [wide, narrow]) { const s = g.stations[0]; s.h = [-.1, .1]; s.x = 0; g.physics(s, DT); }
-  assert.ok(Math.abs(gradient(narrow.stations[0]).x / gradient(wide.stations[0]).x - 2) < 1e-9);
+  assert.ok(Math.abs(gradient(narrow.stations[0]) / gradient(wide.stations[0]) - 2) < 1e-9);
   assert.ok(Math.abs(narrow.stations[0].vx / wide.stations[0].vx - 2) < 1e-9, 'half the span doubles slide acceleration');
   assert.ok(Math.abs(narrow.stations[0].x / wide.stations[0].x - 4) < 1e-9, 'shorter tray also halves the travel distance to an edge');
   const s = wide.stations[0], before = { h: [...s.h], x: s.x, vx: s.vx, load: shares(s) };
   wide.applySettings({ width: .8 });
   assert.equal(wide.stations[0], s); assert.deepEqual(s.h, before.h);
   assert.equal(s.x, before.x); assert.equal(s.vx, before.vx); assert.deepEqual(shares(s), before.load);
-  const triangle = { ids: [0, 1, 2], h: [0, .2, .4], settings: { width: 2 } };
-  const slope = gradient(triangle); triangle.settings.width = 1;
-  assert.equal(gradient(triangle).x, 2 * slope.x); assert.equal(gradient(triangle).z, 2 * slope.z);
+  const tray = { ids: [0, 1], h: [0, .2], settings: { width: 2 } };
+  const slope = gradient(tray); tray.settings.width = 1;
+  assert.equal(gradient(tray), 2 * slope);
   assert.equal(Lift.importDraft('{"version":1,"settings":{"force":1.8}}').width, 2, 'old drafts inherit the reference width');
 });
 
@@ -111,6 +111,6 @@ test('all supported slider extremes remain finite during seeded bot episodes', (
   for (const spec of Lift.SLIDERS) for (const value of [spec.min, spec.max]) {
     const g = new Episode({ mode: 'watch', seed: 18, settings: { [spec.key]: value } }); g.start(); g.tick(350);
     assert.equal(g.phase, 'finale', spec.key + '=' + value);
-    assert.ok(g.stations.every(s => [...s.h, ...s.v, s.x, s.z, s.vx, s.vz].every(Number.isFinite)), spec.key + '=' + value);
+    assert.ok(g.stations.every(s => [...s.h, ...s.v, s.x, s.vx].every(Number.isFinite)), spec.key + '=' + value);
   }
 });

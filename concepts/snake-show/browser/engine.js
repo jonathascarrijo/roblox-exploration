@@ -30,12 +30,26 @@
     return a;
   }
   function assignGroups(active, act) {
+    // Every Prize Lift has exactly two operators. An odd cast must name a
+    // spotter (see chooseSpotter) before its remaining contestants are paired.
+    if (active.length % 2) throw new Error('assignGroups needs an even cast; choose a spotter first.');
     const order = [...active];
     for (let i = 1; i < act; i++) order.push(order.shift());
     if (act % 2 === 0) order.reverse();
     const groups = [];
-    while (order.length) groups.push(order.splice(0, order.length === 3 ? 3 : 2));
+    while (order.length) groups.push(order.splice(0, 2));
     return groups;
+  }
+  function chooseSpotter(active, removed, partners, previous) {
+    // Spotter rule: when a removal leaves an odd cast, the removed contestant's
+    // last lift partner spots the next act. A deadlock keeps the current
+    // spotter. Roles are never consulted. The final fallback only serves
+    // hand-built fixtures; the episode flow always reaches one of the first two.
+    if (active.length % 2 === 0) return null;
+    const partner = removed === null || removed === undefined ? undefined : partners[removed];
+    if (partner !== undefined && active.includes(partner)) return partner;
+    if (previous !== null && previous !== undefined && active.includes(previous)) return previous;
+    return active[active.length - 1];
   }
   function tally(active, ballots, candidates = active) {
     const totals = Object.fromEntries(candidates.map(id => [id, 0]));
@@ -57,39 +71,27 @@
     return null;
   }
   function makeStation(ids, index, random, settings = { ...DEFAULTS }) {
-    const n = ids.length;
-    const points = n === 3 ? [[-1, -.57735], [1, -.57735], [0, 1.1547]] : [[-1, 0], [1, 0]];
+    if (ids.length !== 2) throw new Error('A Prize Lift station has exactly two operators.');
     return {
-      ids, index, name: PLACES[index], points, settings, state: 'lifting', h: ids.map(() => 0), v: ids.map(() => 0),
-      held: ids.map(() => false), x: (random() < .5 ? -1 : 1) * settings.x0, z: 0, vx: 0, vz: 0,
+      ids, index, name: PLACES[index], settings, state: 'lifting', h: [0, 0], v: [0, 0],
+      held: [false, false], x: (random() < .5 ? -1 : 1) * settings.x0, vx: 0,
       armedBy: null, armedAt: 0, burstUntil: 0, rigDirection: true, catchAt: 0, taps: new Set(), catchPlan: {}, duty: [],
       reloadAt: 0, resetUntil: 0, delivered: false, losses: 0, catches: 0, heists: 0,
       events: [], tracks: ids.map(() => ({ highHold: 0, lowIdle: 0, highRelease: 0, maxHigh: 0, maxIdle: 0, maxRelease: 0 })),
       publicCards: [], message: 'Bring the ball to center. Lift to the gold line.'
     };
   }
-  function shares(s) {
-    if (s.ids.length === 2) return [(1 - s.x) / 2, (1 + s.x) / 2];
-    const c = (s.z + .57735) / 1.73205, b = (1 - c + s.x) / 2, a = 1 - c - b;
-    return [a, b, c];
-  }
-  function gradient(s) {
-    const half = s.settings.width / 2;
-    return { x: (s.h[1] - s.h[0]) / (2 * half), z: s.ids.length === 3 ? (s.h[2] - (s.h[0] + s.h[1]) / 2) / (1.73205 * half) : 0 };
-  }
+  function shares(s) { return [(1 - s.x) / 2, (1 + s.x) / 2]; }
+  function gradient(s) { return (s.h[1] - s.h[0]) / s.settings.width; }
   function centeringTargets(s, ability = 1) {
     const P = s.settings, half = P.width / 2;
     // Tilt returns the ball; velocity feedback brakes it before it crosses
     // the center. Both terms use physical distance at any tray width.
     const damping = .4 + 1.6 * ability;
-    let x = .8 * s.x * half + damping * s.vx, z = .8 * s.z * half + damping * s.vz;
-    const offset = Math.hypot(s.x, s.z);
-    if (Math.hypot(s.vx, s.vz) < .02 && offset > .06) {
-      const friction = Math.max(P.mus, P.muk) * P.g;
-      x += friction * s.x / offset; z += friction * s.z / offset;
-    }
-    const targets = s.points.map(([px, pz]) => (x * px + z * pz) * half / (P.roll * P.g));
-    const spread = Math.max(...targets) - Math.min(...targets), limit = Math.min(F.dmax / 2, P.width * .4);
+    let x = .8 * s.x * half + damping * s.vx;
+    if (Math.abs(s.vx) < .02 && Math.abs(s.x) > .06) x += Math.max(P.mus, P.muk) * P.g * Math.sign(s.x);
+    const targets = [-x, x].map(px => px * half / (P.roll * P.g));
+    const spread = Math.abs(targets[1] - targets[0]), limit = Math.min(F.dmax / 2, P.width * .4);
     return spread > limit ? targets.map(h => h * limit / spread) : targets;
   }
   function needle(s, time) {
@@ -110,12 +112,13 @@
         active: mode !== 'practice' || id < 2, bot: mode === 'watch' || id !== 0, x: 360 + id * 40, y: 548,
         operated: false, pulling: false, rigging: false, pulseUntil: 0, catchHeld: false,
         nextThink: 0, motorChoice: false, mistakeUntil: 0, skill: .50 + this.random() * .32,
-        rigAt: 4 + this.random() * 5, suspicion: Array(8).fill(0), station: -1 }));
+        rigAt: 4 + this.random() * 5, suspicion: Array(8).fill(0), station: -1, spotting: false, spotGoal: -1, spotThink: 0 }));
       this.timers = Object.fromEntries(['phase', 'catch', 'rig', 'reload'].map(name => [name, { paused: false, offset: 0, at: 0 }]));
       this.phase = 'lobby'; this.phaseTime = 0; this.time = 0; this.act = 0;
       this.heists = 0; this.pot = 0; this.stations = []; this.history = []; this.ballots = {};
       this.candidates = []; this.botVoteAt = {}; this.lastVote = null; this.outcome = null;
-      this.attempt = { reserved: null, since: 0, spent: false }; this.revision = 0;
+      this.attempt = { reserved: null, since: 0, spent: false, station: null }; this.revision = 0;
+      this.spotter = null; this.partners = {}; this.lastRemoved = null; this.spotLog = null;
       this.locked = new Set(); this.confidences = {}; this.completedActs = 0; this.practiceResult = ''; this.voted = new Set();
     }
     timerClock(name = 'phase') {
@@ -144,9 +147,18 @@
     }
     stationFinished(s) { return !!s && ['delivered', 'lava', 'timeout'].includes(s.state); }
     reviewSnapshot() {
-      return { act: this.act, stations: this.stations.map(s => ({ name: s.name, ids: [...s.ids], ready: this.stationFinished(s), cards: this.stationFinished(s) ? this.makeReceipts(s) : null })) };
+      return { act: this.act, stations: this.stations.map(s => ({ name: s.name, ids: [...s.ids], ready: this.stationFinished(s), cards: this.stationFinished(s) ? this.makeReceipts(s) : null })), spotter: this.makeSpotterReceipt() };
     }
     stationOf(id) { return this.stations.find(s => s.ids.includes(id)); }
+    nearStation(id, radius = 105) {
+      const p = this.players[id]; if (!p) return undefined;
+      return this.stations.find(s => Math.hypot(p.x - POSITIONS[s.index].x, p.y - POSITIONS[s.index].y) <= radius);
+    }
+    rigStation(id) {
+      // An operator rigs their own station; the spotter rigs the station whose rescue area they stand in.
+      const p = this.players[id];
+      return p?.spotting ? this.nearStation(id) : this.stationOf(id);
+    }
     publicEvent(s, kind, text, id = null, extra = {}) {
       s.events.push({ time: this.phaseTime, kind, text, id, private: false, ...extra });
     }
@@ -157,18 +169,28 @@
     start() { this.mode === 'practice' ? this.beginAct() : this.setPhase('casting'); }
     beginAct() {
       this.act++; this.setPhase('challenge');
-      this.attempt = { reserved: null, since: 0, spent: false };
-      this.stations = assignGroups(this.activeIds(), this.act).map((ids, i) => makeStation(ids, i, this.random, this.settings));
+      this.attempt = { reserved: null, since: 0, spent: false, station: null };
+      const active = this.activeIds();
+      this.spotter = this.mode === 'play' || this.mode === 'watch' ? chooseSpotter(active, this.lastRemoved, this.partners, this.spotter) : null;
+      for (const p of this.players) { p.spotting = p.id === this.spotter; p.spotGoal = -1; p.spotThink = 0; }
+      this.stations = assignGroups(active.filter(id => id !== this.spotter), this.act).map((ids, i) => makeStation(ids, i, this.random, this.settings));
+      this.partners = {};
       for (const s of this.stations) for (const id of s.ids) {
         const p = this.players[id]; p.station = s.index; p.operated = true; p.nextThink = 0; p.mistakeUntil = 0;
-        p.rigAt = 4 + this.random() * 5;
-        p.x = POSITIONS[s.index].x + (s.ids.indexOf(id) - (s.ids.length - 1) / 2) * 40;
+        p.rigAt = 4 + this.random() * 5; this.partners[id] = s.ids.find(other => other !== id);
+        p.x = POSITIONS[s.index].x + (s.ids.indexOf(id) - .5) * 40;
         p.y = POSITIONS[s.index].y + 35;
+      }
+      this.spotLog = null;
+      if (this.spotter !== null) {
+        const p = this.players[this.spotter];
+        p.station = -1; p.operated = false; p.rigAt = 4 + this.random() * 5; p.x = 497; p.y = 522;
+        this.spotLog = { id: p.id, seconds: this.stations.map(() => 0), saves: 0, misses: 0 };
       }
     }
     releaseAll() {
       for (const p of this.players) { p.pulling = false; p.rigging = false; p.pulseUntil = 0; p.catchHeld = false; }
-      if (this.attempt?.reserved !== null && this.attempt) this.attempt.reserved = null;
+      if (this.attempt?.reserved !== null && this.attempt) { this.attempt.reserved = null; this.attempt.station = null; }
     }
     operate(id, on) {
       const p = this.players[id], s = this.stationOf(id);
@@ -185,13 +207,13 @@
     }
     releasePull(id) { if (this.players[id]) this.players[id].pulling = false; }
     pressRig(id) {
-      const p = this.players[id], s = this.stationOf(id);
-      if (this.phase !== 'challenge' || !p?.active || p.role !== 'Snake' || !p.operated || s?.state !== 'lifting' || this.attempt.spent || this.attempt.reserved !== null) return false;
-      p.rigging = true; this.attempt.reserved = id; this.attempt.since = this.timerClock('rig'); return true;
+      const p = this.players[id], s = this.rigStation(id);
+      if (this.phase !== 'challenge' || !p?.active || p.role !== 'Snake' || !(p.operated || p.spotting) || s?.state !== 'lifting' || this.attempt.spent || this.attempt.reserved !== null) return false;
+      p.rigging = true; this.attempt.reserved = id; this.attempt.since = this.timerClock('rig'); this.attempt.station = s.index; return true;
     }
     releaseRig(id) {
       if (this.players[id]) this.players[id].rigging = false;
-      if (this.attempt.reserved === id) this.attempt.reserved = null;
+      if (this.attempt.reserved === id) { this.attempt.reserved = null; this.attempt.station = null; }
     }
     eligibleCatch(id, s) {
       const p = this.players[id];
@@ -206,20 +228,22 @@
       s.taps.add(id);
       if (!inCatchZone(s, this.timerClock('catch'))) {
         this.publicEvent(s, 'catch', `${p.name} tapped outside the Catch zone.`, id, { saved: false });
+        if (p.spotting && this.spotLog) this.spotLog.misses++;
         s.message = `${p.name} missed. Other contestants still have their tap.`;
         return 'miss';
       }
       this.publicEvent(s, 'catch', `${p.name} caught the capsule.`, id, { saved: true });
-      if (s.armedBy !== null) this.privateEvent(s, 'cleared', 'The catch cleared the armed diverter and motor burst.');
+      if (p.spotting && this.spotLog) this.spotLog.saves++;
+      if (s.armedBy !== null) this.privateEvent(s, 'cleared', s.burstUntil ? 'The catch cleared the armed diverter and motor burst.' : 'The catch cleared the armed diverter.');
       s.armedBy = null; s.burstUntil = 0; s.catches++; s.state = 'lifting';
-      s.x = 0; s.z = 0; s.vx = 0; s.vz = 0; s.v.fill(0); s.resetUntil = this.timerClock('reload') + .45;
+      s.x = 0; s.vx = 0; s.v.fill(0); s.resetUntil = this.timerClock('reload') + .45;
       s.message = `Caught by ${p.name} — keep lifting!`;
       return 'saved';
     }
     releaseCatch(id) { if (this.players[id]) this.players[id].catchHeld = false; }
     fault(s) {
       if (s.state !== 'lifting') return;
-      if (s.ids.includes(this.attempt.reserved)) this.releaseRig(this.attempt.reserved);
+      if (this.attempt.reserved !== null && this.attempt.station === s.index) this.releaseRig(this.attempt.reserved);
       s.state = 'catch'; s.catchAt = this.timerClock('catch'); s.taps.clear(); s.catchPlan = {}; s.held.fill(false);
       for (const id of s.ids) { const p = this.players[id]; p.pulling = false; p.pulseUntil = 0; p.rigging = false; }
       this.publicEvent(s, 'spill', 'The capsule rolled off. Motors stopped for Catch.');
@@ -239,13 +263,13 @@
       s.losses++; this.publicEvent(s, 'loss', 'The capsule was lost in the opaque collection housing.');
       if (s.armedBy !== null) {
         s.heists++;
-        this.privateEvent(s, 'heist', `${this.players[s.armedBy].name}’s armed capsule entered the Snake channel. Heist completed.`, s.armedBy);
+        this.privateEvent(s, 'heist', `The capsule ${this.players[s.armedBy].name} armed entered the Snake channel. Heist completed.`, s.armedBy);
       }
       s.armedBy = null; s.burstUntil = 0; s.state = 'reload'; s.reloadAt = this.timerClock('reload') + 3;
       s.message = 'Capsule lost. A fresh treasure loads in 3 seconds.';
     }
     endStation(s, result) {
-      if (s.ids.includes(this.attempt.reserved)) this.releaseRig(this.attempt.reserved);
+      if (this.attempt.reserved !== null && this.attempt.station === s.index) this.releaseRig(this.attempt.reserved);
       if (s.armedBy !== null) this.privateEvent(s, 'cleared', `${result === 'delivered' ? 'Safe delivery' : result === 'lava' ? 'Lava contact' : 'The deadline'} defeated the unresolved Rig.`);
       s.armedBy = null; s.burstUntil = 0; s.held.fill(false); s.state = result;
       if (result === 'delivered') {
@@ -275,15 +299,42 @@
       // Skill controls added handling mistakes; it never changes hidden roles.
       if (this.phaseTime >= p.mistakeUntil && this.random() < .05 * (1 - ability) ** 2) p.mistakeUntil = this.phaseTime + .3 + (1 - ability) * (.5 + this.random());
       if (this.phaseTime < p.mistakeUntil) return p.motorChoice = true;
-      const targets = centeringTargets(s, ability), target = targets[i] - mean(targets.filter((_, j) => i !== j));
+      const targets = centeringTargets(s, ability), target = targets[i] - targets[1 - i];
       const predicted = s.h.map((h, j) => h + s.v[j] * .3);
-      const difference = predicted[i] - mean(predicted.filter((_, j) => i !== j));
+      const difference = predicted[i] - predicted[1 - i];
       const tolerance = .008 + (1 - ability) * .025;
       p.motorChoice = s.h[i] < F.lava + .35 || difference < target - tolerance || difference <= target + tolerance && s.v[i] < .5;
       return p.motorChoice;
     }
+    botSpot(p, dt) {
+      // A bot spotter walks between rescue areas. Loyals cover the lift whose
+      // capsule is furthest off center; Snakes do the same and arm it. Movement
+      // uses the same courtyard speed as the human contestant.
+      if (this.phaseTime >= p.spotThink) {
+        p.spotThink = this.phaseTime + 1 + (1 - this.botAbility(p)) * 1.5;
+        const open = this.stations.filter(s => s.state === 'lifting' || s.state === 'catch');
+        const pick = open.find(s => s.state === 'catch') || open.reduce((best, s) => !best || Math.abs(s.x) > Math.abs(best.x) ? s : best, null);
+        p.spotGoal = pick ? pick.index : -1;
+      }
+      if (p.spotGoal >= 0) {
+        const goal = POSITIONS[p.spotGoal], target = { x: goal.x, y: goal.y + 60 };
+        const dx = target.x - p.x, dy = target.y - p.y, distance = Math.hypot(dx, dy);
+        if (distance > 2) { const step = Math.min(140 * dt, distance); p.x += dx / distance * step; p.y += dy / distance * step; }
+      }
+      if (p.role === 'Snake' && this.mode !== 'practice' && !this.attempt.spent && this.heists < 2) {
+        const near = this.nearStation(p.id);
+        if (this.attempt.reserved === null && near && near.state === 'lifting' && this.phaseTime >= p.rigAt) this.pressRig(p.id);
+      }
+    }
+    spotterStep(dt) {
+      const p = this.spotter === null ? null : this.players[this.spotter];
+      if (!p || !p.active) return;
+      if (p.bot) this.botSpot(p, dt);
+      const near = this.nearStation(p.id);
+      if (near && this.spotLog) this.spotLog.seconds[near.index] += dt;
+    }
     physics(s, dt) {
-      const n = s.ids.length, weights = shares(s), P = this.settings;
+      const n = 2, weights = shares(s), P = this.settings;
       for (let i = 0; i < n; i++) {
         const p = this.players[s.ids[i]];
         const on = p.bot ? this.botMotor(p, s, i) : p.operated && (p.pulling || p.rigging || this.phaseTime < p.pulseUntil);
@@ -294,7 +345,7 @@
         s.v[i] = clamp(s.v[i] + accel * dt, -P.vdown * (burst ? P.rigDown : 1), P.vup * (burst ? P.rigForce : 1));
         s.h[i] += s.v[i] * dt;
         if (s.h[i] > F.top) { s.h[i] = F.top; s.v[i] = Math.min(0, s.v[i]); }
-        const high = s.h[i] - mean(s.h.filter((_, j) => j !== i)), tr = s.tracks[i];
+        const high = s.h[i] - s.h[1 - i], tr = s.tracks[i];
         tr.highHold = on && high > .08 ? tr.highHold + dt : 0;
         tr.lowIdle = !on && high < -.08 ? tr.lowIdle + dt : 0;
         tr.highRelease = !on && high > .08 ? tr.highRelease + dt : 0;
@@ -305,34 +356,40 @@
       const span = Math.max(...s.h) - Math.min(...s.h);
       if (span > F.dmax) { const mid = mean(s.h); s.h = s.h.map(h => mid + (h - mid) * F.dmax / span); }
       if (Math.min(...s.h) <= F.lava) { this.endStation(s, 'lava'); return; }
-      const slope = gradient(s), drive = { x: -P.roll * P.g * slope.x, z: -P.roll * P.g * slope.z };
-      const speed = Math.hypot(s.vx, s.vz), magnitude = Math.hypot(drive.x, drive.z);
-      if (speed <= .001 && magnitude <= P.mus * P.g) { s.vx = 0; s.vz = 0; }
+      const drive = -P.roll * P.g * gradient(s), speed = Math.abs(s.vx);
+      if (speed <= .001 && Math.abs(drive) <= P.mus * P.g) s.vx = 0;
       else {
-        const dx = speed > .001 ? s.vx / speed : drive.x / (magnitude || 1);
-        const dz = speed > .001 ? s.vz / speed : drive.z / (magnitude || 1);
-        const vx = s.vx + (drive.x - dx * P.muk * P.g - P.cb * s.vx) * dt;
-        const vz = s.vz + (drive.z - dz * P.muk * P.g - P.cb * s.vz) * dt;
-        if (speed > .001 && vx * s.vx + vz * s.vz <= 0) { s.vx = 0; s.vz = 0; }
-        else { s.vx = vx; s.vz = vz; }
+        const direction = speed > .001 ? Math.sign(s.vx) : Math.sign(drive);
+        const vx = s.vx + (drive - direction * P.muk * P.g - P.cb * s.vx) * dt;
+        s.vx = speed > .001 && vx * s.vx <= 0 ? 0 : vx;
       }
       // Position is a fraction of the tray's half-width; slide velocity is u/s.
       // Live resizing keeps the prize's relative position and current velocity.
-      const half = P.width / 2;
-      s.x += s.vx * dt / half; s.z += s.vz * dt / half;
+      s.x += s.vx * dt / (P.width / 2);
       if (shares(s).some(v => v < 0)) this.fault(s);
       else if (Math.min(...s.h) >= F.finish) this.endStation(s, 'delivered');
     }
     stepChallenge(dt) {
+      this.spotterStep(dt);
       const reserved = this.attempt.reserved;
       if (reserved !== null) {
-        const p = this.players[reserved], s = this.stationOf(reserved);
-        if (!p.rigging || !p.operated || !p.active || s.state !== 'lifting') this.releaseRig(reserved);
+        const p = this.players[reserved], s = this.stations[this.attempt.station];
+        // The hold survives only while the Snake stays at that console, or, for
+        // the spotter, inside that station's rescue area.
+        const present = p.spotting ? this.nearStation(reserved) === s : p.operated && this.stationOf(reserved) === s;
+        if (!p.rigging || !present || !p.active || s.state !== 'lifting') this.releaseRig(reserved);
         else if (this.timerClock('rig') - this.attempt.since >= this.settings.rigHold) {
-          this.attempt.spent = true; this.attempt.reserved = null;
-          s.armedBy = reserved; s.armedAt = this.timerClock('rig'); s.burstUntil = this.timerClock('rig') + this.settings.rigTime;
-          s.rigDirection = shares(s)[s.ids.indexOf(reserved)] <= 1 / s.ids.length;
-          this.privateEvent(s, 'rig', `${p.name} completed the ${this.settings.rigHold}-second Rig hold. One team attempt consumed; diverter armed, motor force ×${this.settings.rigForce} and pull-down ×${this.settings.rigDown} for ${this.settings.rigTime} seconds.`, reserved);
+          this.attempt.spent = true; this.attempt.reserved = null; this.attempt.station = null;
+          s.armedBy = reserved; s.armedAt = this.timerClock('rig');
+          if (p.spotting) {
+            // Spotter arming changes no physics: the diverter is armed, no motor is boosted.
+            s.burstUntil = 0;
+            this.privateEvent(s, 'rig', `${p.name} completed the ${this.settings.rigHold}-second Rig hold from the rescue area. One team attempt consumed; diverter armed, no motor changed.`, reserved);
+          } else {
+            s.burstUntil = this.timerClock('rig') + this.settings.rigTime;
+            s.rigDirection = shares(s)[s.ids.indexOf(reserved)] <= .5;
+            this.privateEvent(s, 'rig', `${p.name} completed the ${this.settings.rigHold}-second Rig hold. One team attempt consumed; diverter armed, motor force ×${this.settings.rigForce} and pull-down ×${this.settings.rigDown} for ${this.settings.rigTime} seconds.`, reserved);
+          }
           // Holding Rig continues the public Pull input until the key is released.
           if (p.bot) p.rigging = false;
         }
@@ -345,7 +402,7 @@
           }
           if (s.state === 'catch' && this.timerClock('catch') - s.catchAt >= this.settings.catchWin) this.lose(s);
         } else if (s.state === 'reload' && this.timerClock('reload') >= s.reloadAt) {
-          s.state = 'lifting'; s.h.fill(0); s.v.fill(0); s.x = (this.random() < .5 ? -1 : 1) * this.settings.x0; s.z = 0; s.vx = 0; s.vz = 0;
+          s.state = 'lifting'; s.h.fill(0); s.v.fill(0); s.x = (this.random() < .5 ? -1 : 1) * this.settings.x0; s.vx = 0;
           s.message = 'Fresh capsule loaded. Bring it to center and keep lifting.';
           this.publicEvent(s, 'reload', 'A fresh capsule loaded at the starting height.');
         }
@@ -373,12 +430,22 @@
         { kind: 'response', text: lastCatch ? `${lastCatch.text} ${s.catches} successful save${s.catches === 1 ? '' : 's'} at this lift.` : 'No Catch input was recorded at this lift.', ids: lastCatch ? [lastCatch.id] : [], saved: lastCatch?.saved || false, saves: s.catches }
       ];
     }
+    makeSpotterReceipt() {
+      // Public spotter card: where they stood longest and how their taps went.
+      // Position and Catch responses are public actions; roles never enter.
+      const log = this.spotLog; if (!log) return null;
+      const p = this.players[log.id], seconds = Math.max(...log.seconds), at = log.seconds.indexOf(seconds);
+      const station = seconds >= .2 ? this.stations[at] : null;
+      const taps = log.saves + log.misses;
+      return { kind: 'spotter', id: p.id, ids: [p.id], station: station?.name || null, seconds, saves: log.saves, misses: log.misses,
+        text: `${p.name} spotted this act without a console. ${station ? `Longest stay: the ${station.name} rescue area, ${seconds.toFixed(1)}s.` : 'No sustained stay at any rescue area.'} ${taps ? `${log.saves} save${log.saves === 1 ? '' : 's'}, ${log.misses} miss${log.misses === 1 ? '' : 'es'}.` : 'No Catch input.'}` };
+    }
     finishChallenge() {
       for (const s of this.stations) if (!['delivered', 'lava'].includes(s.state)) this.endStation(s, 'timeout');
       if (this.mode === 'practice') { this.practiceResult = 'timeout'; this.setPhase('practice-result'); return; }
       this.heists += this.stations.reduce((sum, s) => sum + s.heists, 0); this.completedActs = this.act;
       const record = { act: this.act, heists: this.stations.reduce((sum, s) => sum + s.heists, 0),
-        pot: this.stations.filter(s => s.delivered).length, stations: [], votes: [] };
+        pot: this.stations.filter(s => s.delivered).length, cast: this.activeIds().length, stations: [], votes: [], spotter: this.makeSpotterReceipt() };
       for (const s of this.stations) { s.publicCards = this.makeReceipts(s); record.stations.push({ name: s.name, ids: [...s.ids], cards: s.publicCards, events: s.events.map(e => ({ ...e })) }); }
       this.history.push(record); this.updateSuspicion(record);
       this.outcome = winner(this.players, this.heists, this.completedActs, false);
@@ -397,6 +464,7 @@
           // specific station; it only increases attention to uncaught spills.
           if (record.heists && outcome.losses) for (const id of s.ids) p.suspicion[id] += .35;
         }
+        if (record.spotter) p.suspicion[record.spotter.id] += record.spotter.misses * .3 - record.spotter.saves * .25;
       }
     }
     beginVote(runoff = false, candidates = this.activeIds()) {
@@ -446,6 +514,7 @@
       this.lastVote = { ...result, runoff: wasRunoff };
       this.history[this.history.length - 1].votes.push({ ...this.lastVote, confidences: { ...this.confidences } });
       if (result.removed === null && !wasRunoff) { this.beginVote(true, result.tied); return; }
+      this.lastRemoved = result.removed;
       if (result.removed !== null) this.players[result.removed].active = false;
       this.outcome = winner(this.players, this.heists, this.completedActs, true);
       this.setPhase('result');
@@ -476,7 +545,7 @@
       if (!this.timers.phase.paused && (this.timerClock() + 1e-8 >= DURATIONS[this.phase] || ['vote', 'runoff'].includes(this.phase) && this.activeIds().every(id => this.locked.has(id)))) this.nextPhase();
     }
   }
-  const api = { Episode, CAST, PLACES, POSITIONS, DURATIONS, DT, clamp, mean, rng, shuffle, assignGroups, tally, winner, makeStation, shares, gradient, centeringTargets, needle, inCatchZone };
+  const api = { Episode, CAST, PLACES, POSITIONS, DURATIONS, DT, clamp, mean, rng, shuffle, assignGroups, chooseSpotter, tally, winner, makeStation, shares, gradient, centeringTargets, needle, inCatchZone };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.SnakeShow = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

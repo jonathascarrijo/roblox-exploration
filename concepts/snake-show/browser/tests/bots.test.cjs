@@ -23,25 +23,17 @@ test('bots tilt a level tray toward the center and reverse the tilt to brake a r
   assert.deepEqual(decisions(-.25, .4), [false, true], 'brake rightward momentum before crossing center');
 });
 
-test('three-cable bots steer the ball on both tray axes', () => {
-  const g = fixture({}, 3), s = g.stations[0]; g.random = () => .5;
-  s.x = 0; s.z = .6;
-  assert.deepEqual(s.ids.map((id, i) => g.botMotor(g.players[id], s, i)), [false, false, true]);
-  s.z = -.3; g.players.forEach(p => { p.nextThink = 0; });
-  assert.deepEqual(s.ids.map((id, i) => g.botMotor(g.players[id], s, i)), [true, true, false]);
-});
-
 test('skilled bots bring displaced balls toward center without a Catch reset', () => {
-  for (const width of [.8, 1.2, 2, 3]) for (const count of [2, 3]) for (const sign of [-1, 1]) {
-    const g = fixture({ width }, count), s = g.stations[0];
-    s.x = sign * .6; s.z = 0;
+  for (const width of [.8, 1.2, 2, 3]) for (const sign of [-1, 1]) {
+    const g = fixture({ width }), s = g.stations[0];
+    s.x = sign * .6;
     let error = 0, samples = 0;
     for (let step = 0; step < 1200; step++) {
       g.phaseTime = step * DT; g.physics(s, DT);
       assert.equal(s.state, 'lifting', 'no spill, lava contact, or catch teleport at width ' + width);
-      if (step >= 840) { error += Math.hypot(s.x, s.z); samples++; }
+      if (step >= 840) { error += Math.abs(s.x); samples++; }
     }
-    assert.ok(error / samples < .15, count + ' cables, width ' + width + ': mean offset ' + error / samples);
+    assert.ok(error / samples < .15, 'width ' + width + ': mean offset ' + error / samples);
     assert.ok(Math.min(...s.h) > 0, 'centering still allows upward progress');
   }
 });
@@ -58,6 +50,22 @@ test('skill changes reaction time immediately without resetting the lift or the 
   assert.equal(g.attempt.spent, true);
   assert.equal(Lift.importDraft(Lift.exportDraft(g.settings)).botSkill, 100);
   assert.equal(Lift.importDraft('{"version":1,"settings":{"width":1.2}}').botSkill, 75);
+});
+
+test('a bot spotter walks to a rescue area, and a Snake spotter arms the lift it stands beside', () => {
+  for (const role of ['Loyal', 'Snake']) {
+    const g = new Episode({ seed: 3, mode: 'watch', settings: { botSkill: 100 } }); g.start(); g.nextPhase();
+    g.players[6].active = false; g.lastRemoved = 6; g.beginAct();
+    const p = g.players[g.spotter]; p.role = role; p.rigAt = 1;
+    g.players.forEach(q => { if (q.id !== p.id && q.role === 'Snake') q.role = 'Loyal'; });
+    assert.equal(p.bot, true); assert.equal(p.station, -1);
+    const start = { x: p.x, y: p.y }; g.tick(6);
+    assert.notDeepEqual({ x: p.x, y: p.y }, start, 'the spotter moved');
+    assert.ok(g.nearStation(p.id), 'the spotter reached a rescue area');
+    assert.equal(g.attempt.spent, role === 'Snake');
+    const armed = g.stations.find(s => s.armedBy === p.id);
+    if (role === 'Snake') { assert.ok(armed); assert.equal(armed.burstUntil, 0); } else assert.equal(armed, undefined);
+  }
 });
 
 test('Catch skill applies to future falls and does not make a Snake cooperative', () => {

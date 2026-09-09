@@ -280,6 +280,8 @@ body[data-phase="vote"] .pick-panel, body[data-phase="runoff"] .pick-panel { ord
 .memory-details { display: flex; flex: 1; flex-direction: column; width: 100%; padding: 0; color: inherit; background: none; border: none; text-align: left; }
 .memory-details .memory-pictures, .memory-details .memory-foot { width: 100%; }
 .memory-details .memory-outcome { align-self: stretch; }
+.spotter-details { cursor: default; }
+.spotter-memory .memory-pictures { grid-template-columns: 1fr; }
 .vote-waiting { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 15px 18px; border-radius: 16px; background: #e5eacd; margin-top: 18px; }
 .vote-waiting span { font-size: 13px; }
 .vote-waiting button { margin-left: auto; }

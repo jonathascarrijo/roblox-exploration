@@ -33,8 +33,17 @@ test('pictures distinguish high Pull, low idle, high release, and lack of a sust
   assert.equal(pictures.size,3);
   s.cards[1].seconds=.1;
   assert.equal(View.facts(s,g.players)[1].label,'No long hold or pause');
-  s.ids=[0,1,2]; s.cards[1].seconds=3;
-  assert.notEqual(View.facts(s,g.players)[1].image,View.facts({...s,ids:[0,1]},g.players)[1].image);
+});
+test('the spotter card is public, offers the same vote shortcut, and distinguishes saves, misses, and no taps', () => {
+  const g=sample(), pictures=new Set();
+  for(const [saves,misses,label] of [[1,0,'1 caught · 0 missed'],[0,1,'0 caught · 1 missed'],[0,0,'No catch tried']]) {
+    const card={kind:'spotter',id:2,ids:[2],station:'West lift',seconds:12.4,saves,misses,text:'Nia spotted this act without a console.'};
+    const html=View.spotterCard(card,g.players);
+    assert.match(html,/Spotter/); assert.match(html,/data-vote-shortcut="2"/); assert.match(html,/Spotted the West lift/); assert.match(html,new RegExp(label));
+    assert.doesNotMatch(html,/Snake|Loyal|Rig|armed/); pictures.add(html.match(/<svg[^]*?<\/svg>/g).at(-1));
+  }
+  assert.equal(pictures.size,3);
+  assert.match(View.spotterCard({kind:'spotter',id:2,ids:[2],station:null,seconds:0,saves:0,misses:0,text:''},g.players),/Kept moving/);
 });
 test('the last catch distinguishes saved, missed and no attempt; reveals name only the voted-out role', () => {
   const g=sample(), s=structuredClone(g.history[0].stations[0]), pictures=new Set();

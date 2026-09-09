@@ -1,6 +1,8 @@
 # Snake Show design brief v2
 
-Version 2, Prize Lift revised · 5 September 2026 · Design for prototype validation
+Version 2, spotter rule · 9 September 2026 · Design for prototype validation
+
+**Design status:** Prize Lift always has exactly two motors and two operators under comparable challenge conditions. The former odd-cast trio rule is withdrawn. An odd cast is handled by the **spotter** rule defined in the episode chapter: the removed contestant’s last lift partner plays the next act without a console. The alternatives that were considered are recorded in the [pairing and elimination review](pairing-and-elimination-review.md).
 
 ## What the game is
 
@@ -54,21 +56,36 @@ Matchmaking assembles eight players. A private card assigns each player to the L
 
 ## Each act: 45 seconds of challenge play
 
-All contestants still competing enter the next cooperative challenge. Movement, grouping, instructions, and play fit within 45 seconds. Players can request partners where supported; the game assigns everyone else and rotates groups across acts. Prize Lift uses pairs, with one three-person lift when the active cast is odd. Every operator controls one cable using the same input.
+All contestants still competing enter the next cooperative challenge. Movement, grouping, instructions, and play fit within 45 seconds. Players can request partners where supported; the game assigns everyone else and rotates partnerships across acts. **Prize Lift always uses two operators, two cables, and two motors, with one operator per motor.** When the active cast is odd, one contestant is the act’s **spotter** and plays without a console; the next section defines who and how. An odd cast never adds a third operator or motor.
+
+Comparable conditions mean the same tray geometry, physical settings, starting-load rule, play time, controls, Rig and Catch rules, and receipt coverage at every station. The intended heavy/light starting asymmetry remains, with side assignment independent of secret roles. Partner skill and deliberate actions can differ; the format must not give one group an additional balance axis or coordination task.
 
 The Snake team has **one armed heist attempt per act**. At Prize Lift, beginning a private Rig hold temporarily reserves it; the first accepted hold gets priority. Completing the hold consumes the attempt. Canceling before completion releases the reservation. A stopped or unsuccessful armed attempt cannot be retried that act. The other Snake sees the team’s attempt status privately.
+
+## The spotter: how an odd cast keeps two-motor lifts
+
+Eight contestants form four pairs. A removal leaves seven, and seven cannot be paired. The **spotter** rule resolves this without a third motor, a bye chosen by the game, or a substitute partner.
+
+- **Who spots.** When a vote removes a contestant and leaves an odd cast, the removed contestant’s lift partner from that act spots the next act. If a deadlock leaves an odd cast unchanged, the current spotter keeps the post. The rule never consults roles. In the normal path only the second act has a spotter; after a first-act deadlock it is the third act.
+- **What the spotter does.** The spotter has no console. They start the act in the courtyard and can walk into any station’s marked rescue area, where the ordinary rescue rule applies: one Catch tap per fault at that station. They vote as usual.
+- **What the spotter cannot do.** They cannot Pull, cannot be observed at a console, and cannot rescue at two stations at once.
+- **Evidence.** The act’s receipts include one spotter card: the rescue area where they stood longest, the time spent there, and their saves and misses. Standing somewhere is a public action, not proof of anything.
+- **A Snake spotter can still attempt a heist.** See “Arming from the rescue area” in the hidden-heist chapter. The act therefore remains a heist opportunity, and the early Loyal win for two unsuccessful opportunities applies unchanged.
+- **Departures.** A departure that leaves an odd cast follows the same rule from the next act: the departed contestant’s last partner spots. A departure is never repaired with a third motor, a bot partner, or an excluded contestant.
+
+Two consequences need playtesting rather than more design. Voting out one operator of a suspicious pair also takes the other off a console for an act, a two-for-one for the Loyals that the vote simulation in Annex A did not model. And a contestant benched before a deadlock spots twice in a row; if deadlocks turn out to be common, revisit the vote structure before changing this rule. Alternatives that were rejected, including a vote runner-up bench, a public draw, and a second wave of lifts, are recorded in the [pairing and elimination review](pairing-and-elimination-review.md).
 
 ## Evidence: 10 seconds; voting: 25 seconds, plus a 10-second runoff when tied
 
 At the challenge’s end, the show announces whether a heist succeeded and updates **Heists: x/2**. It then presents a small set of receipts. Players examine the evidence before voting opens. Each active contestant has one secret vote for another active contestant; totals appear together when voting closes. A missing vote is an abstention.
 
-The contestant with the most votes leaves the competition and their team is revealed. A tie for the most votes opens a 10-second **runoff**: only the tied contestants are selectable, every active contestant votes again, including the tied ones, and nobody can vote for themself. Receipts stay open, and a missing vote is an abstention. If the runoff also ties, the show announces a **deadlock** and nobody leaves; that act’s vote is still used. The same process repeats for up to three acts. Without deadlocks or early endings, the active cast shrinks from eight to seven to six to five.
+The contestant with the most votes leaves the competition and their team is revealed. A tie for the most votes opens a 10-second **runoff**: only the tied contestants are selectable, every active contestant votes again, including the tied ones, and nobody can vote for themself. Receipts stay open, and a missing vote is an abstention. If the runoff also ties, the show announces a **deadlock** and nobody leaves; that act’s vote is still used. The same process repeats for up to three acts. Without deadlocks or early endings, the active cast shrinks from eight to seven to six to five: the second act has three pairs and a spotter, and the third act has three pairs.
 
 ## Winning and the finale: 20 seconds
 
 After the third vote, Snakes win if they have at least two successful heists and at least one Snake remains active. Otherwise the Loyals win. Catching both Snakes ends the episode early with a Loyal victory. Two unsuccessful heist opportunities also trigger an early Loyal victory because reaching two successes is then impossible.
 
-The finale reveals all roles, shows a short factual reconstruction, and awards progress. All original team members share their team’s result, including those voted out. Active survivors do not win individually. The full timing is **10 + 3 × (45 + 10 + 25) + 20 = 270 seconds**, plus 10 seconds for each act that needs a runoff, so an episode runs 270 to 300 seconds. Queue time is additional; transitions are included in the phase budgets.
+The finale reveals all roles, shows a short factual reconstruction, and awards progress. All original team members share their team’s result, including those voted out. Active survivors do not win individually. The full timing is **10 + 3 × (45 + 10 + 25) + 20 = 270 seconds**, plus 10 seconds for each act that needs a runoff, so an episode runs 270 to 300 seconds. The spotter adds no phase. Queue time is additional; transitions are included in the phase budgets.
 
 # Prize Lift — the normal controls
 
@@ -76,7 +93,7 @@ Prize Lift is a cooperative lifting challenge played on a bright studio gantry a
 
 ## Take a console; learn one action
 
-Each operator stands at a numbered console controlling one end of the tray. A normal station has two operators; an odd-sized cast uses one station with a triangular tray, three cables, and three operators, each at a corner. A fixed camera keeps the entire tray, consoles, and nearby contestants visible. The movement joystick is hidden while operating; **Leave** restores movement and releases that cable’s input.
+Each of the two operators stands at a numbered console controlling one end of the tray. Every station has the same two-ended tray, two cables, and two motors. A fixed camera keeps the entire tray, consoles, and nearby contestants visible. The movement joystick is hidden while operating; **Leave** restores movement and releases that cable’s input.
 
 The large **Pull** button has one rule: **hold to run your motor and raise your end; release to let the weight take over.** A held motor pushes its cable with a fixed force. A released cable pays out under whatever it carries. There is no extra boost, and a quick tap only runs the motor for a short pulse, a proposed 0.15 seconds. Pulling and releasing visibly move the avatar’s lever and the corresponding cable. Both teams use identical controls and physical rules.
 
@@ -84,7 +101,7 @@ The large **Pull** button has one rule: **hold to run your motor and raise your 
 
 The capsule’s weight splits between the cables by distance. Near the left end it loads the left cable; at the center it loads both equally. Motor force is fixed and the load is not, so the loaded end answers a pull sluggishly and sinks fast, while the light end answers at once and sinks slowly. The operator carrying the capsule has to hold longer. The operator on the light end has to hold less than feels natural, or the tray tilts.
 
-The tray starts level with the capsule halfway to one end, on a random side, so the two cables never start with the same load. The tray tilts whenever its ends move at different rates. The capsule holds still below a slope of about 1.7 percent, then slides toward the low end, and nothing stops it at the edge. A level gauge mirrors the tray’s tilt, and a local arrow says whether your end is high or low, with shape and position accompanying color. If your end is high, release while the other operator pulls. If it is low, pull. On the three-cable tray, a bubble level shows tilt across the triangle; each player still manages only their own corner.
+The tray starts level with the capsule halfway to one end, on a random side, so the two cables never start with the same load. The tray tilts whenever its ends move at different rates. The capsule holds still below a slope of about 1.7 percent, then slides toward the low end, and nothing stops it at the edge. A level gauge mirrors the tray’s tilt, and a local arrow says whether your end is high or low, with shape and position accompanying color. If your end is high, release while the other operator pulls. If it is low, pull.
 
 ## The operators set the pace
 
@@ -113,7 +130,7 @@ Distances are in tray half-lengths, so the tray is two units long. These values 
 | Delivery line above the start | 2.6 | `finish` |
 | Water line below the start | 1.8 | `water` |
 | Maximum tilt, from the tray’s length | about 53° | `dmax` |
-| Rig hold to arm | 1.5 s | not in the model |
+| Rig hold to arm, at a console or from a rescue area | 1.5 s | not in the model |
 | Rig burst length | 5.0 s | `rigTime` |
 | Rig force multiplier while held | 2 | `rigForce` |
 | Rig pull-down multiplier while released | 2 | `rigDown` |
@@ -156,6 +173,12 @@ Without the burst, a Snake cannot out-tilt an attentive partner, because both mo
 
 An **armed capsule followed by an unsuccessful Catch** diverts it into the concealed Snake channel: one successful heist. Without a rig, the same visible drop sends it to the ordinary recovery bin and awards no heist. A successful Catch clears the rig and ends that attempt; safe delivery, a sunk tray, or the act ending also defeats an unresolved attempt. The rig cannot transfer to a replacement capsule.
 
+## Arming from the rescue area
+
+A Snake who is the act’s spotter has no console and no motor, but keeps the team’s play. Standing inside a station’s rescue area, the Snake can hold **Rig** for the same 1½ seconds. The hold reserves the team attempt under the same rules; walking out of the rescue area, a fault at that station, or releasing early cancels it. Completion consumes the attempt and arms that capsule’s diverter. **Nothing physical changes:** no motor is boosted, and the operators’ cables answer exactly as before. If that pair spills the capsule and nobody catches it, the heist counts. Delivery, a sunk tray, a successful Catch, or the end of the act defeats the rig as usual. The spotter’s own Catch tap at that station is theirs to use or waste.
+
+This keeps the innocent operators’ evidence honest: their fault, if any, is their own, and the finale can show who armed the lift. The alternative, letting the spotter boost an operator’s motor from a distance, would make an honest operator’s cable move abnormally and frame them through physics they cannot see. That variant is a test setting only, in case arming alone proves too weak against practiced pairs.
+
 ## One shared scene; limited private information
 
 Loyals, Snakes, and live observers see the same tray position, lever movement, tilt, warning, capsule slide, Catch gauge, and capsule drop, subject to their camera view. **There is no Snake-only version of the physical scene.** The internal routing is concealed from everyone’s live camera. A doubled end does move visibly faster than a plain motor allows; the brief accepts that as a live observation a watching player may or may not notice, and the receipts never record it.
@@ -164,7 +187,7 @@ Only private interface information differs: role card, Snake teammate identity, 
 
 ## Prototype acceptance
 
-First verify that novices understand hold/release and the leaning capsule, a single attentive Loyal can rescue, and both viewers see identical public events. Test refusal to play, constant holds, tap spam, deliberate imbalance, and two- versus three-person stations. Measure, against novice and practiced Loyal partners, how often a Rig burst produces a fault and how often that fault becomes a heist. If experienced players stop every heist, or newcomers cannot stop one, revise the interaction before adding challenges.
+First verify that novices understand hold/release and the leaning capsule, a single attentive Loyal can rescue, and both viewers see identical public events. Every tested lift has exactly two operators and two motors under the common rules. Test refusal to play, constant holds, tap spam, and deliberate imbalance. Separately validate the spotter through eliminations, deadlocks, and departures: whether a benched contestant feels fairly treated, how often a Snake spotter’s armed lift becomes a heist against novice and practiced pairs, and whether the Loyals’ two-for-one on a failed pair decides too many episodes. Measure, against novice and practiced Loyal partners, how often a Rig burst produces a fault and how often that fault becomes a heist. If experienced players stop every heist, or newcomers cannot stop one, revise the interaction before adding challenges.
 
 The earlier model’s simulation found that the Catch, not the tilt, decides the heist rate, and the coupled-cables model has not changed that. Expect the catch-zone width and the number of attempts per act to be the balance dials, with the Rig burst length and multipliers behind them.
 
@@ -174,7 +197,7 @@ The earlier model’s simulation found that the Catch, not the tilt, decides the
 
 A receipt is a short, automatically generated record of something the show’s cameras or challenge systems observed. It is always accurate within its stated scope, but does not expose the complete event log. For example: the east lift failed; Maya and Leo operated it; Leo kept pulling while his end was high; Maya missed a catch.
 
-These receipts identify a place, people, and observable actions. A normal Pull and a Rig hold have the same public action, so no card names the private Rig input before the finale. Receipts record when a motor was held or idle while its end sat above or below the other, never how fast an end moved, so a Rig burst leaves the same kind of card as an ordinary over-pull. Other stations may have failed innocently, and successful heists are announced for the act as a whole. Comparing behavior across acts and partnerships is how players narrow their suspicions.
+These receipts identify a place, people, and observable actions. An act with a spotter adds one card naming where the spotter stood longest and how their Catch taps went. A normal Pull and a Rig hold have the same public action, so no card names the private Rig input before the finale. Receipts record when a motor was held or idle while its end sat above or below the other, never how fast an end moved, so a Rig burst leaves the same kind of card as an ordinary over-pull. Other stations may have failed innocently, and successful heists are announced for the act as a whole. Comparing behavior across acts and partnerships is how players narrow their suspicions.
 
 Receipts remain accessible for the rest of the episode. The initial design shows only a few salient cards at once; players can revisit earlier acts. Selection must follow documented coverage rules, rather than secretly choosing clues that guarantee a desired winner. The full record is reserved for the finale.
 
@@ -208,9 +231,9 @@ Receipts show both failed stations and relevant winch actions. Maya remembers Le
 
 ## The second act
 
-Groups rotate. Nia uses the next act’s attempt successfully at another station, bringing the display to **Heists: 2/2**. Both Snakes are still active before this act’s vote. They have met the theft requirement, but at least one must survive all remaining votes.
+Seven contestants cannot all pair, so Hugo’s first-act partner, Tess, spots the second act: she has no console and walks between rescue areas. The other six form three new pairs. Nia uses the next act’s attempt successfully at her console, bringing the display to **Heists: 2/2**. Tess’s spotter card shows that she stood longest at the west lift and missed a catch there; it proves nothing by itself. Both Snakes are still active before this act’s vote. They have met the theft requirement, but at least one must survive all remaining votes.
 
-This time the group votes out Leo, and his card reveals Snake. Six contestants remain: five Loyals and one Snake, Nia. **Heists: 2/2 stays unchanged** because removing a Snake does not undo completed thefts. The Loyals can still win by identifying Nia in the final act.
+This time the group votes out Leo, and his card reveals Snake. Six contestants remain: five Loyals and one Snake, Nia. They form three pairs, and nobody spots. **Heists: 2/2 stays unchanged** because removing a Snake does not undo completed thefts. The Loyals can still win by identifying Nia in the final act.
 
 ## The third act and the outcome
 
@@ -244,7 +267,7 @@ Earned participation credit is recorded when the player leaves. Any later team-r
 
 One primary public queue keeps the population together. Small friend groups can join together; basic friend play is free. New arrivals enter between episodes and do not inherit departed players’ secret roles. Any computer-controlled practice characters are explicitly labeled and remain outside the main cast.
 
-A brief reconnect allowance should cover temporary connection loss. If a departure makes a fair episode impossible, end it as incomplete and preserve earned participation credit. The precise grace period and cancellation rule need validation. Incomplete episodes are recorded separately from normal team wins and losses.
+A brief reconnect allowance should cover temporary connection loss. A departure that leaves an odd cast is handled by the spotter rule from the next act; it never adds a third motor, assigns a bot partner, or excludes an otherwise active contestant. If a departure makes a fair episode impossible, end it as incomplete and preserve earned participation credit. The precise grace period and cancellation rule need validation. Incomplete episodes are recorded separately from normal team wins and losses.
 
 # Career progress, identity, and purchases
 
@@ -286,7 +309,7 @@ Promotional images should show actual recognizable situations: partners at a cha
 
 ## Content that adds variety without losing readability
 
-Begin with one villa and, after validating Prize Lift, add two more mechanically distinct challenge families. A challenge family is a reusable type of activity with variations in layout, timing, partner structure, and evidence coverage. New families must define their own heist action, counterplay, and receipt rules before implementation.
+Begin with one villa and, after validating Prize Lift, add two more mechanically distinct challenge families. A challenge family is a reusable type of activity with variations in layout, timing, partner structure, and evidence coverage. New families must define their own heist action, counterplay, and receipt rules before implementation. Candidate families and the shared rules they must satisfy are explored in the [pair challenge families exploration](pair-challenge-families.md); none is adopted or scheduled.
 
 A later season can add a visual theme, one challenge family, selected cosmetics, and a shared event. Bigger settings such as a cruise ship or ski lodge should retain familiar controls and clear evidence. A **modifier** changes one announced rule for an episode; introduce these only after the base format is understood and test each interaction.
 
@@ -300,6 +323,8 @@ Future ranked competition, spectator hosting, player trading, and creator-author
 
 Build one small villa set, Prize Lift, eight-player casting, two secret teams, the heist counter, an automatic receipt board, secret voting, a short factual reveal, and a clear New Episode action. Use simple temporary art—a **gray-box prototype**—while preserving the visual cues needed for cooperation and deduction.
 
+The connected browser episode implements the two-motor rule and the spotter, including arming from the rescue area; see the [browser README](browser/README.md). Its passing tests establish the rules’ internal consistency, not their balance or fairness with real players.
+
 Add two more challenge families and a small earned cosmetic collection after the initial gameplay test. Advanced customization, additional role types, ranked matchmaking, trading, and multiple public queues are outside this first scope. Generous resources should improve observation, iteration, accessibility, and polish before increasing the number of systems.
 
 ## Can people understand and enjoy it?
@@ -308,7 +333,7 @@ Run repeated sessions with roughly 40–60 appropriately recruited target-age pl
 
 Proposed initial screening gates are that 80% explain their team objective, 70% identify relevant evidence, and 60% voluntarily start another episode when free to stop. Compare suspect accuracy against a random choice among eligible contestants. Team win rates alone may reflect sabotage difficulty. These small-sample gates are internal proposals, not population retention estimates.
 
-Compare 4½- and six-minute episodes, easier and harder Catch timing, shorter and longer Rig bursts, and permitted chat on or off. Change one major factor at a time. Test idle stations, constant holds, tap spam, intentional imbalance, extra rescuers, coordinated friend votes, and newcomer targeting. Measure heist success against novice and practiced Loyals; tune two- and three-person stations separately. A dominant low-effort strategy requires revision. Record the tie rate per vote and how each runoff resolved; if deadlocks stay common, revisit the vote structure rather than the tie rule.
+Compare 4½- and six-minute episodes, easier and harder Catch timing, shorter and longer Rig bursts, and permitted chat on or off. Change one major factor at a time. Test idle stations, constant holds, tap spam, intentional imbalance, extra rescuers, coordinated friend votes, and newcomer targeting. Measure heist success against novice and practiced Loyals using the same two-motor mechanics across all pairs, and separately for a Snake spotter’s armed lift. A dominant low-effort strategy requires revision. Record the tie rate per vote, how each runoff resolved, and how often the same contestant spots twice; if deadlocks stay common, revisit the vote structure rather than the tie rule.
 
 ## Do unfamiliar players return?
 
@@ -337,6 +362,8 @@ Current age-based account materials describe additional evaluation for games ava
 All characters, branding, art, sound, and show presentation must be original or properly licensed. Snake Show is a working title whose availability remains unverified. Team names are localized through the experience’s translation table rather than left to automatic translation, which would render an invented noun such as “Loyals” unpredictably [7]. “Loyal” has a plain native word in most supported languages, but its transliteration in Japanese and Korean reads as “royal”, so those two need a native term; and its French and German forms coincide with the team name used by local editions of the reality format The Traitors, so the name should be reviewed for format proximity together with the working title. The proposed visual treatment is a design direction, not evidence that assets, a name, or platform approval have been secured.
 
 ## Decisions the prototype must resolve
+
+Motor count is fixed at two, not a tuning variable. The spotter rule is the adopted answer to an odd cast. The open questions around it are the Loyals’ two-for-one on a failed pair, the repeat-spotter cost after a deadlock, and whether arming from the rescue area is strong enough without a motor burst. The [format review](pairing-and-elimination-review.md) records the alternatives.
 
 The two-heist target, the 1½-second Rig hold, the five-second Rig burst and its multipliers, the three-second Catch window and quarter-second zone, the motor force and speed limits, the capsule’s friction and start offset, the pool depth, receipt coverage, runoff length, and episode length are test settings. Two Prize Lift rules remain open from its review: whether the Snake team keeps one attempt per act or each Snake gets one, and whether a caught capsule returns to the center or to the edge it fell from. The core question is whether players enjoy cooperation, notice a plausible betrayal, reason about evidence, and feel fairly treated when wrong.
 
@@ -387,6 +414,14 @@ The first product review should use observed player behavior to decide which mec
 # Annex A — Why the design changed
 
 This annex explains changes from the initial concept and subsequent Prize Lift refinements. It is historical context; the main brief defines the complete proposed game. Design judgments remain hypotheses until tested.
+
+## Prize Lift: two motors, and a spotter instead of a trio
+
+The former brief accommodated seven contestants with two pairs and one triangular, three-motor lift, and the connected browser game implemented it. The 8 September review withdrew it: the triangle adds another balance axis and a third person’s coordination, so its errors are not comparable observations of possible sabotage, and tuning trio difficulty would not remove that structural difference.
+
+The 9 September decision keeps individual removals and answers the odd cast with the spotter: the removed contestant’s last partner plays the next act without a console. It was preferred to a vote runner-up bench (extra Loyal power, a second vote target, tie rules), a public draw (arbitrary for the chosen player), a second wave of lifts (one contestant lifts twice inside 45 seconds), even-sized removal blocks (delayed reveals or early double evictions), and a bot substitute (a partner of known behavior). The spotter rule is deterministic, role-blind, explainable in one sentence, and follows from a pairing the players already saw.
+
+Giving a Snake spotter a Rig that boosts an operator’s motor was considered and rejected as the baseline. It recreates the trio problem in sharper form: an honest operator’s receipts would reflect physics they did not choose, and the sabotage would have no observable act. Arming from the rescue area without a motor change keeps the operators’ evidence honest and keeps the act a real heist opportunity. The remote burst remains a test variant.
 
 ## What stayed: the cast and the show fantasy
 

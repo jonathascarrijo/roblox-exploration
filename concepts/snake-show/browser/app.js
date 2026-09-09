@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const { Episode, POSITIONS, PLACES, DURATIONS, clamp, mean, gradient, centeringTargets, needle, shares } = SnakeShow;
+  const { Episode, POSITIONS, PLACES, DURATIONS, clamp, centeringTargets, needle, shares } = SnakeShow;
   const { FIXED, DEFAULTS, SLIDERS, catchGeometry, neededDuty, speeds } = LiftSettings;
   const $ = id => document.getElementById(id);
   const scene = new SnakeScene($('scene'));
@@ -141,7 +141,8 @@
     const first = holds[action].size === 0; holds[action].add(source);
     if (!first) return;
     if (action === 'pull' && view.station === game.players[0].station && view.camera === 'lift') game.pressPull(0);
-    if (action === 'rig' && view.station === game.players[0].station && view.camera === 'lift') game.pressRig(0);
+    // An operator rigs from their own camera; the spotter rigs from whichever rescue area they stand in.
+    if (action === 'rig' && (game.players[0].spotting || view.station === game.players[0].station && view.camera === 'lift')) game.pressRig(0);
     if (action === 'catch') {
       const s = view.camera === 'lift' ? game.stations[view.station] : closestStation();
       const result = game.pressCatch(0, s?.index);
@@ -226,9 +227,10 @@
     if (!blocked(p.x, ny)) p.y = ny;
   }
   function renderCast(force) {
-    const signature = game.players.map(p => `${p.active}`).join() + game.mode + (game.phase === 'finale');
+    const spotting = game.phase === 'challenge' ? game.spotter : null;
+    const signature = game.players.map(p => `${p.active}`).join() + game.mode + (game.phase === 'finale') + spotting;
     if (!force && signature === castSignature) return; castSignature = signature;
-    $('cast').innerHTML = game.players.map(p => `<div class="cast-member ${p.id === 0 && game.mode !== 'watch' ? 'you' : ''} ${!p.active ? 'out' : ''}">${avatar(p)}<span class="number">${String(p.id + 1).padStart(2, '0')}</span><b>${p.name}</b><small>${!p.active && game.mode !== 'practice' || game.phase === 'finale' ? p.role : p.id === 0 && game.mode !== 'watch' ? 'YOU' : 'BOT'}</small></div>`).join('');
+    $('cast').innerHTML = game.players.map(p => `<div class="cast-member ${p.id === 0 && game.mode !== 'watch' ? 'you' : ''} ${!p.active ? 'out' : ''}">${avatar(p)}<span class="number">${String(p.id + 1).padStart(2, '0')}</span><b>${p.name}</b><small>${!p.active && game.mode !== 'practice' || game.phase === 'finale' ? p.role : p.id === spotting ? (p.id === 0 && game.mode !== 'watch' ? 'YOU · SPOTTER' : 'SPOTTER') : p.id === 0 && game.mode !== 'watch' ? 'YOU' : 'BOT'}</small></div>`).join('');
     set('castSummary', game.mode === 'watch' ? '8 BOTS · SPECTATING' : game.mode === 'practice' ? 'YOU + 1 PRACTICE BOT' : '1 YOU + 7 BOTS');
     set('castNote', game.mode === 'watch' ? 'Autonomous play. Roles stay hidden until revealed.' : !game.players[0].active && game.mode !== 'practice' ? 'You are backstage. Your original team’s result still counts.' : 'Same faces. Secret allegiances.');
   }
@@ -247,7 +249,7 @@
     if ($('receiptAct').innerHTML !== options) $('receiptAct').innerHTML = options;
     $('receiptAct').value = String(shownAct);
     const record = receiptRecord(); if (!record) return;
-    $('receipts').innerHTML = record.stations.map((s, i) => s.ready === false ? VoteView.waitingStation(s, game.players) : VoteView.stationCard(s, game.players, i)).join('');
+    $('receipts').innerHTML = record.stations.map((s, i) => s.ready === false ? VoteView.waitingStation(s, game.players) : VoteView.stationCard(s, game.players, i)).join('') + (record.spotter ? VoteView.spotterCard(record.spotter, game.players) : '');
     set('memoryHeading', shownAct === game.act ? 'The lifts' : 'Round ' + shownAct + ' · The lifts');
     const latest = game.history.at(-1);
     // Heists are revealed only when the entire act ends.
@@ -336,14 +338,16 @@
     revealSignature = `${game.seed}:${game.act}`;
     set('winner', `${game.outcome.team} win the show.`); set('winnerReason', game.outcome.reason + (game.mode === 'watch' ? '' : ` You ${game.players[0].role === (game.outcome.team === 'Snakes' ? 'Snake' : 'Loyal') ? 'win with' : 'played for'} the ${game.players[0].role === 'Snake' ? 'Snakes' : 'Loyals'}${game.players[0].active ? '.' : ', even from backstage.'}`));
     $('revealCast').innerHTML = game.players.map(p => `<div class="reveal-person ${p.role === 'Snake' ? 'snake' : ''}">${VoteView.rolePortrait(p)}<b>${p.name}${p.id === 0 && game.mode !== 'watch' ? ' · You' : ''}</b><span>${p.role} · ${p.active ? 'survived' : 'removed'}</span></div>`).join('');
-    $('replay').innerHTML = game.history.map(h => `<article class="replay-act"><h3>Act ${h.act} <span class="fine">${h.heists} heist · ${h.pot} delivered</span></h3>${h.stations.flatMap(s => s.events.filter(e => ['rig', 'heist', 'cleared', 'catch', 'lava', 'delivery', 'loss'].includes(e.kind)).map(e => ({ ...e, place: s.name }))).sort((a, b) => a.time - b.time).map(e => `<p class="${e.private ? 'secret' : ''}"><b>${e.time.toFixed(1)}s · ${e.place}</b><br>${escape(e.text)}</p>`).join('') || '<p>No decisive lift events recorded.</p>'}${h.votes.map(v => `<p><b>${v.runoff ? 'Runoff' : 'Vote'}</b><br>${v.accepted.map(b => `${game.players[b.voter].name} → ${game.players[b.target].name}`).join(' · ')}${v.accepted.length ? '.' : 'Everyone abstained.'}<br>${v.removed === null ? 'Tie.' : `${game.players[v.removed].name} received the most votes.`}</p>`).join('')}</article>`).join('');
+    $('replay').innerHTML = game.history.map(h => `<article class="replay-act"><h3>Act ${h.act} <span class="fine">${h.heists} heist · ${h.pot} delivered</span></h3>${h.stations.flatMap(s => s.events.filter(e => ['rig', 'heist', 'cleared', 'catch', 'lava', 'delivery', 'loss'].includes(e.kind)).map(e => ({ ...e, place: s.name }))).sort((a, b) => a.time - b.time).map(e => `<p class="${e.private ? 'secret' : ''}"><b>${e.time.toFixed(1)}s · ${e.place}</b><br>${escape(e.text)}</p>`).join('') || '<p>No decisive lift events recorded.</p>'}${h.spotter ? `<p><b>Spotter</b><br>${escape(h.spotter.text)}</p>` : ''}${h.votes.map(v => `<p><b>${v.runoff ? 'Runoff' : 'Vote'}</b><br>${v.accepted.map(b => `${game.players[b.voter].name} → ${game.players[b.target].name}`).join(' · ')}${v.accepted.length ? '.' : 'Everyone abstained.'}<br>${v.removed === null ? 'Tie.' : `${game.players[v.removed].name} received the most votes.`}</p>`).join('')}</article>`).join('');
   }
   function phaseChanged() {
     lastPhase = game.phase; earlyReviewOpen = false; earlyReviewSeen = false; earlySignature = ''; selected = null; releaseInputs();
     $('cameraDialog').close();
     if (game.phase === 'vote') { roleVisible = false; if (tuningOpen) openTuning(false); }
     if (game.phase === 'challenge') {
-      view.station = game.players[0].active ? game.players[0].station : 0; view.camera = 'lift';
+      // The spotter has no console and starts in the courtyard.
+      const me = game.players[0];
+      view.station = me.active && me.station >= 0 ? me.station : 0; view.camera = me.spotting ? 'villa' : 'lift';
       shownAct = game.act;
       if (innerWidth <= 850) roleVisible = false;
     }
@@ -406,6 +410,8 @@
     const s = view.camera === 'lift' ? game.stations[view.station] : closestStation();
     const own = challenge && p.active && !watch && p.operated && s?.ids.includes(0) && view.camera === 'lift';
     const canCatch = challenge && !watch && s?.state === 'catch' && game.eligibleCatch(0, s);
+    const near = closestStation(), spotting = challenge && !watch && p.active && p.spotting;
+    const rigStation = own ? s : spotting ? near : null, armedStation = game.stations.find(st => st.armedBy === 0);
     show('lobbyPanel', lobby); show('gamePanel', !lobby); show('pause', !lobby && phase !== 'finale');
     show('stationTabs', challenge && game.stations.length > 1); show('mobileMove', movable());
     show('evidencePanel', voteRoom);
@@ -452,13 +458,12 @@
     $('pull').classList.toggle('pressed', p.pulling && own);
     show('catch', canCatch); show('catchPanel', challenge && s?.state === 'catch');
     $('catch').disabled = !canCatch || s?.taps.has(0);
-    show('rig', own && p.role === 'Snake' && s.state !== 'catch'); show('rigHint', challenge && p.role === 'Snake' && !watch && p.active);
-    $('rig').disabled = !own || s?.state !== 'lifting' || game.attempt.spent || game.attempt.reserved !== null && game.attempt.reserved !== 0;
-    $('rig').classList.toggle('pressed', p.rigging && own);
+    show('rig', p.role === 'Snake' && !!rigStation && rigStation.state !== 'catch'); show('rigHint', challenge && p.role === 'Snake' && !watch && p.active);
+    $('rig').disabled = !rigStation || rigStation.state !== 'lifting' || game.attempt.spent || game.attempt.reserved !== null && game.attempt.reserved !== 0;
+    $('rig').classList.toggle('pressed', p.rigging && !!rigStation);
     const rigProgress = game.attempt.reserved === 0 ? clamp((game.timerClock('rig') - game.attempt.since) / game.settings.rigHold, 0, 1) : 0;
-    set('rig', game.attempt.spent ? 'Team attempt used' : rigProgress ? `Keep holding… ${Math.ceil(rigProgress * 100)}%` : 'Hold to rig · R');
-    set('rigHint', game.attempt.spent ? s?.armedBy === 0 ? `Rig armed. ${Math.max(0, s.burstUntil - game.timerClock('rig')).toFixed(1)}s of motor burst. An uncaught spill completes the heist.` : 'The team attempt is consumed for this act.' : game.attempt.reserved !== null && game.attempt.reserved !== 0 ? 'Your teammate is holding Rig. The team attempt is reserved.' : `Private · Hold ${game.settings.rigHold}s. One shared attempt this act.`);
-    const near = closestStation();
+    set('rig', game.attempt.spent ? 'Team attempt used' : rigProgress ? `Keep holding… ${Math.ceil(rigProgress * 100)}%` : spotting ? `Hold to rig the ${near ? near.name : 'nearest lift'} · R` : 'Hold to rig · R');
+    set('rigHint', game.attempt.spent ? armedStation ? (armedStation.burstUntil ? `Rig armed. ${Math.max(0, armedStation.burstUntil - game.timerClock('rig')).toFixed(1)}s of motor burst. An uncaught spill completes the heist.` : `Rig armed at the ${armedStation.name}. No motor changed. An uncaught spill there completes the heist.`) : 'The team attempt is consumed for this act.' : game.attempt.reserved !== null && game.attempt.reserved !== 0 ? 'Your teammate is holding Rig. The team attempt is reserved.' : spotting ? `Spotter · Stand in a rescue area and hold ${game.settings.rigHold}s to arm that lift. No motor changes. One shared attempt this act.` : `Private · Hold ${game.settings.rigHold}s. One shared attempt this act.`);
     show('interact', challenge && !watch && p.active && !p.operated && !!near);
     set('interact', near?.ids.includes(0) ? 'Join your console · E' : 'Watch nearby lift · E');
     show('leave', challenge && !watch && p.active && (p.operated || view.camera === 'lift'));
@@ -467,8 +472,8 @@
       const progress = clamp(Math.min(...s.h) / FIXED.finish * 100, 0, 100);
       set('heightText', `${Math.round(progress)}%`); $('heightFill').style.width = `${progress}%`;
       const i = s.ids.indexOf(0), aims = centeringTargets(s), predicted = s.h.map((h, j) => h + s.v[j] * .3);
-      const error = i < 0 ? 0 : predicted[i] - mean(predicted.filter((_, j) => j !== i)) - aims[i] + mean(aims.filter((_, j) => j !== i));
-      set('tiltText', own ? error > .04 ? 'Release → steady the ball' : error < -.04 ? 'Pull → steady the ball' : 'Keep climbing · watch the ball' : `${s.ids.length} cables · ${s.catches} saves`);
+      const error = i < 0 ? 0 : predicted[i] - predicted[1 - i] - aims[i] + aims[1 - i];
+      set('tiltText', own ? error > .04 ? 'Release → steady the ball' : error < -.04 ? 'Pull → steady the ball' : 'Keep climbing · watch the ball' : `2 cables · ${s.catches} saves`);
       if (s.state === 'catch') {
         set('catchTime', `${Math.max(0, game.settings.catchWin - game.timerClock('catch') + s.catchAt).toFixed(1)}s`);
         set('catchHint', s.taps.has(0) && !watch ? 'Your tap is used. Others can still save.' : !canCatch ? 'Watch for a save. Enter the rescue area to help.' : 'One fresh tap. Aim for the gold zone.');
@@ -477,16 +482,16 @@
     const zone = catchGeometry(game.settings);
     document.querySelector('.catch-zone').style.left = `${zone.start * 100}%`;
     document.querySelector('.catch-zone').style.width = `${zone.width * 100}%`;
-    const titles = { casting: watch ? 'The bots are being cast.' : 'Your secret starts here.', challenge: watch ? 'The cast is on its own.' : !p.active ? 'Welcome backstage.' : s?.state === 'catch' ? 'Don’t let it fall.' : own ? 'You control one cable.' : 'The courtyard is yours.', vote: watch ? 'The bots are voting.' : p.active ? 'Make your call.' : 'Follow the vote backstage.', runoff: 'The vote needs a runoff.', result: game.lastVote?.removed === null ? 'Deadlock. Everyone stays.' : `${game.players[game.lastVote?.removed]?.name} leaves the show.`, finale: 'The full story is below.', 'practice-result': game.practiceResult === 'delivered' ? 'Treasure delivered!' : 'One more practice?' };
+    const titles = { casting: watch ? 'The bots are being cast.' : 'Your secret starts here.', challenge: watch ? 'The cast is on its own.' : !p.active ? 'Welcome backstage.' : s?.state === 'catch' ? 'Don’t let it fall.' : own ? 'You control one cable.' : spotting ? 'You spot this act.' : 'The courtyard is yours.', vote: watch ? 'The bots are voting.' : p.active ? 'Make your call.' : 'Follow the vote backstage.', runoff: 'The vote needs a runoff.', result: game.lastVote?.removed === null ? 'Deadlock. Everyone stays.' : `${game.players[game.lastVote?.removed]?.name} leaves the show.`, finale: 'The full story is below.', 'practice-result': game.practiceResult === 'delivered' ? 'Treasure delivered!' : 'One more practice?' };
     set('panelTitle', titles[phase] || 'Welcome to the show.');
     set('panelEyebrow', challenge ? practice ? 'LEARN THE LIFT' : watch || !p.active ? 'LIVE FROM THE VILLA' : 'PRIZE LIFT · YOUR NEXT MOVE' : voting ? 'OPEN VOTE' : 'YOUR EPISODE');
-    const texts = { casting: watch ? 'Eight labeled bots. Two randomly assigned Snakes. Their roles stay hidden from this camera until the show reveals them.' : 'Your role belongs to you. Every contestant looks ordinary onstage. Read your objective, then enter the first act.', challenge: watch ? s?.message : !p.active ? 'You can follow the public cameras and receipts. Your votes and controls are closed. Your original team can still win.' : own ? s?.state === 'lifting' ? 'Tilt to guide the ball toward center, then steady it as you climb. Hold Pull to raise your cable; release to lower it.' : s?.message : p.operated ? 'You are watching another lift. Select your own camera to use Pull, or leave your console to help rescue.' : 'Walk to a marked rescue area. You can Catch at nearby lifts, or return to your assigned console.', vote: 'Look at the lifts and vote. Everyone can see the choices and counts as votes come in.', runoff: 'Only tied contestants can receive votes. Everyone still onstage votes again. A second tie removes nobody.', result: game.lastVote?.removed === null ? 'Nobody is removed. This act’s vote is used; the episode continues.' : `${game.players[game.lastVote?.removed]?.name} was a ${game.players[game.lastVote?.removed]?.role}. Completed heists are not undone.`, finale: 'All roles are revealed. The reconstruction below uses the actual lift events and ballots from your episode.', 'practice-result': game.practiceResult === 'delivered' ? 'You and Leo lifted the golden treasure using the same cable physics as the episode. Ready to meet the rest of the cast?' : 'Guide the ball toward center and slow it before it rolls across. Both operators still need to lift; a spill needs one well-timed Catch.' };
+    const texts = { casting: watch ? 'Eight labeled bots. Two randomly assigned Snakes. Their roles stay hidden from this camera until the show reveals them.' : 'Your role belongs to you. Every contestant looks ordinary onstage. Read your objective, then enter the first act.', challenge: watch ? s?.message : !p.active ? 'You can follow the public cameras and receipts. Your votes and controls are closed. Your original team can still win.' : own ? s?.state === 'lifting' ? 'Tilt to guide the ball toward center, then steady it as you climb. Hold Pull to raise your cable; release to lower it.' : s?.message : p.operated ? 'You are watching another lift. Select your own camera to use Pull, or leave your console to help rescue.' : spotting ? 'Your partner was voted out, so you spot this act with no console. Walk into a rescue area to Catch at that lift. Every lift still has two motors.' : 'Walk to a marked rescue area. You can Catch at nearby lifts, or return to your assigned console.', vote: 'Look at the lifts and vote. Everyone can see the choices and counts as votes come in.', runoff: 'Only tied contestants can receive votes. Everyone still onstage votes again. A second tie removes nobody.', result: game.lastVote?.removed === null ? 'Nobody is removed. This act’s vote is used; the episode continues.' : `${game.players[game.lastVote?.removed]?.name} was a ${game.players[game.lastVote?.removed]?.role}. Completed heists are not undone.`, finale: 'All roles are revealed. The reconstruction below uses the actual lift events and ballots from your episode.', 'practice-result': game.practiceResult === 'delivered' ? 'You and Leo lifted the golden treasure using the same cable physics as the episode. Ready to meet the rest of the cast?' : 'Guide the ball toward center and slow it before it rolls across. Both operators still need to lift; a spill needs one well-timed Catch.' };
     set('panelText', texts[phase] || '');
     show('continue', ['casting', 'practice-result'].includes(phase));
     set('continue', phase === 'practice-result' ? 'Practice again →' : 'Enter the first act →');
     if (phase === 'practice-result') show('nextEpisode', true);
     set('sceneCaption', lobby ? 'A little teamwork. A little betrayal.' : challenge ? s?.message || 'Walk into a marked rescue area to help.' : phase === 'casting' ? 'Your role is private. Your actions are on camera.' : phase === 'finale' ? `${game.outcome.team} win the show.` : phase === 'result' ? titles.result : 'Scroll down to the receipts and ballot.');
-    set('sceneHint', lobby || challenge && view.camera === 'villa' ? 'WASD / arrows to walk · Tap a destination · E to interact' : challenge && own ? 'SPACE: pull · C: catch' + (p.role === 'Snake' ? ' · R: rig' : '') : challenge ? 'Select a camera below · Escape to pause' : 'The cameras record actions. The cast decides who to trust.');
+    set('sceneHint', lobby || challenge && view.camera === 'villa' ? 'WASD / arrows to walk · Tap a destination · E to interact' + (spotting ? ' · C: catch' + (p.role === 'Snake' ? ' · R: rig' : '') : '') : challenge && own ? 'SPACE: pull · C: catch' + (p.role === 'Snake' ? ' · R: rig' : '') : challenge ? 'Select a camera below · Escape to pause' : 'The cameras record actions. The cast decides who to trust.');
     if (voting) {
       const canVote = !watch && p.active, locked = game.locked.has(0), target = game.ballots[0], certain = game.confidences[0] === 'Certain';
       selected = canVote && Number.isInteger(target) ? target : null;
@@ -546,7 +551,7 @@
   $('abstain').addEventListener('click', () => { if (game.castVote(0, null)) { selected = null; updateUI(); } });
   function openHelp() {
     const p = game.settings;
-    $('rigHelp').textContent = `Play the Snake. Hold R or Rig for ${p.rigHold} seconds. For ${p.rigTime} seconds, motor force is multiplied by ${p.rigForce} and pull-down by ${p.rigDown}. A rigged, uncaught spill is a heist; lava contact is only a failed lift.`;
+    $('rigHelp').textContent = `Play the Snake. Hold R or Rig for ${p.rigHold} seconds. For ${p.rigTime} seconds, motor force is multiplied by ${p.rigForce} and pull-down by ${p.rigDown}. A rigged, uncaught spill is a heist; lava contact is only a failed lift. A Snake spotter can instead hold Rig inside a rescue area to arm that lift without changing any motor.`;
     if (game.phase !== 'lobby') pause(); placeTimerControls($('helpDialog')); $('helpDialog').showModal();
   }
   $('help').addEventListener('click', openHelp); for (const id of ['gotIt', 'closeHelp']) $(id).addEventListener('click', () => $('helpDialog').close());

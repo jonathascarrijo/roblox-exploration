@@ -22,29 +22,47 @@
     return null;
   }
   function groups(active, act) {
+    // Every Prize Lift has exactly two operators. An odd cast names a spotter
+    // first (chooseSpotter); the remaining contestants are paired here.
+    if (active.length % 2) throw new Error('groups needs an even cast; choose a spotter first.');
     const order = [...active];
     // Rotate, then alternate the ends of the order to change partnerships.
     for (let i = 1; i < act; i++) order.push(order.shift());
     if (act % 2 === 0) order.reverse();
     const result = [];
-    while (order.length) result.push(order.splice(0, order.length === 3 ? 3 : 2));
+    while (order.length) result.push(order.splice(0, 2));
     return result;
   }
-  function makeAct(active, act, allowHeist = true) {
-    const stations = groups(active, act);
-    const snakeStation = stations.findIndex(ids => ids.some(id => role(id) === 'Snake'));
-    const heist = allowHeist && snakeStation >= 0;
+  function chooseSpotter(active, removed, partners = {}, previous = null) {
+    // The removed contestant's last lift partner spots the next act when the
+    // cast is odd; a deadlock keeps the current spotter. Roles are not consulted.
+    if (active.length % 2 === 0) return null;
+    const partner = removed === null || removed === undefined ? undefined : partners[removed];
+    if (partner !== undefined && active.includes(partner)) return partner;
+    if (previous !== null && active.includes(previous)) return previous;
+    return active[active.length - 1];
+  }
+  function makeAct(active, act, allowHeist = true, context = {}) {
+    const spotter = chooseSpotter(active, context.removed ?? null, context.partners || {}, context.spotter ?? null);
+    const stations = groups(active.filter(id => id !== spotter), act);
+    const partners = {};
+    for (const ids of stations) { partners[ids[0]] = ids[1]; partners[ids[1]] = ids[0]; }
     const locations = ['East lift', 'Pool lift', 'West lift', 'Garden lift'];
+    let snakeStation = stations.findIndex(ids => ids.some(id => role(id) === 'Snake'));
+    // A Snake spotter arms a lift from its rescue area when no Snake holds a console.
+    const spotterArms = snakeStation < 0 && spotter !== null && role(spotter) === 'Snake';
+    if (spotterArms) snakeStation = 0;
+    const heist = allowHeist && snakeStation >= 0;
     const publicCards = [], full = [];
     let pot = 0;
     stations.forEach((ids, i) => {
       const armed = heist && i === snakeStation;
       const failed = armed || i === (snakeStation + 1) % stations.length;
-      const operator = armed ? ids.find(id => role(id) === 'Snake') : ids[0];
+      const operator = armed && !spotterArms ? ids.find(id => role(id) === 'Snake') : ids[0];
       const catcher = ids.find(id => id !== operator);
       const place = locations[i], names = ids.map(id => CAST[id]).join(' + ');
       const add = (time, text, kind) => { const card = { act, place, ids, time, text, kind }; publicCards.push(card); full.push({ ...card, private: false }); };
-      if (armed) full.push({ act, place, time: 14, text: `${CAST[operator]} completed Rig. The act attempt was consumed and this capsule's diverter armed.`, private: true });
+      if (armed) full.push({ act, place, time: 14, text: spotterArms ? `${CAST[spotter]} completed Rig from the rescue area. The act attempt was consumed and this capsule's diverter armed; no motor changed.` : `${CAST[operator]} completed Rig. The act attempt was consumed and this capsule's diverter armed.`, private: true });
       add(18, `${CAST[operator]} ${failed ? 'held Pull for 2.0 s while their end was high' : 'released Pull while their end was high'}.`, 'handling');
       if (failed) add(23, `${CAST[catcher]} tapped Catch outside the zone. No eligible contestant saved the capsule.`, 'catch');
       else add(25, `${names} kept the capsule aboard.`, 'catch');
@@ -54,12 +72,18 @@
     });
     // Fixed coverage: outcome, handling, response for EVERY station in location order.
     publicCards.sort((a, b) => locations.indexOf(a.place) - locations.indexOf(b.place) || ['outcome','handling','catch'].indexOf(a.kind) - ['outcome','handling','catch'].indexOf(b.kind));
+    if (spotter !== null) {
+      // One public spotter card: longest stay and Catch response; no role or Rig.
+      const place = locations[snakeStation >= 0 ? snakeStation : 0];
+      const card = { act, place, ids: [spotter], time: 27, text: `${CAST[spotter]} spotted this act without a console. Longest stay: the ${place} rescue area, 20 s. ${spotterArms ? 'Tapped Catch outside the zone.' : 'No Catch input.'}`, kind: 'spotter' };
+      publicCards.push(card); full.push({ ...card, private: false });
+    }
     full.sort((a,b) => a.time-b.time);
-    return { act, stations, heist: Number(heist), pot, publicCards, full };
+    return { act, stations, spotter, partners, heist: Number(heist), pot, publicCards, full };
   }
   class Rescue {
     constructor(settings = {}) {
-      this.settings = { hold: 1.5, burst: 5, window: 3, zone: .25, ...settings };
+      this.settings = { hold: 1.5, burst: 5, window: 3, zone: .25, spotter: 2, ...settings };
       this.time = 0; this.phase = 'lifting'; this.reserved = null; this.heldSince = 0;
       this.spent = false; this.armed = false; this.burstUntil = 0; this.faultAt = 0;
       this.attempts = new Set(); this.heldCatch = new Set(); this.heists = 0;
@@ -78,8 +102,9 @@
       if (this.phase === 'ended') return;
       this.time += dt;
       if (this.reserved !== null && this.time - this.heldSince >= this.settings.hold) {
-        this.log(`${CAST[this.reserved]} armed the capsule. Team attempt consumed.`, true);
-        this.spent = true; this.armed = true; this.burstUntil = this.time + this.settings.burst; this.reserved = null;
+        const fromRescueArea = this.reserved === this.settings.spotter;
+        this.log(fromRescueArea ? `${CAST[this.reserved]} armed the capsule from the rescue area. Team attempt consumed; no motor changed.` : `${CAST[this.reserved]} armed the capsule. Team attempt consumed.`, true);
+        this.spent = true; this.armed = true; this.burstUntil = fromRescueArea ? this.time : this.time + this.settings.burst; this.reserved = null;
       }
       if (this.phase === 'catch' && this.time - this.faultAt >= this.settings.window) this.lose();
     }
@@ -131,7 +156,7 @@
     }
     totals() { return [...this.entries.values()].reduce((sum,e) => ({ fame:sum.fame+e.fame, credits:sum.credits+e.credits }),{ fame:0,credits:0 }); }
   }
-  const api = { CAST, role, tally, winner, groups, makeAct, Rescue, RewardLedger };
+  const api = { CAST, role, tally, winner, groups, chooseSpotter, makeAct, Rescue, RewardLedger };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.SnakeRules = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

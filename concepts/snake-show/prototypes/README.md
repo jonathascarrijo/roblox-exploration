@@ -2,6 +2,8 @@
 
 5 September 2026 · Proposed interactions based on the [design brief v2](../snake-show-design-brief-v2.md).
 
+**Design correction, 8–9 September 2026:** Prize Lift requires exactly two operators and two motors under comparable conditions, and an odd cast names a **spotter**: the removed contestant’s last lift partner plays the next act without a console. These studies follow that rule. The Catch/Rig fixture pairs Maya and Leo, with Nia as a Snake spotter who can arm the lift from the rescue area; the receipt/vote rehearsal pairs the cast and shows the spotter with one public card. See the [pairing and elimination review](../pairing-and-elimination-review.md) for the alternatives that were considered. The coupled-cables study remains an isolated two-motor model.
+
 Open [the prototype room](index.html) in a modern browser. All new pages work directly from disk, with no build, account, network requests, fonts, or external assets. Keep the HTML files, scripts, and `prototype.css` together. The existing Prize Lift files are unchanged.
 
 ## What to try
@@ -17,9 +19,9 @@ The new prototypes isolate interactions around Prize Lift. They do not add chall
 
 ## Catch & Rig
 
-- `R` / `T`: hold Rig as Leo / Nia. Releasing early cancels the reservation. A fault also cancels an unfinished hold. The first accepted reservation wins; completing it consumes the act’s one team attempt.
+- `R` / `T`: hold Rig as Leo / Nia. Leo rigs from his console and gets the 5-second motor burst. Nia rigs from the rescue area as the spotter: the same diverter, no motor change. Releasing early cancels the reservation. A fault also cancels an unfinished hold. The first accepted reservation wins; completing it consumes the act’s one team attempt.
 - `C` / `V`: Catch as Maya / Omar. Pointer and focused-button keyboard input also work. An unsuccessful tap consumes only that player’s opportunity. A pre-held input requires release and a new press after the prompt.
-- The focused fixture contains a three-operator station with Maya, Leo, and Nia, plus Omar in the rescue area. Only Maya and Omar’s Catch inputs are controlled; the other operators abstain. The static scene is a schematic, without triangle physics.
+- The focused fixture contains a two-operator station with Maya and Leo, Nia as the act’s spotter, and Omar in the rescue area. Only Maya and Omar’s Catch inputs are controlled; Leo and Nia abstain from Catch. The static scene is a schematic, without cable physics.
 - The public log contains the same fault and loss messages for armed and innocent capsules. A private Snake panel exposes reservation, Rig, and diversion state for inspection. The public heist counter updates only when the act ends.
 - The 5-second burst can expire while the capsule’s diverter remains armed. Catch clears both. A replacement capsule inherits no rig; a consumed attempt stays consumed. Reload takes 3 seconds. Timeout, safe delivery, and water drops defeat unresolved attempts without creating heists.
 - Sliders configure the next act: Rig hold 1.5 s, Catch window 3 s, and a 0.25 s opportunity on each of two passes. The act deadline is 45 s. The target is centered at 50% of the track; a linear needle traverses the track and returns.
@@ -30,9 +32,9 @@ Try an innocent spill, release Rig just before completion, contend for the reser
 
 This is an episode state-machine rehearsal with **scripted challenge events and other-contestant ballots**. It is not a multiplayer match or a model of human deduction. Roles are fixed for repeatable scenarios: Leo and Nia are the two Snakes. Maya is the default playable contestant; switching to Leo resets the episode and exposes his private Snake objective.
 
-The challenge fixture rotates partnerships, using a three-person station when the active cast is odd. By default it produces a heist in acts 1 and 2 if a Snake remains, alongside an innocent failure. Other stations deliver. The director can instead disable heists to exercise an early Loyal win. Challenge actions and ballot scripts are test fixtures, not proposed game automation. Scripts that target a role deliberately consult the full cast to exercise win conditions.
+The challenge fixture rotates partnerships in pairs. When a removal leaves an odd cast, the removed contestant’s last partner spots the act, a deadlock keeps the spotter, and the fixture adds one public spotter card. By default it produces a heist in acts 1 and 2 if a Snake remains, alongside an innocent failure; a Snake spotter with no Snake at a console arms a lift from the rescue area. Other stations deliver. The director can instead disable heists to exercise an early Loyal win. Challenge actions and ballot scripts are test fixtures, not proposed game automation. Scripts that target a role deliberately consult the full cast to exercise win conditions.
 
-**Proposed evidence coverage:** every station contributes exactly three cards in fixed location order: outcome, a recorded held/released action, and the Catch or safe-capsule response. The board shows one station at a time and retains earlier acts. No public card includes Rig, motor speed, concealed routing, or an active contestant’s role. Full event records become visible only in the finale. A private suspect selection is an unshared note per act; it does not submit a ballot.
+**Proposed evidence coverage:** every station contributes exactly three cards in fixed location order: outcome, a recorded held/released action, and the Catch or safe-capsule response. An act with a spotter adds one spotter card: where they stood longest and their Catch response. The board shows one station at a time and retains earlier acts. No public card includes Rig, motor speed, concealed routing, or an active contestant’s role. Full event records become visible only in the finale. A private suspect selection is an unshared note per act; it does not submit a ballot.
 
 Each active contestant may seal one vote for another active contestant. Missing ballots are abstentions. Totals stay hidden until close. A top tie opens a 10-second runoff among tied contestants, with every active contestant voting again and no self-votes. A second tie removes nobody and uses that act’s vote. All-abstention ballots are treated as ties at zero. A human ballot can break the director’s split-vote pattern.
 

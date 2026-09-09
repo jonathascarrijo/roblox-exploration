@@ -12,7 +12,9 @@
   function enter(phase) { s.phase=phase; s.left=durations[phase] || 0; s.paused=false; render(); }
   function finalize(outcome) { s.finish=outcome; replayIndex=0; enter('finale'); }
   function startChallenge() {
-    s.pending=makeAct(s.active,s.act,$('outcomes').value==='two' && s.act<=2);
+    // Pairing follows the spotter rule: the removed contestant's last partner spots an odd cast.
+    s.pending=makeAct(s.active,s.act,$('outcomes').value==='two' && s.act<=2,{removed:s.lastRemoved??null,partners:s.partners||{},spotter:s.spotter??null});
+    s.partners=s.pending.partners; s.spotter=s.pending.spotter;
     enter('challenge');
   }
   function finishChallenge() {
@@ -58,6 +60,7 @@
     s.lastTally=result; s.resultKind=result.removed!==null?'removed':wasRunoff?'deadlock':'tie';
     if(result.removed!==null) s.active=s.active.filter(id=>id!==result.removed);
     else if(!wasRunoff) s.runoff=result.tied;
+    if(wasRunoff||result.removed!==null) s.lastRemoved=result.removed;
     enter('result');
   }
   function afterResult() {
@@ -134,7 +137,7 @@
     $('roleTitle').textContent=s.revealed?`${CAST[s.viewer]} · ${role(s.viewer)}`:'Role card hidden';
     $('objective').textContent=s.revealed?(role(s.viewer)==='Snake'?'Complete at least two heists and keep one Snake onstage after the final vote. Your teammate is Nia.':'Prevent two heists, or vote out both Snakes. Your whole team shares the result, including removed contestants.'):'Only your contestant can see this card in the intended game.';
     $('roleToggle').textContent=s.revealed?'Hide role card':'Show role card';
-    if(phase==='challenge') $('stations').innerHTML=s.pending.stations.map((ids,i)=>`<div class="card"><span class="tag">${['East','Pool','West','Garden'][i]} lift</span><p style="margin:12px 0 0">${ids.map(id=>`${String(id+1).padStart(2,'0')} · ${CAST[id]}`).join('<br>')}</p><small>${ids.length===3?'Three cables · triangular tray':'Two cables · one operator each'}</small></div>`).join('');
+    if(phase==='challenge') $('stations').innerHTML=s.pending.stations.map((ids,i)=>`<div class="card"><span class="tag">${['East','Pool','West','Garden'][i]} lift</span><p style="margin:12px 0 0">${ids.map(id=>`${String(id+1).padStart(2,'0')} · ${CAST[id]}`).join('<br>')}</p><small>Two cables · one operator each</small></div>`).join('')+(s.pending.spotter===null?'':`<div class="card"><span class="tag">Spotter</span><p style="margin:12px 0 0">${String(s.pending.spotter+1).padStart(2,'0')} · ${CAST[s.pending.spotter]}</p><small>No console · Catch from any rescue area</small></div>`);
     if(['vote','runoff'].includes(phase))drawPortraits();if(phase==='result')drawResult();
     if(phase==='finale'){$('roles').innerHTML=CAST.map((name,id)=>`<div class="portrait"><span class="badge ${role(id)==='Snake'?'snake':''}">${String(id+1).padStart(2,'0')}</span><span>${name} · ${role(id)}<small>${s.active.includes(id)?'Onstage':'Removed'} · ${role(id)==='Snake'?(s.finish.team==='Snakes'?'Team win':'Team loss'):(s.finish.team==='Loyals'?'Team win':'Team loss')}</small></span></div>`).join('');drawReplay();}
     $('next').textContent={ready:'Start episode',casting:'Skip casting →',challenge:'Skip to receipts →',evidence:'Open voting →',vote:'Close ballot →',runoff:'Close runoff →',result:s.resultKind==='tie'?'Open runoff →':'Continue episode →',finale:'Finish reveal'}[phase];
