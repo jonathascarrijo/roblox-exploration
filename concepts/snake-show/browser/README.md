@@ -93,6 +93,14 @@ Loyal bots weigh these public cards with random uncertainty, retaining decaying 
 
 Casting is 10 seconds, challenge up to 45, combined review/vote up to 35, runoff up to 10. Each resolved ballot has an additional five-second readable reveal. The finale remains open for inspection. With no early finishes or unanimous locking, three-act browser play reaches the finale in **265–295 seconds** (10 + 3 × (45 + 35 + 5), plus runoffs), with optional pauses adding time. The finale is manually dismissible; its viewing duration is not capped at the brief’s 20-second target. Completed lifts, unanimous locks, practice and early wins can finish sooner.
 
+## Developer scenes
+
+Open [the game with developer tools](index.html?dev=1) and expand **Dev scenes** in the timer bar. Add `?dev=1` to the normal game URL; add `&scene=vote` to open directly at a voting scene. Without `dev=1`, the scenario menu and its game-pause control are absent. This is a local prototype switch, not an access-control system.
+
+The menu includes **Your Snake role**, **Your Loyal role**, **Vote**, **Public votes**, **Catch timer**, **Early finish**, **Runoff**, **Deadlock**, both vote reveals, **Finale reveal**, **Watching**, **Backstage**, and **Round 2** (including the spotter). Loading a scene replaces the local episode and keeps your current lift tuning. Role cards hold the casting countdown while the game runs; other scenes pause the game for inspection. **Resume game** continues from that state. The existing timer switches remain independent.
+
+**Next bot vote**, **Bots lock votes**, **Finish another lift**, and **Timer ends** act on the current scene. They are disabled when inapplicable. Expiring a frozen phase resumes that phase clock and advances normally without changing which players are bots. **Fresh episode** starts normal play with random roles and clears scene timer holds. Opening or closing the menu alone never resets or pauses the game. The old voting-harness URL forwards here; there is one shared implementation of the scene shortcuts.
+
 ## Development timer controls
 
 The sticky **DEV · TIMERS** bar is available in normal play, practice, watch mode, and voting fixtures. Opening lift pictures or instructions brings the same controls into the dialog so they remain accessible. **Freeze timer** stops only the current phase countdown. Physics, movement, bot decisions, Catch, Rig, voting, and animations keep running. It also holds the phase open after all lifts finish or everyone locks a vote; **Resume timer** permits the pending transition. It works for casting, the lift round, voting, runoff and the result reveal. The lobby and finale have no running phase countdown.
@@ -116,10 +124,10 @@ JavaScript and CSS URLs in `index.html` include content versions so an updated p
 Run the dependency-free engine suite:
 
 ```sh
-node --test concepts/snake-show/browser/tests/engine.test.cjs concepts/snake-show/browser/tests/tuning.test.cjs concepts/snake-show/browser/tests/bots.test.cjs concepts/snake-show/browser/tests/voting.test.cjs
+node --test concepts/snake-show/browser/tests/engine.test.cjs concepts/snake-show/browser/tests/tuning.test.cjs concepts/snake-show/browser/tests/bots.test.cjs concepts/snake-show/browser/tests/voting.test.cjs concepts/snake-show/browser/tests/dev-tools.test.cjs
 ```
 
-For repeatable UI checks, open [the voting fixtures](tests/voting-harness.html) on the same local server. They provide paused, clearly labeled empty and public vote boards, **Next bot vote** and **Bots lock votes** controls, early-finish previews, **Finish another lift**, **Timer ends**, runoff, deadlock, both role reveals, watch, backstage, and prior-round scenarios. The fixture buttons drive the existing test entry point; they do not appear in normal play.
+For repeatable UI checks, use [Dev scenes](index.html?dev=1&scene=vote) inside the game. The [old voting fixture link](tests/voting-harness.html) forwards to the same view. Run the scene-controller regression tests with `node --test concepts/snake-show/browser/tests/dev-tools.test.cjs`.
 
 Optional browser checks require an existing Playwright installation and Chromium:
 

@@ -63,7 +63,7 @@ The connected 2D browser game lives in `concepts/snake-show/browser/`.
 Open its `index.html` directly, or run
 `python -m http.server 8000 --bind 127.0.0.1 --directory concepts/snake-show/browser`.
 No build or dependencies are required to play. Run the game engine tests with
-`node --test concepts/snake-show/browser/tests/engine.test.cjs concepts/snake-show/browser/tests/tuning.test.cjs concepts/snake-show/browser/tests/bots.test.cjs concepts/snake-show/browser/tests/voting.test.cjs` and optional
+`node --test concepts/snake-show/browser/tests/engine.test.cjs concepts/snake-show/browser/tests/tuning.test.cjs concepts/snake-show/browser/tests/bots.test.cjs concepts/snake-show/browser/tests/voting.test.cjs concepts/snake-show/browser/tests/dev-tools.test.cjs` and optional
 Playwright checks with `node concepts/snake-show/browser/tests/browser-smoke.cjs`.
 Live tuning browser checks use `node concepts/snake-show/browser/tests/tuning-browser.cjs`.
 After editing this game's JavaScript or CSS, update the corresponding `?v=`

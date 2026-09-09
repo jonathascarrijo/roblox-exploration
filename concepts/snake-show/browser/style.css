@@ -79,3 +79,12 @@ body[data-tuning="true"] .cast-panel{display:none}
 @media(max-width:650px){.dev-timers{gap:6px 9px;padding:7px 9px}.dev-timer-label{width:100%;font-size:8px}.dev-timers small{display:none}.dev-phase{font-size:11px;gap:4px;margin-right:auto}.dev-timers button{font-size:11px;padding:7px}.dev-timers summary{font-size:10px}.dev-timer-options{width:220px}}
 
 @media(max-width:650px){.dev-timers details{position:static}.dev-timer-options{right:8px;top:100%;max-width:calc(100% - 16px)}}
+
+/* Scene shortcuts are mounted only in the explicit developer view. */
+.dev-timers .dev-scenes{flex-basis:100%;border-top:1px solid #cdd5c6;padding-top:3px}
+.dev-scenes>summary{width:max-content;font-weight:750}
+.dev-scenes-content{max-height:40vh;overflow:auto;padding:0 2px 6px}
+.dev-scenes-content p{margin:4px 0 9px;font-size:12px}
+.dev-scene-buttons{display:flex;flex-wrap:wrap;gap:7px}
+.dev-scene-steps{border-top:1px solid #cdd5c6;padding-top:10px;margin:12px 0}
+.dev-scenes-content>button{margin-top:2px}

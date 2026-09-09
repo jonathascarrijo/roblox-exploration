@@ -14,6 +14,8 @@
     placeTimerControls(['cameraDialog', 'helpDialog'].map($).find(dialog => dialog.open));
   });
   const params = new URLSearchParams(location.search);
+  const devMode = params.get('dev') === '1';
+  let devTools = null;
   const validSeed = params.has('seed') && /^\d+$/.test(params.get('seed'));
   const storageKey = 'snake-show-lift-draft-v1';
   let draft = { ...DEFAULTS }, tuningOpen = false, draftStatus = 'Prototype baseline. Changes are saved in this browser.';
@@ -109,7 +111,7 @@
   function pause(reason = 'The show is paused.') {
     if (game.phase === 'lobby' || paused) return;
     paused = true; releaseInputs(); set('pauseTitle', reason); const inVoteRoom = earlyReviewOpen || ['vote', 'runoff', 'result'].includes(game.phase);
-    show('pauseOverlay', !inVoteRoom); updateUI(); (inVoteRoom ? $('voteResume') : $('resume')).focus();
+    show('pauseOverlay', !inVoteRoom && !devMode); updateUI(); (devMode ? $('devSimulationPause') : inVoteRoom ? $('voteResume') : $('resume')).focus();
   }
   function resume() { paused = false; accumulated = 0; lastTime = performance.now(); show('pauseOverlay', false); updateUI(); $('pause').focus(); }
   function closestStation() {
@@ -511,6 +513,7 @@
       refreshPublicVotes();
     }
     renderCast(force); if (challenge) renderTabs(force);
+    if (devTools) devTools.update();
   }
   $('devTimers').addEventListener('click', e => {
     const button = e.target.closest('[data-timer]'); if (!button || button.disabled) return;
@@ -590,6 +593,16 @@
   $('mechanicsPanel').addEventListener('toggle', () => renderMechanics(game?.stations[view.station]));
   $('mechanicsPanel').open = innerWidth > 850;
   buildTuning(); reset(); requestAnimationFrame(frame);
+  if (devMode) {
+    devTools = SnakeShowDev.mount({
+      get game() { return game; }, get paused() { return paused; },
+      reset: (...args) => { $('helpDialog').close(); reset(...args); },
+      pause, resume, update: () => updateUI(true),
+      showScene(visible) { roleVisible = visible; shownAct = game.act; updateUI(true); }
+    }, $('devTimers'));
+    const initialScene = params.get('scene');
+    if (initialScene) { devTools.open(); devTools.runScene(initialScene); }
+  }
   // Explicit local test entry point; absent during ordinary play.
   if (params.get('test') === '1') window.snakeShowTest = { get game() { return game; }, get view() { return view; }, get paused() { return paused; }, update: () => updateUI(true), reset, pause, resume };
 })();
