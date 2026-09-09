@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Voting UI fixtures · local tests</title><style>body{margin:0;background:#eee;font:14px system-ui}nav{padding:8px;display:flex;gap:7px;flex-wrap:wrap}button{padding:8px}iframe{border:0;width:100%;height:calc(100vh - 120px)}p{margin:5px 10px;font-size:12px}</style>
+<nav aria-label="Test scenarios"><button data-case="vote">Vote</button><button data-case="public">Public votes</button><button id="oneVote">Next bot vote</button><button id="botLocks">Bots lock votes</button><button data-case="early">Early finish</button><button id="finishLift">Finish another lift</button><button id="deadline">Timer ends</button><button data-case="runoff">Runoff</button><button data-case="deadlock">Deadlock</button><button data-case="Snake">Snake reveal</button><button data-case="Loyal">Loyal reveal</button><button data-case="watch">Watching</button><button data-case="backstage">Backstage</button><button data-case="history">Round 2</button></nav>
+<p>Local fixtures. Paused for inspection. Reload the normal game to play a fresh episode.</p>
+<iframe id="game" title="Voting game fixture" src="../index.html?seed=11&test=1"></iframe>
+<script>
+const frame=document.getElementById('game');
+function finishChallenge(g) { while(g.phase==='challenge') g.tick(1/120); }
+function fixture(kind='vote') {
+  const ui=frame.contentWindow.snakeShowTest; if(!ui)return;
+  ui.reset('watch',true,11); const g=ui.game; g.nextPhase();
+  if(kind==='early') {
+    g.mode='play';g.players[0].bot=false;
+    g.stations.forEach(s=>{s.state='reload';s.reloadAt=1000;});
+    ui.update(); g.phaseTime=12;g.endStation(g.stationOf(0),'delivered');g.tick(.01);ui.update();ui.pause();return;
+  }
+  finishChallenge(g);
+  if(kind==='history') { g.heists=1; g.history[0].heists=1; for(const p of g.players) g.castVote(p.id,p.id===1?2:1); g.finishVote(); g.nextPhase(); finishChallenge(g); }
+  if(kind!=='watch') { g.mode='play'; g.players[0].bot=false; }
+  if(kind==='backstage') { g.players[0].active=false; g.beginVote(); }
+  if(kind==='public') { g.castVote(0,7); g.castVote(1,0); g.castVote(2,3); g.castVote(3,2); g.castVote(4,0); g.castVote(5,1); g.castVote(6,null); g.castVote(7,2); g.setCertain(3,true); }
+  if(['runoff','deadlock'].includes(kind)) { g.castVote(0,1); g.castVote(1,2); g.finishVote(); if(kind==='deadlock') g.finishVote(); }
+  if(['Snake','Loyal'].includes(kind)) { const target=g.players.find(p=>p.role===kind).id; for(const p of g.players) g.castVote(p.id,p.id===target?null:target); g.finishVote(); }
+  ui.update(); const role=frame.contentDocument.getElementById('voteRoleToggle'); if(role.getAttribute('aria-expanded')==='true') role.click(); const rounds=frame.contentDocument.getElementById('receiptAct'); rounds.value=String(g.act); rounds.dispatchEvent(new frame.contentWindow.Event('change')); ui.pause();
+}
+frame.addEventListener('load',()=>fixture());
+document.getElementById('oneVote').addEventListener('click',()=>{const ui=frame.contentWindow.snakeShowTest,g=ui.game,p=g.players.find(p=>p.id!==0&&p.active&&!g.voted.has(p.id));if(p){g.castVote(p.id,g.botBallot(p));ui.update();}});
+document.getElementById('botLocks').addEventListener('click',()=>{const ui=frame.contentWindow.snakeShowTest,g=ui.game;for(const p of g.players.filter(p=>p.id!==0&&p.active)){if(!g.voted.has(p.id))g.castVote(p.id,p.id===1?2:1);g.lockVote(p.id);}ui.update();});
+document.getElementById('finishLift').addEventListener('click',()=>{const ui=frame.contentWindow.snakeShowTest,g=ui.game,s=g.stations.find(s=>!g.stationFinished(s));if(g.phase==='challenge'&&s){g.endStation(s,'delivered');g.tick(.01);ui.update();}});
+document.getElementById('deadline').addEventListener('click',()=>{const ui=frame.contentWindow.snakeShowTest,g=ui.game;g.players.forEach(p=>p.bot=false);g.phaseTime=frame.contentWindow.SnakeShow.DURATIONS[g.phase]-.001;g.tick(.01);ui.update();});
+document.querySelectorAll('[data-case]').forEach(b=>b.addEventListener('click',()=>fixture(b.dataset.case)));
+</script></html>

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "settings": {
+    "width": 1.2,
+    "botSkill": 20,
+    "force": 1.7,
+    "vup": 0.2,
+    "vdown": 0.2,
+    "g": 1.5,
+    "ballW": 1,
+    "cw": 4,
+    "roll": 1.2,
+    "cb": 0.1,
+    "mus": 0,
+    "muk": 0,
+    "x0": 0.5,
+    "pulse": 0.15,
+    "rigForce": 2,
+    "rigDown": 2,
+    "rigTime": 5,
+    "catchWin": 3,
+    "catchZone": 0.25,
+    "rigHold": 1.5
+  }
+}
