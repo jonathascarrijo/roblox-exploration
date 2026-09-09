@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#162c2c">
   <title>Snake Show — The villa is live</title>
   <!-- Content versions prevent a cached script from running against newer markup. -->
-  <link rel="stylesheet" href="style.css?v=41d4f3e1a800">
+  <link rel="stylesheet" href="style.css?v=f714cc688948">
   <script defer src="lift-settings.js?v=fff1915433bc"></script>
-  <script defer src="engine.js?v=1761e50dbbf5"></script>
+  <script defer src="engine.js?v=acf7690f86f1"></script>
   <script defer src="scene.js?v=736649c6fe65"></script>
-  <script defer src="lift-scene.js?v=ec6c48904b56"></script>
-  <link rel="stylesheet" href="vote.css?v=e14c82b99ec2">
-  <script defer src="vote-view.js?v=2ee515cd37c5"></script>
-  <script defer src="app.js?v=7dcef8bf534f"></script>
+  <script defer src="lift-scene.js?v=b68c53a2a04f"></script>
+  <link rel="stylesheet" href="vote.css?v=6faf0ab23cb6">
+  <script defer src="vote-view.js?v=f5d566335d72"></script>
+  <script defer src="app.js?v=260d68759a8e"></script>
 </head>
 <body>
   <div class="app">
@@ -22,6 +22,19 @@
       <div class="live"><i></i> THE VILLA IS LIVE</div>
       <div class="top-actions"><button id="earlyReviewToggle" class="quiet" hidden>Round so far</button><button id="pause" class="quiet" hidden>Pause</button><button id="tuneToggle" class="quiet" aria-expanded="false" aria-controls="tuningPanel">Tune lift</button><button id="sound" class="quiet" aria-pressed="false">Sound off</button><button id="help" class="icon-button" aria-label="How to play">?</button></div>
     </header>
+
+    <aside id="devTimers" class="dev-timers" aria-label="Development timer controls">
+      <span class="dev-timer-label">DEV · TIMERS</span>
+      <span class="dev-phase"><span id="devPhaseName">No phase timer</span> <b id="devPhaseTime">—</b></span>
+      <button id="freezePhaseTimer" data-timer="phase" data-label="timer" aria-pressed="false" disabled>Ⅱ Freeze timer</button>
+      <details id="devOtherTimers"><summary>Other timers</summary><div class="dev-timer-options">
+        <button data-timer="catch" data-label="Catch" aria-pressed="false" disabled>Ⅱ Freeze Catch</button>
+        <button data-timer="rig" data-label="Rig" aria-pressed="false" disabled>Ⅱ Freeze Rig</button>
+        <button data-timer="reload" data-label="reload" aria-pressed="false" disabled>Ⅱ Freeze reload</button>
+        <span>Each switch controls that timer at every lift.</span>
+      </div></details>
+      <small id="devTimerHint">Freeze clocks, keep playing</small>
+    </aside>
 
     <main>
       <div class="episode-bar">
@@ -80,7 +93,7 @@
           <div class="vote-tools"><button id="voteRoleToggle" class="text-button" aria-expanded="false" aria-controls="votePrivateRole" hidden>My role</button><label id="voteSpeedControls" hidden>Speed <select id="voteSpeed" aria-label="Voting playback speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label><button id="voteNewEpisode" class="text-button" hidden>New episode</button><div class="vote-clock" id="voteClock"><span id="voteClockLabel">Vote ends in</span><b id="voteSeconds">35</b><span>seconds</span></div></div>
         </div>
         <div id="votePrivateRole" class="vote-private-role" hidden></div>
-        <div id="voteWaiting" class="vote-waiting" hidden><b>Waiting for the other lifts…</b><span>Voting opens when everyone finishes.</span><button id="watchLifts" class="secondary">Watch lifts →</button></div>
+        <div id="voteWaiting" class="vote-waiting" hidden><b id="voteWaitingTitle">Waiting for the other lifts…</b><span id="voteWaitingHint">Voting opens when everyone finishes.</span><button id="watchLifts" class="secondary">Watch lifts →</button></div>
         <div id="voteRoundSummary" class="round-prizes"></div>
         <div id="runoffNotice" class="runoff-notice" hidden></div>
         <div class="vote-content">

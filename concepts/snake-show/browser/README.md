@@ -12,6 +12,8 @@ Open [index.html](index.html) in a modern browser. Everything runs locally, incl
 
 The connected episode includes casting, up to three Prize Lift acts with rotating groups, receipts, open voting, runoff/deadlock, removal, public backstage spectating, and a factual finale with all roles and recorded ballots. **New episode** resets the cast and episode scores.
 
+The private role card shows your own avatar with **yellow slit eyes** for a Snake or a **golden prize pin** for a Loyal. The same cues appear when reopening **Show role / My role**. Vote results show these cues on the removed contestant, and the finale shows them on the entire cast. Cast portraits, lift observations and voting targets keep their ordinary appearance before their roles are revealed. These deliberately simple cues are for UX validation.
+
 ## Controls
 
 | Action | Keyboard | Pointer / touch |
@@ -86,6 +88,14 @@ Every station contributes three receipts, in fixed location order: **outcome**, 
 Loyal bots weigh these public cards with random uncertainty, retaining decaying suspicion across acts. They never query other roles to choose a ballot. Snakes use the same evidence plus their legitimate teammate knowledge to deflect votes. Bots are fallible rule-based agents, not language models or models of human social behavior.
 
 Casting is 10 seconds, challenge up to 45, combined review/vote up to 35, runoff up to 10. Each resolved ballot has an additional five-second readable reveal. The finale remains open for inspection. With no early finishes or unanimous locking, three-act browser play reaches the finale in **265–295 seconds** (10 + 3 × (45 + 35 + 5), plus runoffs), with optional pauses adding time. The finale is manually dismissible; its viewing duration is not capped at the brief’s 20-second target. Completed lifts, unanimous locks, practice and early wins can finish sooner.
+
+## Development timer controls
+
+The sticky **DEV · TIMERS** bar is available in normal play, practice, watch mode, and voting fixtures. Opening lift pictures or instructions brings the same controls into the dialog so they remain accessible. **Freeze timer** stops only the current phase countdown. Physics, movement, bot decisions, Catch, Rig, voting, and animations keep running. It also holds the phase open after all lifts finish or everyone locks a vote; **Resume timer** permits the pending transition. It works for casting, the lift round, voting, runoff and the result reveal. The lobby and finale have no running phase countdown.
+
+**Other timers** independently freezes Catch (including the falling-capsule animation and tap window), Rig (hold and burst duration), or reload (including the short post-Catch reset). Each switch applies to that mechanic at every lift. Inputs can still resolve or cancel an action. Bot reaction times and physical movement are never frozen by these switches. The normal **Pause** button and Escape still pause the whole game.
+
+Frozen clocks resume at their saved time without catching up. Switches remain set across phases; starting a new episode or practice resets them. Timer holds are development tools and can extend a round beyond the normal duration.
 
 ## Run and validate
 

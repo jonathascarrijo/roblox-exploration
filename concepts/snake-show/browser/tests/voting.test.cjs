@@ -43,11 +43,15 @@ test('the last catch distinguishes saved, missed and no attempt; reveals name on
   }
   assert.equal(pictures.size,3);
   for(const role of ['Loyal','Snake']) {
-    const p=g.players.find(p=>p.role===role), html=View.result({removed:p.id,totals:{[p.id]:4},abstentions:1},g.players);
+    const p=g.players.find(p=>p.role===role), other=g.players.find(q=>q.role!==role), vote={removed:p.id,totals:{[p.id]:4,[other.id]:2},abstentions:1}, html=View.result(vote,g.players);
     assert.match(html,new RegExp(` ${role}</span>`)); assert.match(html,/4 votes/); assert.match(html,/1 skipped/);
+    assert.equal((html.match(new RegExp(role==='Snake'?'class="snake-eyes"':'class="loyal-prize-pin"','g'))||[]).length,2);
+    assert.doesNotMatch(html,role==='Snake'?/loyal-prize-pin/:/snake-eyes/);
+    const changed=g.players.map(q=>q.id===p.id?q:{...q,role:q.role==='Snake'?'Loyal':'Snake'});
+    assert.equal(View.result(vote,changed),html);
   }
   const tie=View.result({removed:null,totals:{1:2,2:2},abstentions:4},g.players);
-  assert.match(tie,/Everyone stays/); assert.doesNotMatch(tie,/role-stamp|Snake|Loyal/);
+  assert.match(tie,/Everyone stays/); assert.doesNotMatch(tie,/role-stamp|Snake|Loyal|snake-eyes|loyal-prize-pin/);
 });
 
 test('all eight seats remain visible, while self, eliminated and non-tied candidates are unvotable', () => {
@@ -88,4 +92,12 @@ test('the leader costume depends only on positive public votes, including ties',
   g.players.forEach(p=>p.role=p.role==='Snake'?'Loyal':'Snake'); assert.deepEqual(leaders(),[1,3]);
   g.beginVote(); assert.deepEqual(leaders(),[]);
   assert.match(View.waitingStation(g.reviewSnapshot().stations[0],g.players),/Still playing/);
+});
+
+test('role cues are opt-in and never appear on unrevealed faces or evidence', () => {
+  const g=sample(),p=g.players[0],snake={...p,role:'Snake'},loyal={...p,role:'Loyal'};
+  assert.match(View.rolePortrait(snake),/class="snake-eyes"/);assert.doesNotMatch(View.rolePortrait(snake),/loyal-prize-pin/);
+  assert.match(View.rolePortrait(loyal),/class="loyal-prize-pin"/);assert.doesNotMatch(View.rolePortrait(loyal),/snake-eyes/);
+  assert.equal(View.portrait(snake),View.portrait(loyal));assert.equal(View.votingPortrait(snake),View.votingPortrait(loyal));
+  for(const html of [View.portrait(snake),View.votingPortrait(snake),...g.history[0].stations.map(s=>View.stationCard(s,g.players,0))]) assert.doesNotMatch(html,/snake-eyes|loyal-prize-pin/);
 });

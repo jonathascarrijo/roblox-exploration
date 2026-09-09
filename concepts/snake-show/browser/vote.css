@@ -298,3 +298,12 @@ body[data-phase="vote"] .pick-panel, body[data-phase="runoff"] .pick-panel { ord
 .certainty-button { min-width: 110px; order: -1; background: #f0e7bf; box-shadow: 0 3px 0 #b0a57d; }
 .vote-room .ballot-status { order: -2; }
 .vote-room .candidate.locked-voter .voter-choice { outline: 1px solid #799265; }
+
+/* Plain private role cards for checking cue recognition. */
+.role-intro{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
+.role-intro .role-portrait{width:116px;height:123px;flex-shrink:0}
+.role-copy{text-align:center;min-width:0}.role-copy>b{display:block;font-size:21px;line-height:1.2;margin-bottom:8px}.role-copy>small{display:block;font-size:12px;line-height:1.5}
+#votePrivateRole .role-intro{flex-direction:row;gap:18px}#votePrivateRole .role-copy{text-align:left}
+@media(max-width:370px){#votePrivateRole .role-intro{flex-direction:column}#votePrivateRole .role-copy{text-align:center}}
+
+.reveal-person > .role-portrait{width:80px;max-width:100%;height:auto}

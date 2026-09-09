@@ -65,3 +65,17 @@ body[data-tuning="true"] .cast-panel{display:none}
 @media(min-width:851px){body[data-tuning="true"] .stage{position:sticky;top:15px}body[data-tuning="true"] .layout{grid-template-columns:minmax(0,1fr) 360px}}
 @media(max-width:850px){body[data-tuning="true"] .sidebar{display:flex}.tuning-panel{margin-top:4px}.tuning-scroll{max-height:400px}.mechanics-panel{margin-top:10px;padding-top:8px}}
 @media(max-width:520px){.top-actions{gap:9px}.top-actions .quiet{font-size:10px}body[data-camera="lift"] canvas{max-width:345px}body[data-phase="challenge"] .mechanics-panel summary{font-size:10px}}
+
+/* Persistent development controls stay separate from the game's full pause. */
+.dev-timers{position:sticky;top:0;z-index:75;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:9px 12px;margin:8px 0;border:1px solid #b9c8bb;border-radius:12px;background:#eef1e7;box-shadow:0 3px 12px #193b3810;font-size:12px;color:#244c42}
+.dev-timer-label{font-size:9px;font-weight:850;letter-spacing:1px;color:#6a746b}
+.dev-phase{display:flex;gap:8px;align-items:center}.dev-phase b{font-variant-numeric:tabular-nums;min-width:28px}
+.dev-timers button{min-height:36px;padding:7px 11px;border:1px solid #aabc9e;border-radius:8px;background:#fffdf1;font-size:12px;font-weight:750;white-space:nowrap}
+.dev-timers button[aria-pressed="true"]{background:#f7d884;border-color:#b49a4d;color:#4d4020}
+.dev-timers.has-frozen-timer{border-color:#b9a560}.dev-timers small{font-size:11px;margin-left:auto}
+.dev-timers details{position:relative}.dev-timers summary{padding:8px 3px;cursor:pointer;font-size:11px}.dev-timers details.has-frozen-timer summary{font-weight:850;color:#8b5c11}
+.dev-timer-options{position:absolute;right:0;top:100%;width:245px;display:grid;gap:8px;padding:12px;background:#f7f6ec;border:1px solid #b6c5b1;border-radius:10px;box-shadow:0 6px 25px #203e382b}
+.dev-timer-options span{font-size:11px;line-height:1.5}
+@media(max-width:650px){.dev-timers{gap:6px 9px;padding:7px 9px}.dev-timer-label{width:100%;font-size:8px}.dev-timers small{display:none}.dev-phase{font-size:11px;gap:4px;margin-right:auto}.dev-timers button{font-size:11px;padding:7px}.dev-timers summary{font-size:10px}.dev-timer-options{width:220px}}
+
+@media(max-width:650px){.dev-timers details{position:static}.dev-timer-options{right:8px;top:100%;max-width:calc(100% - 16px)}}

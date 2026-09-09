@@ -10,7 +10,7 @@
     const active = s.state === 'lifting', fault = s.state === 'catch';
     scene.rect(0, 0, 650, 650, 0, '#fffdf6');
     scene.text('PRIZE LIFT / COUPLED CABLES', 27, 27, 12, '#687a68', 750, 'left');
-    scene.text(`${game.phaseTime.toFixed(1)}s / 45s`, 624, 27, 12, '#526d5b', 600, 'right');
+    scene.text(`${game.timerClock().toFixed(1)}s / 45s`, 624, 27, 12, '#526d5b', 600, 'right');
     const slope = gradient(s), angle = Math.atan2(s.h[1] - s.h[0], P.width), cy = mean(s.h);
     // Both axes use the same scale. Two-cable trays rotate at a constant length,
     // and their cable attachment points move inward as in the reference model.
@@ -60,15 +60,15 @@
       if (!['reload', 'lava', 'timeout', 'catch'].includes(s.state)) scene.treasure(X(s.x * half), weights.reduce((sum, w, i) => sum + w * pts[i][1], 0) - 12, .8);
     }
     if (fault) {
-      const tau = clamp((game.phaseTime - s.catchAt) / P.catchWin, 0, 1);
+      const tau = clamp((game.timerClock('catch') - s.catchAt) / P.catchWin, 0, 1);
       const px = s.ids.length === 2 ? s.x * half * Math.cos(angle) - F.r * Math.sin(angle) : s.x * half;
       const py = s.ids.length === 2 ? cy + s.x * half * Math.sin(angle) + F.r * Math.cos(angle) : weights.reduce((sum, w, i) => sum + w * s.h[i], 0) + F.r;
       scene.ellipse(X(px), Y(py - (py - F.lava) * tau * tau), F.r * scale, F.r * scale, '#eebf45');
       const zone = catchGeometry(P), tx = 208, tw = 234, ty = 505;
       scene.rect(tx, ty, tw, 15, 1, '#f5f0dc', '#ab8958'); scene.rect(tx + tw * zone.start, ty, tw * zone.width, 15, 0, '#e5b344');
-      scene.line(tx + needle(s, game.phaseTime) * tw, ty - 5, tx + needle(s, game.phaseTime) * tw, ty + 20, '#244e3d', 3);
+      scene.line(tx + needle(s, game.timerClock('catch')) * tw, ty - 5, tx + needle(s, game.timerClock('catch')) * tw, ty + 20, '#244e3d', 3);
       scene.text('CATCH', tx - 13, ty + 13, 12, '#a05836', 750, 'right');
-      scene.text(`${Math.max(0, P.catchWin - game.phaseTime + s.catchAt).toFixed(1)}s`, tx + tw + 12, ty + 13, 12, '#6e754e', 600, 'left');
+      scene.text(`${Math.max(0, P.catchWin - game.timerClock('catch') + s.catchAt).toFixed(1)}s`, tx + tw + 12, ty + 13, 12, '#6e754e', 600, 'left');
     }
     const tilt = s.ids.length === 2 ? angle * 180 / Math.PI : Math.atan(Math.hypot(slope.x, slope.z)) * 180 / Math.PI;
     scene.text(`tilt ${tilt.toFixed(1)}°`, 546, 467, 13, Math.abs(tilt) > 8 ? '#aa673a' : '#688265', 650, 'right');
@@ -77,7 +77,7 @@
       scene.ellipse(585, 265, 24, 24, '#e6ebd9'); scene.line(560, 265, 610, 265, '#a3ad91', 1); scene.line(585, 240, 585, 290, '#a3ad91', 1);
       scene.ellipse(585 + clamp(slope.x * 35, -18, 18), 265 - clamp(slope.z * 35, -18, 18), 5, 5, '#4d8267'); scene.text('3-CABLE LEVEL', 585, 310, 9, '#68795c', 650);
     }
-    const banner = s.delivered ? 'TREASURE DELIVERED · +1' : s.state === 'reload' ? `RELOAD IN ${Math.ceil(s.reloadAt - game.phaseTime)}s` : s.state === 'lava' ? 'LIFT LOST TO THE LAVA' : s.state === 'timeout' ? 'TIME IS UP' : '';
+    const banner = s.delivered ? 'TREASURE DELIVERED · +1' : s.state === 'reload' ? `RELOAD IN ${Math.ceil(s.reloadAt - game.timerClock('reload'))}s` : s.state === 'lava' ? 'LIFT LOST TO THE LAVA' : s.state === 'timeout' ? 'TIME IS UP' : '';
     if (banner) { scene.rect(193, 199, 264, 39, 6, '#eef0dc', '#bdc8a8'); scene.text(banner, 325, 224, 14, '#486c47', 750); }
   };
 })(globalThis);

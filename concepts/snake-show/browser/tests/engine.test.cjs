@@ -269,3 +269,62 @@ test('all active locks can advance a runoff; removed contestants never hold the 
   for(let id=0;id<7;id++){g.castVote(id,id===1?null:1);g.lockVote(id);}
   assert.equal(g.phase,'result');assert.equal(g.lastVote.removed,1);
 });
+
+test('freezing a phase timer keeps physics, bot reactions and elapsed simulation time running', () => {
+  const a=fixture(), b=fixture();
+  for(const g of [a,b]) { g.players[1].bot=true; g.pressPull(0); }
+  a.setTimerPaused('phase',true); a.tick(1); b.tick(1);
+  assert.equal(a.timerClock(),0); assert.ok(a.phaseTime>.99); assert.ok(a.time>.99);
+  assert.deepEqual(a.stations[0].h,b.stations[0].h);assert.deepEqual(a.stations[0].held,b.stations[0].held);
+  assert.ok(a.stations[0].h[0]>0);assert.ok(a.players[1].nextThink>0);
+  a.setTimerPaused('phase',false);a.tick(.25);assert.ok(Math.abs(a.timerClock()-.25)<1e-8);
+});
+test('frozen phase clocks hold casting, completed lifts and reveals, then resume without a jump', () => {
+  const g=new Episode({seed:11});g.start();g.tick(3);g.setTimerPaused('phase',true);g.tick(60);
+  assert.equal(g.phase,'casting');assert.ok(Math.abs(g.timerClock()-3)<1e-8);
+  g.setTimerPaused('phase',false);g.tick(6.9);assert.equal(g.phase,'casting');g.tick(.2);assert.equal(g.phase,'challenge');
+  g.setTimerPaused('phase',true);for(const s of g.stations)g.endStation(s,'delivered');g.tick(60);
+  assert.equal(g.phase,'challenge');assert.equal(g.history.length,0);
+  g.setTimerPaused('phase',false);g.tick(.01);assert.equal(g.phase,'vote');
+  g.castVote(0,1);g.finishVote();g.setTimerPaused('phase',true);g.tick(20);
+  assert.equal(g.phase,'result');assert.equal(g.timerClock(),0);
+  g.setTimerPaused('phase',false);g.tick(5.01);assert.notEqual(g.phase,'result');
+});
+test('bots can vote and lock beyond 35 seconds while the voting timer alone is frozen', () => {
+  const g=fixture();g.players.forEach(p=>p.bot=true);g.finishChallenge();g.setTimerPaused('phase',true);g.tick(50);
+  assert.equal(g.phase,'vote');assert.equal(g.timerClock(),0);assert.equal(g.voted.size,8);assert.equal(g.locked.size,8);
+  assert.equal(g.history[0].votes.length,0);g.setTimerPaused('phase',false);g.tick(.01);
+  assert.ok(['result','runoff'].includes(g.phase));assert.equal(g.history[0].votes.length,1);
+  const human=fixture();human.finishChallenge();human.setTimerPaused('phase',true);human.tick(60);
+  assert.equal(human.castVote(0,1),true);assert.equal(human.castVote(0,2),true);assert.equal(human.setCertain(0,true),true);assert.equal(human.lockVote(0),true);
+});
+test('Catch can freeze at a valid tap position while another lift keeps moving', () => {
+  const g=fixture(),s=g.stations[0];g.stations.push(makeStation([2,3],1,rng(2)));
+  g.fault(s);g.tick(1);g.setTimerPaused('catch',true);const clock=g.timerClock('catch'),h=g.stations[1].h[0];
+  g.tick(2);assert.equal(g.timerClock('catch'),clock);assert.equal(s.state,'catch');assert.notEqual(g.stations[1].h[0],h);
+  assert.equal(g.pressCatch(0,0),'saved');
+  const miss=fixture(),m=miss.stations[0];miss.fault(m);miss.tick(.5);miss.setTimerPaused('catch',true);miss.tick(5);
+  assert.equal(m.state,'catch');miss.setTimerPaused('catch',false);miss.tick(2.51);assert.equal(m.state,'reload');
+});
+test('Rig hold and burst timers freeze independently without stopping cable physics', () => {
+  const g=fixture(),s=g.stations[0];g.settings.rigHold=.5;g.pressRig(0);g.tick(.2);
+  g.setTimerPaused('rig',true);const height=s.h[0];g.tick(.3);assert.equal(g.attempt.spent,false);assert.notEqual(s.h[0],height);
+  g.setTimerPaused('rig',false);g.tick(.31);assert.equal(g.attempt.spent,true);g.releaseRig(0);
+  const remaining=s.burstUntil-g.timerClock('rig');g.setTimerPaused('rig',true);g.tick(.1);
+  assert.ok(Math.abs(s.burstUntil-g.timerClock('rig')-remaining)<1e-8);
+});
+test('reload and post-Catch reset clocks resume from where they stopped', () => {
+  const g=fixture(),s=g.stations[0];g.fault(s);g.lose(s);g.tick(1);g.setTimerPaused('reload',true);g.tick(5);
+  assert.equal(s.state,'reload');assert.ok(Math.abs(s.reloadAt-g.timerClock('reload')-2)<1e-8);
+  g.setTimerPaused('reload',false);g.tick(2.01);assert.equal(s.state,'lifting');
+  const save=fixture(),lift=save.stations[0];save.fault(lift);save.tick(1);save.pressCatch(0,0);save.setTimerPaused('reload',true);
+  const heights=[...lift.h];save.tick(2);assert.deepEqual(lift.h,heights);
+  save.setTimerPaused('reload',false);save.tick(.6);assert.notDeepEqual(lift.h,heights);
+});
+test('timer holds remain independent across phases and a new episode starts with running clocks', () => {
+  const g=fixture();g.setTimerPaused('phase',true);g.setTimerPaused('catch',true);g.tick(1);
+  assert.equal(g.timerClock(),0);assert.equal(g.timerClock('catch'),0);assert.ok(g.timerClock('rig')>.99);
+  g.beginVote();g.tick(2);assert.equal(g.timerClock(),0);assert.equal(g.timerClock('catch'),0);
+  assert.equal(g.setTimerPaused('unknown',true),false);assert.equal(g.setTimerPaused('phase','yes'),false);
+  assert.ok(Object.values(new Episode().timers).every(t=>!t.paused));
+});

@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><title>Voting UI fixtures · local tests</title><style>body{margin:0;background:#eee;font:14px system-ui}nav{padding:8px;display:flex;gap:7px;flex-wrap:wrap}button{padding:8px}iframe{border:0;width:100%;height:calc(100vh - 120px)}p{margin:5px 10px;font-size:12px}</style>
-<nav aria-label="Test scenarios"><button data-case="vote">Vote</button><button data-case="public">Public votes</button><button id="oneVote">Next bot vote</button><button id="botLocks">Bots lock votes</button><button data-case="early">Early finish</button><button id="finishLift">Finish another lift</button><button id="deadline">Timer ends</button><button data-case="runoff">Runoff</button><button data-case="deadlock">Deadlock</button><button data-case="Snake">Snake reveal</button><button data-case="Loyal">Loyal reveal</button><button data-case="watch">Watching</button><button data-case="backstage">Backstage</button><button data-case="history">Round 2</button></nav>
+<nav aria-label="Test scenarios"><button data-case="roleSnake">Your Snake role</button><button data-case="roleLoyal">Your Loyal role</button><button data-case="vote">Vote</button><button data-case="public">Public votes</button><button id="oneVote">Next bot vote</button><button id="botLocks">Bots lock votes</button><button data-case="catch">Catch timer</button><button data-case="early">Early finish</button><button id="finishLift">Finish another lift</button><button id="deadline">Timer ends</button><button data-case="runoff">Runoff</button><button data-case="deadlock">Deadlock</button><button data-case="Snake">Snake reveal</button><button data-case="Loyal">Loyal reveal</button><button data-case="finale">Finale reveal</button><button data-case="watch">Watching</button><button data-case="backstage">Backstage</button><button data-case="history">Round 2</button></nav>
 <p>Local fixtures. Paused for inspection. Reload the normal game to play a fresh episode.</p>
 <iframe id="game" title="Voting game fixture" src="../index.html?seed=11&test=1"></iframe>
 <script>
@@ -7,7 +7,13 @@ const frame=document.getElementById('game');
 function finishChallenge(g) { while(g.phase==='challenge') g.tick(1/120); }
 function fixture(kind='vote') {
   const ui=frame.contentWindow.snakeShowTest; if(!ui)return;
+  if(kind.startsWith('role')) {
+    const wanted=kind==='roleSnake'?'Snake':'Loyal'; let seed=1;
+    while(new frame.contentWindow.SnakeShow.Episode({seed}).players[0].role!==wanted)seed++;
+    ui.reset('play',true,seed);ui.game.setTimerPaused('phase',true);ui.update();return;
+  }
   ui.reset('watch',true,11); const g=ui.game; g.nextPhase();
+  if(kind==='catch') { g.mode='play'; g.players.forEach(p=>p.bot=false); g.fault(g.stationOf(0)); g.tick(1); ui.update();ui.pause();return; }
   if(kind==='early') {
     g.mode='play';g.players[0].bot=false;
     g.stations.forEach(s=>{s.state='reload';s.reloadAt=1000;});
@@ -20,6 +26,7 @@ function fixture(kind='vote') {
   if(kind==='public') { g.castVote(0,7); g.castVote(1,0); g.castVote(2,3); g.castVote(3,2); g.castVote(4,0); g.castVote(5,1); g.castVote(6,null); g.castVote(7,2); g.setCertain(3,true); }
   if(['runoff','deadlock'].includes(kind)) { g.castVote(0,1); g.castVote(1,2); g.finishVote(); if(kind==='deadlock') g.finishVote(); }
   if(['Snake','Loyal'].includes(kind)) { const target=g.players.find(p=>p.role===kind).id; for(const p of g.players) g.castVote(p.id,p.id===target?null:target); g.finishVote(); }
+  if(kind==='finale') { g.act=3;g.completedActs=3;g.heists=2;g.history[0].act=3;g.history[0].heists=2;for(const p of g.players)g.castVote(p.id,p.id===1?null:1);g.finishVote();g.nextPhase(); }
   ui.update(); const role=frame.contentDocument.getElementById('voteRoleToggle'); if(role.getAttribute('aria-expanded')==='true') role.click(); const rounds=frame.contentDocument.getElementById('receiptAct'); rounds.value=String(g.act); rounds.dispatchEvent(new frame.contentWindow.Event('change')); ui.pause();
 }
 frame.addEventListener('load',()=>fixture());

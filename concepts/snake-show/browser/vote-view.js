@@ -25,14 +25,20 @@
     };
     return svg(`<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${paths[name] || paths.question}</g>`, '0 0 24 24', 'vote-icon');
   }
-  function person(p, x = 0, y = 0, size = 1) {
+  function person(p, x = 0, y = 0, size = 1, revealRole = false) {
+    // Role cues are opt-in for private cards and confirmed role reveals.
+    const eyes = revealRole && p.role === 'Snake'
+      ? '<g class="snake-eyes" fill="#ffe04f" stroke="#665523" stroke-width=".8"><ellipse cx="-7" cy="10" rx="5" ry="4.5"/><ellipse cx="8" cy="10" rx="5" ry="4.5"/><path d="M-7 6.5v7m15-7v7" stroke="#253c32" stroke-width="1.8"/></g>'
+      : '<g fill="#243f3c"><ellipse cx="-7" cy="10" rx="2" ry="2.8"/><ellipse cx="8" cy="10" rx="2" ry="2.8"/></g>';
+    const pin = revealRole && p.role === 'Loyal' ? '<g class="loyal-prize-pin">' + crown(13,54,.5) + '</g>' : '';
     // Match the onstage cast's shirt, hair, skin, and glasses.
-    return `<g transform="translate(${x} ${y}) scale(${size})"><path d="M-25 69v-9q0-24 25-24t25 24v9" fill="${esc(p.color)}" stroke="#243f3c" stroke-width="2"/><path d="M-9 39q9 9 18 0" fill="none" stroke="#fff5df" stroke-width="3"/><rect x="-8" y="24" width="16" height="18" rx="5" fill="#ebbf91"/><ellipse cy="5" rx="24" ry="27" fill="${esc(p.hair)}"/><rect x="-20" y="-8" width="40" height="40" rx="15" fill="#ebbf91"/><path d="M-22 1v-12q1-24 27-15 18 6 17 26L6-8-5 0-11-5Z" fill="${esc(p.hair)}"/><g fill="#243f3c"><ellipse cx="-7" cy="10" rx="2" ry="2.8"/><ellipse cx="8" cy="10" rx="2" ry="2.8"/></g><path d="M-4 23q5 3 10-1" fill="none" stroke="#986548" stroke-width="2" stroke-linecap="round"/>${p.id % 3 === 1 ? '<g fill="none" stroke="#344940" stroke-width="2"><rect x="-17" y="3" width="13" height="12" rx="4"/><rect x="3" y="3" width="13" height="12" rx="4"/><path d="M-4 7h7"/></g>' : ''}</g>`;
+    return `<g transform="translate(${x} ${y}) scale(${size})"><path d="M-25 69v-9q0-24 25-24t25 24v9" fill="${esc(p.color)}" stroke="#243f3c" stroke-width="2"/><path d="M-9 39q9 9 18 0" fill="none" stroke="#fff5df" stroke-width="3"/><rect x="-8" y="24" width="16" height="18" rx="5" fill="#ebbf91"/><ellipse cy="5" rx="24" ry="27" fill="${esc(p.hair)}"/><rect x="-20" y="-8" width="40" height="40" rx="15" fill="#ebbf91"/><path d="M-22 1v-12q1-24 27-15 18 6 17 26L6-8-5 0-11-5Z" fill="${esc(p.hair)}"/>${eyes}<path d="M-4 23q5 3 10-1" fill="none" stroke="#986548" stroke-width="2" stroke-linecap="round"/>${p.id % 3 === 1 ? '<g fill="none" stroke="#344940" stroke-width="2"><rect x="-17" y="3" width="13" height="12" rx="4"/><rect x="3" y="3" width="13" height="12" rx="4"/><path d="M-4 7h7"/></g>' : ''}${pin}</g>`;
   }
   function suspectHood() {
     return '<g class="suspect-hood"><path d="M20 42Q13 4 50 3t30 39L69 28Q50 16 31 28Z" fill="#a0c957" stroke="#486948" stroke-width="2"/><ellipse cx="37" cy="14" rx="5" ry="6" fill="#fff6b8"/><ellipse cx="63" cy="14" rx="5" ry="6" fill="#fff6b8"/><path d="M37 11v6m26-6v6" stroke="#304c3f" stroke-width="2.5"/><path d="M50 4V0m0 0-4-3m4 3 4-3" stroke="#d77c81" stroke-width="2"/></g>';
   }
   function portrait(p) { return svg(person(p, 50, 39, .94), '0 0 100 106', 'portrait'); }
+  function rolePortrait(p) { return svg(person(p, 50, 39, .94, true), '0 0 100 106', 'portrait role-portrait'); }
   function votingPortrait(p) {
     const arm = `<path class="pointing-elbow" hidden fill="none" stroke="${esc(p.color)}" stroke-width="13" stroke-linecap="round"/><g class="pointing-arm" hidden><path d="M0 0h17" stroke="#243f3c" stroke-width="16" stroke-linecap="round"/><path d="M0 0h17" stroke="${esc(p.color)}" stroke-width="13" stroke-linecap="round"/><path d="M16-5h9l5-3h13q5 0 5 3t-5 3h-9l6 2q4 2 1 5l-7 3-10-3h-8Z" fill="#ebbf91" stroke="#715b43" stroke-width="1.4" stroke-linejoin="round"/><path d="m31 2 8 1m-9 2 6 2" fill="none" stroke="#b78a62" stroke-width="1"/></g>`;
     return svg(person(p, 50, 39, .94) + suspectHood() + arm, '0 0 100 106', 'portrait voting-portrait');
@@ -109,11 +115,11 @@
   }
   function result(vote, players) {
     const removed = vote.removed === null ? null : players[vote.removed];
-    const hero = removed ? `<div class="reveal-spotlight ${removed.role === 'Snake' ? 'snake-reveal' : 'loyal-reveal'}">${portrait(removed)}<div><span class="reveal-kicker">VOTED OUT</span><h2>${esc(removed.name)}</h2><span class="role-stamp">${icon(removed.role === 'Snake' ? 'snake' : 'shield')} ${removed.role}</span></div></div>` : `<div class="deadlock-art">${icon('envelope')}${icon('envelope')}</div><h2>Another tie. Everyone stays!</h2>`;
-    const totals = Object.entries(vote.totals).map(([id, count])=>`<div class="vote-total-person ${Number(id) === vote.removed ? 'removed' : ''}">${portrait(players[id])}<b>${esc(players[id].name)}</b><span class="vote-token-count" aria-label="${count} votes">${icon('envelope')} ${count}</span></div>`).join('');
+    const hero = removed ? `<div class="reveal-spotlight ${removed.role === 'Snake' ? 'snake-reveal' : 'loyal-reveal'}">${rolePortrait(removed)}<div><span class="reveal-kicker">VOTED OUT</span><h2>${esc(removed.name)}</h2><span class="role-stamp">${icon(removed.role === 'Snake' ? 'snake' : 'shield')} ${removed.role}</span></div></div>` : `<div class="deadlock-art">${icon('envelope')}${icon('envelope')}</div><h2>Another tie. Everyone stays!</h2>`;
+    const totals = Object.entries(vote.totals).map(([id, count])=>`<div class="vote-total-person ${Number(id) === vote.removed ? 'removed' : ''}">${Number(id) === vote.removed ? rolePortrait(players[id]) : portrait(players[id])}<b>${esc(players[id].name)}</b><span class="vote-token-count" aria-label="${count} votes">${icon('envelope')} ${count}</span></div>`).join('');
     return `${hero}<div class="vote-totals" aria-label="Final vote totals">${totals}</div><p class="result-foot">${vote.abstentions ? `${vote.abstentions} skipped · ` : ''}Next up in <b id="resultCountdown">5</b>s</p>`;
   }
-  const api = { icon, portrait, votingPortrait, pointingPose, candidateState, facts, stationCard, waitingStation, detail, result };
+  const api = { icon, portrait, rolePortrait, votingPortrait, pointingPose, candidateState, facts, stationCard, waitingStation, detail, result };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.VoteView = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

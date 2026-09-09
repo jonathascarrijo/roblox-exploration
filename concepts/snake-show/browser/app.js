@@ -4,6 +4,15 @@
   const { FIXED, DEFAULTS, SLIDERS, catchGeometry, neededDuty, speeds } = LiftSettings;
   const $ = id => document.getElementById(id);
   const scene = new SnakeScene($('scene'));
+  const timerHome = document.createComment('Development timer bar home');
+  $('devTimers').before(timerHome);
+  function placeTimerControls(dialog = null) {
+    if (dialog) dialog.prepend($('devTimers'));
+    else timerHome.after($('devTimers'));
+  }
+  for (const id of ['cameraDialog', 'helpDialog']) $(id).addEventListener('close', () => {
+    placeTimerControls(['cameraDialog', 'helpDialog'].map($).find(dialog => dialog.open));
+  });
   const params = new URLSearchParams(location.search);
   const validSeed = params.has('seed') && /^\d+$/.test(params.get('seed'));
   const storageKey = 'snake-show-lift-draft-v1';
@@ -326,7 +335,7 @@
     if (revealSignature === `${game.seed}:${game.act}`) return;
     revealSignature = `${game.seed}:${game.act}`;
     set('winner', `${game.outcome.team} win the show.`); set('winnerReason', game.outcome.reason + (game.mode === 'watch' ? '' : ` You ${game.players[0].role === (game.outcome.team === 'Snakes' ? 'Snake' : 'Loyal') ? 'win with' : 'played for'} the ${game.players[0].role === 'Snake' ? 'Snakes' : 'Loyals'}${game.players[0].active ? '.' : ', even from backstage.'}`));
-    $('revealCast').innerHTML = game.players.map(p => `<div class="reveal-person ${p.role === 'Snake' ? 'snake' : ''}">${avatar(p)}<b>${p.name}${p.id === 0 && game.mode !== 'watch' ? ' · You' : ''}</b><span>${p.role} · ${p.active ? 'survived' : 'removed'}</span></div>`).join('');
+    $('revealCast').innerHTML = game.players.map(p => `<div class="reveal-person ${p.role === 'Snake' ? 'snake' : ''}">${VoteView.rolePortrait(p)}<b>${p.name}${p.id === 0 && game.mode !== 'watch' ? ' · You' : ''}</b><span>${p.role} · ${p.active ? 'survived' : 'removed'}</span></div>`).join('');
     $('replay').innerHTML = game.history.map(h => `<article class="replay-act"><h3>Act ${h.act} <span class="fine">${h.heists} heist · ${h.pot} delivered</span></h3>${h.stations.flatMap(s => s.events.filter(e => ['rig', 'heist', 'cleared', 'catch', 'lava', 'delivery', 'loss'].includes(e.kind)).map(e => ({ ...e, place: s.name }))).sort((a, b) => a.time - b.time).map(e => `<p class="${e.private ? 'secret' : ''}"><b>${e.time.toFixed(1)}s · ${e.place}</b><br>${escape(e.text)}</p>`).join('') || '<p>No decisive lift events recorded.</p>'}${h.votes.map(v => `<p><b>${v.runoff ? 'Runoff' : 'Vote'}</b><br>${v.accepted.map(b => `${game.players[b.voter].name} → ${game.players[b.target].name}`).join(' · ')}${v.accepted.length ? '.' : 'Everyone abstained.'}<br>${v.removed === null ? 'Tie.' : `${game.players[v.removed].name} received the most votes.`}</p>`).join('')}</article>`).join('');
   }
   function phaseChanged() {
@@ -359,6 +368,19 @@
     if (lastPhase !== game.phase) phaseChanged();
     const phase = game.phase, p = game.players[0], watch = game.mode === 'watch', practice = game.mode === 'practice';
     document.body.dataset.phase = phase;
+    const timed = !!DURATIONS[phase] && phase !== 'finale';
+    set('devPhaseTime', timed ? Math.ceil(Math.max(0, DURATIONS[phase] - game.timerClock())) + 's' : '—');
+    set('devPhaseName', ({casting:'Casting', challenge:'Lift round', vote:'Voting', runoff:'Runoff', result:'Reveal'})[phase] || 'No phase timer');
+    for (const button of $('devTimers').querySelectorAll('[data-timer]')) {
+      const name = button.dataset.timer, frozen = game.timers[name].paused;
+      button.setAttribute('aria-pressed', String(frozen));
+      const label = (frozen ? '▶ Resume ' : 'Ⅱ Freeze ') + button.dataset.label;
+      if (button.textContent !== label) button.textContent = label;
+      button.disabled = name === 'phase' ? !timed : phase !== 'challenge';
+    }
+    set('devTimerHint', game.timers.phase.paused ? 'Phase held open · gameplay continues' : 'Freeze clocks, keep playing');
+    $('devTimers').classList.toggle('has-frozen-timer', Object.values(game.timers).some(timer => timer.paused));
+    $('devOtherTimers').classList.toggle('has-frozen-timer', ['catch','rig','reload'].some(name => game.timers[name].paused));
     const earlyEligible = phase === 'challenge' && !practice && !watch && p.active && game.stationFinished(game.stationOf(0));
     if (earlyEligible && !earlyReviewSeen) {
       earlyReviewSeen = true; earlyReviewOpen = true; roleVisible = false; releaseInputs();
@@ -374,6 +396,10 @@
     document.body.dataset.earlyReview = String(early);
     show('earlyReviewToggle', earlyEligible && !early);
     show('voteWaiting', early);
+    if (early) {
+      set('voteWaitingTitle', game.stations.every(s => game.stationFinished(s)) ? 'All lifts finished!' : 'Waiting for the other lifts…');
+      set('voteWaitingHint', game.timers.phase.paused ? 'Resume the timer when you’re ready to vote.' : 'Voting opens when everyone finishes.');
+    }
     document.body.dataset.voting = String(voteRoom);
     document.body.dataset.camera = ['challenge', 'practice-result'].includes(phase) ? view.camera : 'villa';
     const challenge = phase === 'challenge', voting = ['vote', 'runoff'].includes(phase), lobby = phase === 'lobby';
@@ -391,13 +417,13 @@
     show('voteSpeedControls', voteRoom && watch); show('voteNewEpisode', voteRoom && (watch || !p.active));
     if ($('voteSpeed').value !== $('speed').value) $('voteSpeed').value = $('speed').value;
     if (voteRoom) {
-      const seconds = Math.ceil(Math.max(0, DURATIONS[phase] - game.phaseTime));
+      const seconds = Math.ceil(Math.max(0, DURATIONS[phase] - game.timerClock()));
       set('voteRoomStep', `ROUND ${game.act} / 3`);
       set('voteRoomTitle', phase === 'result' ? 'The votes are in!' : phase === 'runoff' ? 'One more vote!' : early ? 'What happened?' : 'Who is the Snake?');
       set('voteRoomHint', phase === 'result' ? '' : early ? 'Your lift is done. Take a look!' : watch ? 'Watch the cast choose.' : !p.active ? 'You’re backstage. Watch the vote.' : 'Look at the lifts. Pick a face.');
-      set('voteClockLabel', paused ? 'Paused' : phase === 'result' ? 'Next in' : early ? 'Lifts end in' : 'Vote ends in');
+      set('voteClockLabel', paused ? 'Game paused' : game.timers.phase.paused ? 'Timer frozen' : phase === 'result' ? 'Next in' : early ? 'Lifts end in' : 'Vote ends in');
       set('voteSeconds', String(seconds));
-      $('voteClock').style.setProperty('--remaining', `${Math.max(0, 100 - game.phaseTime / DURATIONS[phase] * 100)}%`);
+      $('voteClock').style.setProperty('--remaining', `${Math.max(0, 100 - game.timerClock() / DURATIONS[phase] * 100)}%`);
       $('voteClock').classList.toggle('almost-done', seconds <= 5);
       if ($('resultCountdown')) set('resultCountdown', String(seconds));
     } show('finalePanel', phase === 'finale');
@@ -406,13 +432,14 @@
     show('privateRole', !lobby && !watch && !practice && roleVisible && phase !== 'finale');
     set('roleToggle', roleVisible ? 'Hide role' : 'Show role');
     const teammate = game.players.find(q => q.id !== 0 && q.role === 'Snake');
-    const roleHtml = p.role === 'Snake' ? `<b>You are a Snake.</b><small>Your teammate is ${teammate.name}. Steal two treasures and keep one Snake onstage after the final vote.</small>` : '<b>You are a Loyal.</b><small>Protect the prizes. Stop two heists, or vote out both Snakes. Watch what contestants do.</small>';
+    const roleText = p.role === 'Snake' ? `<b>You are a Snake.</b><small>Your teammate is ${teammate.name}. Steal two treasures and keep one Snake onstage after the final vote.</small>` : '<b>You are a Loyal.</b><small>Protect the prizes. Stop two heists, or vote out both Snakes. Watch what contestants do.</small>';
+    const roleHtml = `<div class="role-intro">${VoteView.rolePortrait(p)}<div class="role-copy">${roleText}</div></div>`;
     if ($('privateRole').innerHTML !== roleHtml) $('privateRole').innerHTML = roleHtml;
     if ($('votePrivateRole').innerHTML !== roleHtml) $('votePrivateRole').innerHTML = roleHtml;
     $('privateRole').className = 'role-card' + (p.role === 'Snake' ? ' snake' : '');
     set('pot', String(game.pot)); set('heists', String(game.heists));
     set('phaseLabel', ({ 'practice-result': 'PRACTICE', challenge: 'ON THE CLOCK', result: 'REVEAL' })[phase] || phase.toUpperCase());
-    set('timer', DURATIONS[phase] && phase !== 'finale' ? `${Math.ceil(Math.max(0, DURATIONS[phase] - game.phaseTime))}s` : '—');
+    set('timer', DURATIONS[phase] && phase !== 'finale' ? `${Math.ceil(Math.max(0, DURATIONS[phase] - game.timerClock()))}s` : '—');
     set('castCount', `${game.activeIds().length} ${lobby ? 'CONTESTANTS' : 'ONSTAGE'}`);
     set('eyebrow', lobby ? 'WELCOME TO THE VILLA' : practice ? 'PRACTICE · YOU + ONE LOYAL BOT' : watch ? `SIMULATED EPISODE · 8 BOTS · ACT ${Math.max(1, game.act)} / 3` : `EPISODE ${String(game.seed % 1000).padStart(3, '0')} · ACT ${Math.max(1, game.act)} / 3`);
     const headings = { lobby: 'Trust is part of the game.', casting: 'Every good show has a secret.', challenge: p.active || watch ? 'Keep the treasure. Watch your partner.' : 'The show goes on, backstage.', vote: 'Who do you trust?', runoff: 'A tie. Make your vote count.', result: 'One vote can change the show.', finale: 'The secrets are out.', 'practice-result': 'Ready for the real show?' };
@@ -428,9 +455,9 @@
     show('rig', own && p.role === 'Snake' && s.state !== 'catch'); show('rigHint', challenge && p.role === 'Snake' && !watch && p.active);
     $('rig').disabled = !own || s?.state !== 'lifting' || game.attempt.spent || game.attempt.reserved !== null && game.attempt.reserved !== 0;
     $('rig').classList.toggle('pressed', p.rigging && own);
-    const rigProgress = game.attempt.reserved === 0 ? clamp((game.phaseTime - game.attempt.since) / game.settings.rigHold, 0, 1) : 0;
+    const rigProgress = game.attempt.reserved === 0 ? clamp((game.timerClock('rig') - game.attempt.since) / game.settings.rigHold, 0, 1) : 0;
     set('rig', game.attempt.spent ? 'Team attempt used' : rigProgress ? `Keep holding… ${Math.ceil(rigProgress * 100)}%` : 'Hold to rig · R');
-    set('rigHint', game.attempt.spent ? s?.armedBy === 0 ? `Rig armed. ${Math.max(0, s.burstUntil - game.phaseTime).toFixed(1)}s of motor burst. An uncaught spill completes the heist.` : 'The team attempt is consumed for this act.' : game.attempt.reserved !== null && game.attempt.reserved !== 0 ? 'Your teammate is holding Rig. The team attempt is reserved.' : `Private · Hold ${game.settings.rigHold}s. One shared attempt this act.`);
+    set('rigHint', game.attempt.spent ? s?.armedBy === 0 ? `Rig armed. ${Math.max(0, s.burstUntil - game.timerClock('rig')).toFixed(1)}s of motor burst. An uncaught spill completes the heist.` : 'The team attempt is consumed for this act.' : game.attempt.reserved !== null && game.attempt.reserved !== 0 ? 'Your teammate is holding Rig. The team attempt is reserved.' : `Private · Hold ${game.settings.rigHold}s. One shared attempt this act.`);
     const near = closestStation();
     show('interact', challenge && !watch && p.active && !p.operated && !!near);
     set('interact', near?.ids.includes(0) ? 'Join your console · E' : 'Watch nearby lift · E');
@@ -443,7 +470,7 @@
       const error = i < 0 ? 0 : predicted[i] - mean(predicted.filter((_, j) => j !== i)) - aims[i] + mean(aims.filter((_, j) => j !== i));
       set('tiltText', own ? error > .04 ? 'Release → steady the ball' : error < -.04 ? 'Pull → steady the ball' : 'Keep climbing · watch the ball' : `${s.ids.length} cables · ${s.catches} saves`);
       if (s.state === 'catch') {
-        set('catchTime', `${Math.max(0, game.settings.catchWin - game.phaseTime + s.catchAt).toFixed(1)}s`);
+        set('catchTime', `${Math.max(0, game.settings.catchWin - game.timerClock('catch') + s.catchAt).toFixed(1)}s`);
         set('catchHint', s.taps.has(0) && !watch ? 'Your tap is used. Others can still save.' : !canCatch ? 'Watch for a save. Enter the rescue area to help.' : 'One fresh tap. Aim for the gold zone.');
       }
     }
@@ -480,6 +507,10 @@
     }
     renderCast(force); if (challenge) renderTabs(force);
   }
+  $('devTimers').addEventListener('click', e => {
+    const button = e.target.closest('[data-timer]'); if (!button || button.disabled) return;
+    game.setTimerPaused(button.dataset.timer, !game.timers[button.dataset.timer].paused); updateUI();
+  });
   $('play').addEventListener('click', () => reset('play', true)); $('practice').addEventListener('click', () => reset('practice', true)); $('watch').addEventListener('click', () => reset('watch', true));
   $('pause').addEventListener('click', () => paused ? resume() : pause());
   $('voteResume').addEventListener('click', resume); $('voteQuit').addEventListener('click', () => reset()); $('resume').addEventListener('click', resume); $('quit').addEventListener('click', () => reset());
@@ -496,7 +527,7 @@
     const record = receiptRecord(), station = record?.stations[Number(button.dataset.receipt)];
     if (!station?.cards) return;
     set('cameraTitle', `${station.name} · ${station.ids.map(id => game.players[id].name).join(' + ')}`);
-    $('cameraDetails').innerHTML = VoteView.detail(station, game.players); $('cameraDialog').showModal();
+    $('cameraDetails').innerHTML = VoteView.detail(station, game.players); placeTimerControls($('cameraDialog')); $('cameraDialog').showModal();
   });
   $('closeCamera').addEventListener('click', () => $('cameraDialog').close());
   function voteFor(id) {
@@ -516,7 +547,7 @@
   function openHelp() {
     const p = game.settings;
     $('rigHelp').textContent = `Play the Snake. Hold R or Rig for ${p.rigHold} seconds. For ${p.rigTime} seconds, motor force is multiplied by ${p.rigForce} and pull-down by ${p.rigDown}. A rigged, uncaught spill is a heist; lava contact is only a failed lift.`;
-    if (game.phase !== 'lobby') pause(); $('helpDialog').showModal();
+    if (game.phase !== 'lobby') pause(); placeTimerControls($('helpDialog')); $('helpDialog').showModal();
   }
   $('help').addEventListener('click', openHelp); for (const id of ['gotIt', 'closeHelp']) $(id).addEventListener('click', () => $('helpDialog').close());
   $('sound').addEventListener('click', async () => { sound = !sound; if (sound) { audioContext ||= new (window.AudioContext || window.webkitAudioContext)(); await audioContext.resume(); } set('sound', sound ? 'Sound on' : 'Sound off'); $('sound').setAttribute('aria-pressed', String(sound)); tone(660, .13); });
@@ -533,7 +564,7 @@
     }
     scene.draw(game, view, drawTime);
     const s = view.camera === 'lift' ? game.stations[view.station] : closestStation();
-    if (s?.state === 'catch') $('needle').style.left = `${needle(s, game.phaseTime) * 100}%`;
+    if (s?.state === 'catch') $('needle').style.left = `${needle(s, game.timerClock('catch')) * 100}%`;
     if (now - lastUi > 90) { updateUI(); lastUi = now; }
     requestAnimationFrame(frame);
   }
