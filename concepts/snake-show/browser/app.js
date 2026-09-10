@@ -515,6 +515,8 @@
     renderCast(force); if (challenge) renderTabs(force);
     if (devTools) devTools.update();
   }
+  // Pointer clicks on timer buttons keep focus where it is, so a focused winch button still answers Space.
+  $('devTimers').addEventListener('pointerdown', e => { if (e.target.closest('[data-timer]')) e.preventDefault(); });
   $('devTimers').addEventListener('click', e => {
     const button = e.target.closest('[data-timer]'); if (!button || button.disabled) return;
     game.setTimerPaused(button.dataset.timer, !game.timers[button.dataset.timer].paused); updateUI();

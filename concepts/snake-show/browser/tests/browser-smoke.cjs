@@ -25,9 +25,11 @@ const url = pathToFileURL(path.join(__dirname, '..', 'index.html')).href;
     await page.locator('#gotIt').click();
     await page.locator('#practice').click(); await page.clock.runFor(120);
     assert.equal(await page.evaluate(() => snakeShowTest.game.activeIds().length), 2);
-    await page.locator('#freezePhaseTimer').click();
+    // Clicking a timer button must not steal focus from the winch; Space keeps driving the motor.
+    await page.locator('#pull').focus(); await page.locator('#freezePhaseTimer').click();
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'pull');
     const frozenLiftTimer = await page.locator('#timer').innerText();
-    await page.locator('#pull').focus(); await page.keyboard.down('Space'); await page.clock.runFor(1600);
+    await page.keyboard.down('Space'); await page.clock.runFor(1600);
     assert.equal(await page.evaluate(() => snakeShowTest.game.players[0].pulling), true);
     assert.ok(await page.evaluate(() => snakeShowTest.game.stations[0].h[0] > 0));
     assert.equal(await page.locator('#timer').innerText(), frozenLiftTimer);
