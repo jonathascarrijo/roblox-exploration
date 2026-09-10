@@ -1,143 +1,147 @@
-# Snake Show — playable 2D browser adaptation
+# The Midnight Fair — playable 2D browser adaptation
 
-Updated 9 September 2026 · Based on the [design brief v2](../snake-show-design-brief-v2.md), the [coupled-cables prototype](../prototypes/prize-lift-coupled-cables.html), and the user-owned direction in `user-notes.txt`.
+Updated 10 September 2026 · Based on [design v3](../midnight-fair-design-v3.md), [Moonmop Lift](../challenges/moonmop-lift.md), and the selected [Moonmop character](../creatures/moonmop.md).
 
-Open [index.html](index.html) in a modern browser. Everything runs locally, including the art, game rules, and bots. There is no build, installation, account, external asset, or network dependency.
+Open [index.html](index.html). The connected prototype now includes a lantern fair, protected Moonmop pods, Keeper/Trickster roles, immediate public voting, team-victory adoptions, and a saved local nursery. It remains one player with local bots, with no build step, package installation, external assets, account, or runtime network dependency. The independent [interaction studies](../prototypes/README.md) keep their own code and historical presentation.
 
-## Two motors everywhere, and the spotter
+## Play and return to the fair
 
-Every Prize Lift in this build has exactly two operators, two cables, and two motors. The former three-cable tray is gone from the physics, drawing, bots, receipts, and tests. When a vote leaves an odd cast, the removed contestant’s last lift partner becomes the act’s **spotter**: no console, free to walk into any rescue area and Catch there. A deadlock keeps the current spotter. A Snake spotter can hold Rig inside a rescue area to arm that lift; arming from the rescue area changes no motor. The spotter’s longest stay and Catch taps become one public receipt. The [pairing and elimination review](../pairing-and-elimination-review.md) records why this format was chosen (9 September 2026) and what still needs playtesting.
+- **Play with 7 bots:** play Maya in an eight-player cast, with six Keepers and two secret Tricksters. A round uses Moonmop Lift for up to three trials.
+- **Practice a lift:** train with one clearly labeled Keeper bot. It uses the same physics and grants no adoption.
+- **Watch bots:** all eight players run autonomously; 1×, 2× and 4× playback are available. Watching grants no adoption and exposes no live secret roles.
+- **My Nursery:** inspect particular babies, nickname and favorite them, pet them, turn their 2D view, and settle them to sleep. Choose one walking companion or arrange three ordered showcase slots.
+- **Meet & present:** inspect Leo’s bot companion, react or pet, Present your own companion, gather on a blanket, or pose in a portrait nook. These are local interaction studies with fixed bot responses and a shared two-second reaction cooldown. Visitor petting and reaction-effect preferences save locally. There are no like counts or care penalties.
+- **Exchange garden:** propose one specific baby for one from Leo’s labeled bot collection. This is a scripted exchange study, not a real player market.
 
-## Play
+The named nursery, exchange and challenge tents also respond to **E** when you walk nearby. The sign at the bottom of the garden enters a round. The nursery and social interfaces are available outside the live round; owned babies never enter the challenge or change its physics.
 
-- **Play with 7 bots:** you play Maya; the other seven contestants are explicitly labeled bots. Two of the eight roles are shuffled privately each episode. You may be a Loyal or a Snake.
-- **Practice a lift:** play a two-person lift with one Loyal bot using the same physical rules. No voting, sabotage, or episode rewards.
-- **Watch bots:** all eight contestants act autonomously. Choose a camera and run at 1×, 2×, or 4×. Roles remain hidden from the spectator interface until removal or the finale.
-
-The connected episode includes casting, up to three Prize Lift acts with rotating groups, receipts, open voting, runoff/deadlock, removal, public backstage spectating, and a factual finale with all roles and recorded ballots. **New episode** resets the cast and episode scores.
-
-The private role card shows your own avatar with **yellow slit eyes** for a Snake or a **golden prize pin** for a Loyal. The same cues appear when reopening **Show role / My role**. Vote results show these cues on the removed contestant, and the finale shows them on the entire cast. Cast portraits, lift observations and voting targets keep their ordinary appearance before their roles are revealed. These deliberately simple cues are for UX validation.
-
-## Controls
+## Controls and two-motor rules
 
 | Action | Keyboard | Pointer / touch |
-|---|---|---|
-| Walk in the courtyard | WASD or arrow keys | Tap a destination or use the direction buttons |
-| Use a nearby console | E | Join console / Watch nearby lift |
+| --- | --- | --- |
+| Walk in the fair garden | WASD or arrows | Tap a destination or use direction buttons |
+| Use a nearby tent or console | E | Lobby buttons; Join console / Watch nearby lift |
 | Raise your cable | Hold Space; release to lower | Hold Pull |
-| Catch a falling capsule | C, once inside the gold zone | Catch button |
-| Arm sabotage as a Snake | Hold R for 1.5 seconds at the baseline, at your console or, as the spotter, inside a rescue area | Hold Rig |
+| Catch a slipping pod | C, once per fault | Catch in the gold zone |
+| Rig as a Trickster | Hold R at your console or spotter rescue area | Hold Rig |
 | Pause / resume | Escape | Pause / Resume |
 
-At a console, movement is replaced by lift controls. **Leave console** returns to the courtyard. Your assigned cable stops receiving input. Walk into any station’s marked rescue area to help Catch, or return to your own console. The spotter has no console and starts each act in the courtyard; the cast panel labels them **SPOTTER**. Selecting another camera only changes what you see; it grants no remote input or rescue power. Keyboard Space/Enter also operates focused action buttons. While you operate your own console, Space always drives the winch, even when a click or a pause has moved focus to another button; use Enter to activate that button instead. Held controls are released and the episode pauses on focus loss or a hidden tab; resuming is explicit.
+Every lift retains exactly two operators, motors and cables. Pairings rotate. When a removal leaves an odd cast, the removed player’s last partner spots the next trial: no console, but movement between rescue areas, Catch, voting, and the same team reward opportunity. A deadlock preserves the spotter. A Trickster spotter can arm a nearby pod without changing either motor.
 
-Sound is optional and off by default. Every sound has a visual equivalent. Reduced-motion preferences suppress decorative movement. Menus, controls, receipts, and ballots are HTML; the game scene is drawn on canvas. The moving scene is not a complete nonvisual gameplay interface.
+One shared Rig attempt is available per trial. An operator’s completed hold arms the pod and temporarily changes their motor; an unrescued armed spill completes a diversion. Catch clears the diverter and motor burst without refunding the attempt. Delivery, a safety-boundary failure, or the deadline defeat an unresolved Rig. Two successful diversions **and** a surviving Trickster after the final required vote are necessary for a Trickster win. Removing both Tricksters or making two diversions impossible gives the Keepers an early win. Deliveries are a separate count, never an extra victory or personal reward requirement.
+
+The pod is clear and protective. The same opaque housing hides ordinary recovery and secret diversion above the theatrical lava. A tray reaching the lower boundary immediately fails, with no Catch or diversion from that contact. Public pictures never identify the diverted station. Both finale scenes welcome safe babies into a nursery.
+
+Selecting a station view grants no remote control or rescue eligibility. Leave console to walk, help Catch nearby, or return to your assigned console. Space drives the winch while operating your console even if another button has focus; Enter activates that button. Inputs release on focus loss, and the game pauses until explicitly resumed. Sound is optional and defaults off. Reduced-motion preferences suppress decorative motion. HTML controls and text accompany the canvas; this is not a complete nonvisual gameplay interface.
+
+## Clues and public voting
+
+After all lifts finish or 45 seconds expire, clues and voting open **together**, with one **35-second clock**. There is no separate waiting period before voting. Early finishers can inspect completed public clues while the other lifts continue; voting starts when the challenge resolves. Previous trials remain available from the Trial selector.
+
+Every lift contributes its outcome, longest observed handling interval, and last Catch response. The spotter adds their longest rescue-area stay and saves/misses. These factual observations never consult roles, private Rig events, or the secretly selected route. Trial-wide diversion totals appear after challenge resolution.
+
+Votes are public from the first choice: live counts, pointing, hunch/certainty, tied-leader costumes, and per-player locks. Tap a face or its clue-card shortcut to vote. Change your hunch, skip and return, or select **I’m sure!**; certainty is expressive and never adds vote weight. Changing the target resets certainty. **Lock vote** freezes your choice and confidence. The latest valid choice counts at the deadline even if unlocked; all active players locking ends the vote early unless its developer clock is frozen. No self-votes. A tie opens a 10-second runoff among tied leaders; another tie removes nobody. The finale reconstructs individual voter → target choices.
+
+This is the user-approved prototype contract recovered from Git commit `b0d1d65` on 10 September 2026. It is the default on the normal page, with no ballot-mode query parameter. The **Public votes** developer scene merely pre-fills example choices. Roles and private sabotage remain secret until their intended reveals.
+
+**New round** immediately starts a fresh playable round, including from practice results and spectating. **Return to the fair** is a separate action for nursery access.
+
+Removed players can observe public views, clues and results, with no active controls or votes. **Return to the fair** lets the old round finish in the background in this tab while the player browses or starts another round. Its eligible adoption arrives once at its own finale. Background rounds pause when the page is paused or hidden; they are not saved across a reload or closed tab. Leaving an active, unfinished round abandons it without a reward. These are local study constraints, not production departure rules.
+
+## Adoption, identity and saving
+
+Each participating member of the original winning team is entitled to one baby, even after a vote-out. The local player’s individual is saved only after the finale; repeated claims for the same round/player do not create duplicates. Practice, watching, incomplete rounds, losses, and developer scenes grant none. Delivery, Catch and Rig success do not affect eligibility, quantity or color.
+
+**Temporary participation assumption:** an accepted control attempt, movement during a trial, opening/reviewing clues, or casting/abstaining on a ballot qualifies. No success or time quota is imposed. The bots are assumed to participate. Production AFK, departures and reconnection rules remain open; the prototype does not validate them.
+
+Individuals have unique IDs, nicknames, variants and origin entries. Same-color babies remain separate records while counting as one owned variant. A round reward describes the team victory, not a personal save. An exchanged baby retains its original origin, including an explicit study origin for Leo’s starter babies.
+
+The provisional palette tests differing rarity with shared odds for both teams:
+
+| Study color | Study rarity | Chance per award |
+| --- | --- | --- |
+| Lilac | Common | 50% |
+| Peach | Common | 25% |
+| Mint | Uncommon | 15% |
+| Midnight blue | Rare | 8% |
+| Pearl | Very rare | 2% |
+
+These names, tiers and probabilities are implementation fixtures, **not approved rarity decisions or measured acquisition targets**. The trial always shows the signature lilac pod. A separate seeded color draw keeps the palette independent of role and personal performance; the same test seed reproduces the color. The in-game collection-study details disclose the odds. Every shade uses the same art and affection controls.
+
+Three proposed badges are exercised locally: **First Friend**, **Both Sides of the Moon**, and **Moonmop Devotee** (own all five explicitly listed study colors simultaneously). Badge unlocks remain after an exchange; one equipped badge appears beside Maya’s lobby name. Current holdings are counted separately. These are draft requirements and permanence behavior, not new product approvals.
+
+Nursery ownership, claim receipts, completed exchanges, preferences and equipment save together under `midnight-fair-nursery-v1`. Lift tuning keeps its existing separate key. Browser storage is origin-specific: direct-file and served play may use different saves. An unreadable snapshot is preserved; storage failure falls back to a clearly reported temporary session. There is no cloud save, server authority or coordination between multiple tabs. Use one game tab per saved collection. Clearing browser data removes the local collection.
+
+## Exchange study
+
+Select the exact individual on each side, inspect nickname/species/color/rarity/origin, ask Leo to confirm, then confirm the current arrangement. Leo deliberately accepts any one unlocked baby for one of his offers; this tests the interface rather than trading demand.
+
+Every offer edit clears both confirmations. Canceling or closing an uncompleted proposal transfers nothing. A completed exchange moves both offers in one saved snapshot and records a transaction ID so retrying it cannot duplicate a transfer. Favorites must first be deliberately unlocked in My babies. The review warns when giving away the last copy of a variant or clearing a companion/showcase slot. Successful exchanges clear affected equipment while retaining origins and earned badges. No currency, automatic price or real-money value is introduced.
+
+This tests single-tab local ownership behavior. Multiplayer acceptance, conflicting clients, interrupted server transactions and reconnect recovery still require authoritative implementation and testing.
 
 ## Lift tuning and approved preset
 
 The user approved the current browser configuration on **8 September 2026**. The complete 20-setting snapshot is saved as [approved-2026-09-08.json](presets/approved-2026-09-08.json): winch width 1.2, bot skill 20%, static friction 0, sliding friction 0, and the remaining values as captured from the game. To restore it later, paste that file into **Export / import a draft** and select **Apply pasted draft**. The sliders remain available for further experiments.
 
-Select **Tune lift** in the top bar. It exposes all 17 sliders from the coupled-cables prototype with the same ranges, increments, and baseline values, plus **Winch width**, **Bot skill**, and the episode’s **Hold to arm Rig** setting. Every slider also has an editable numeric value. Changed fields are marked with a dot.
+Select **Tune lift** in the top bar. It exposes all 17 sliders from the coupled-cables prototype with the same ranges, increments, and baseline values, plus **Winch width**, **Bot skill**, and the round’s **Hold to arm Rig** setting. Every slider also has an editable numeric value. Changed fields are marked with a dot.
 
-**Winch width** is the first slider, under **Frame**. It changes the cable span from 0.8 to 3.0 units (reference width: 2.0). The frame, cable mounts, and tray resize live. Narrower spans produce more tilt at the same cable-height difference and give the capsule a shorter distance to slide off. Resizing preserves the prize’s relative position, load distribution, physical slide velocity, and cable heights; it does not restart an attempt. Older saved drafts inherit the reference width.
+**Winch width** is the first slider, under **Frame**. It changes the cable span from 0.8 to 3.0 units (reference width: 2.0). The frame, cable mounts, and tray resize live. Narrower spans produce more tilt at the same cable-height difference and give the pod a shorter distance to slide off. Resizing preserves the pod’s relative position, load distribution, physical slide velocity, and cable heights; it does not restart an attempt. Older saved drafts inherit the reference width.
 
 **Bot skill** is under **Bots**, immediately after the Frame group. It ranges from 0–100% in 5-point steps (draft baseline: 75%). It controls all bots’ lift reaction time, anticipation of the ball’s momentum, handling mistakes, and Catch accuracy. A live edit takes effect on the next motor decision and clears a current added handling mistake; Catch plans use the skill at the start of their fall. At 100%, bots use the quickest reactions and no added handling mistakes, while still being limited by the cables and the other operators. The setting saves and exports with the rest of the draft.
 
-Motor force, upward/downward caps, winch drag, gravity, tap pulse, prize weight, slide response/drag/friction, Rig multipliers/duration, and Catch timing feed the actual simulation. Edits apply to all current lifts and carry into future acts and episodes. **Start offset** affects the next loaded capsule or a restart, never teleports a capsule already in play. Changing tap pulse affects future taps. Rig duration is recalculated from the existing arm time; extending it can extend a still-armed capsule’s burst. Changing Catch duration retimes its current fall and needle; previously spent taps and consumed team attempts stay spent.
+Motor force, upward/downward caps, winch drag, gravity, tap pulse, pod weight, slide response/drag/friction, Rig multipliers/duration, and Catch timing feed the actual simulation. Edits apply to all current lifts and carry into future trials and rounds. **Start offset** affects the next loaded pod or a restart, never teleports a pod already in play. Changing tap pulse affects future taps. Rig duration is recalculated from the existing arm time; extending it can extend a still-armed pod’s burst. Changing Catch duration retimes its current fall and needle; previously spent taps and consumed team attempts stay spent.
 
-**Restart same practice** starts a two-person practice lift with the current draft and the same random seed. It resets the practice run, making input comparisons repeatable. **Restore prototype** restores the baseline values live; it does not reset the episode or refund sabotage. Neither action establishes settled presets.
+**Restart same practice** starts a two-person practice lift with the current draft and the same random seed. It resets the practice run, making input comparisons repeatable. **Restore prototype** restores the baseline values live; it does not reset the round or refund sabotage. Neither action establishes settled presets.
 
 Drafts are stored locally in this browser under `snake-show-lift-draft-v1`, separately from game progress. They survive refreshes and browser restarts on the same origin. If storage is unavailable, settings remain usable for the current tab. **Export / import a draft** provides versioned JSON to paste into a conversation or save elsewhere. An invalid or out-of-range import leaves the current settings intact. The original prototype and its defaults are not edited when tuning the game.
 
-**Motor readouts** shows each end’s height, share of the prize load, recent hold percentage, and estimated required hold. These use the prototype’s measurements; the required hold estimate assumes an unboosted motor and cannot expose a secret Rig. Live readouts are separate from the limited receipts used for voting. The tuning panel also shows theoretical speeds, static tilt threshold, best-case climb time, and effective Catch-zone duration. These are model estimates, not observed balance results.
+**Motor readouts** shows each end’s height, share of the pod load, recent hold percentage, and estimated required hold. These use the prototype’s measurements; the required hold estimate assumes an unboosted motor and cannot expose a secret Rig. Live readouts are separate from the limited clues used for voting. The tuning panel also shows theoretical speeds, static tilt threshold, best-case climb time, and effective Catch-zone duration. These are model estimates, not observed balance results.
 
-## Implemented rules and adaptation choices
+## Bots, timing and development controls
 
-The full cast is six Loyals and two Snakes. Snakes win with **at least two heists plus one Snake still active after the last vote**. Both Snakes removed, or two unsuccessful opportunities, produces an early Loyal win. Removed contestants keep their original team result and can read public evidence or follow the public cameras, but cannot pull, sabotage, catch, or vote.
+Bots retain the existing controller: predicted pod motion determines target tilt and their own motor input. Skill changes reaction time, anticipation, mistakes and Catch timing. Trickster bots share Rig reservations, know their teammate and can sabotage; Keeper ballots use public clues with uncertainty. Spotters walk between rescue areas at the same movement speed. Bot results do not establish human cooperation quality or game balance.
 
-Prize Lift uses the coupled-cable model: fixed motor force, load distributed by the capsule’s position, inertia, drag, sliding friction, exposed edges, and no automatic hoist. The two-cable physics at the reference width is compared frame by frame against functions extracted from the unchanged prototype in the regression suite. Its mechanical view follows the reference: equal horizontal/vertical scale, constant-length rotating tray, inward-moving cable attachments, cable thickness indicating prize load, height ruler, and a quadratic visual fall during Catch. The round golden capsule keeps its crown motif. There is no other tray geometry: an odd cast produces a spotter, never a third cable.
+Timing remains a documented adaptation: casting 10 seconds, each challenge up to 45, combined clue review/voting up to 35, runoff up to 10, and a separate readable result pause of 5. Without early finishes or unanimous locking, three trials reach the finale in **265–295 seconds**: `10 + 3 × (45 + 35 + 5)`, plus runoffs. A 20-second finale would make **285–315 seconds**, 15 seconds beyond v3’s target. The finale stays open for inspection and nursery browsing. Pauses and developer timer holds can extend play further.
 
-The provisional baseline matches the coupled-cables prototype: motor force 1.7× balanced load, gravity 1.5, winch drag 4, prize/tray weight ratio 1, slide response 1.2, slide drag 0.1, static/sliding friction 0.02/0.05, top speed ±0.2, tap pulse 0.15 seconds, start offset 0.5, delivery height 2.6, lower boundary −1.8, and maximum end-height spread 1.6. Tray mass is 2, winch inertia is 0.6 per end, and the upper limit is 2.8. These replace the browser adaptation’s earlier mass/inertia and upper-stop values. Physics runs in 1/120-second steps.
+[Developer scenes](index.html?dev=1&scene=vote) cover private roles, public votes, Catch, early completion, runoff/deadlock, role reveals, finale, watching, rest-area spectating and trial-two history. Scenes preserve lift tuning and grant no babies; all rounds in a `dev=1` tab are reward-free. Legacy `roleSnake` and `roleLoyal` scene IDs still load the renamed role cards; `Snake` and `Loyal` still open their role-reveal scenes.
 
-Your notes override the older water theme: the challenge pit is **stylized lava**, and the capsule contains an original **golden crown treasure**. The villa retains an ornamental pool. No creature or contestant is harmed; a spill enters the opaque collection prop. A tray contacting lava fails immediately, with no Catch and no heist from that drop. This is a presentation adaptation, not a change to the team objective.
-
-Rig reserves the team’s one attempt while held. At the baseline, canceling, leaving, or faulting before 1.5 seconds releases the reservation. Completion consumes it, arms this capsule’s diverter, and doubles that motor for five seconds. The arming time, motor multipliers, and burst duration are adjustable. A Snake spotter can hold Rig only while standing inside a station’s rescue area; walking out cancels the hold. Completion consumes the same team attempt and arms that capsule’s diverter with no motor burst, so the operators’ physics are unchanged. The remote-burst variant, where the spotter boosts an operator’s motor, is deliberately not implemented; the brief lists it as a test variant with a framing cost. An armed, uncaught edge spill awards a heist; expiry of the burst does not disarm the capsule. Catch, delivery, lava contact, or the challenge deadline clears unresolved sabotage. A replacement after an uncaught spill loads in three seconds and carries no rig. A station can bank only one delivery per act.
-
-At the baseline, Catch lasts three seconds with a 0.25-second opportunity on each of two passes. As in the reference, the zone starts at 60% of the track: the baseline windows are 0.90–1.15 seconds and 1.85–2.10 seconds after the fall begins. This replaces the earlier centered zone. Requested zone width is clipped to the remaining 40% of the track; the tuning panel reports its effective duration. Each eligible contestant gets one fresh tap per fall. One save resolves immediately and clears sabotage; another contestant’s miss cannot cancel it. A catch centers the capsule, freezes it briefly for a 0.45-second reset, and preserves the tray heights. The local simulation models no network delay allowance.
-
-The lower-boundary drop and post-loss capsule reload reset are explicitly browser prototype choices: replacements restart at the initial height. Rewards, cosmetics, real matchmaking, multiplayer networking, chat, saved progression, and Roblox services are outside this browser build. The requested bot-filled episode is a **local simulation exception** to the brief’s proposal that production practice bots remain outside the main cast. No production matchmaking or balance decision is implied.
-
-## Visual voting room
-
-The 8 September browser iteration uses **open voting**. Players whose lift finishes early automatically see **What happened?** while unfinished lifts show **Still playing**. They can return to watch or help nearby lifts. Voting stays closed until every lift finishes or the 45-second limit expires. Then pictures and voting share **35 seconds** (the former 10-second review plus 25-second vote). An already-decided episode goes directly to the finale.
-
-Every completed lift shows its operators, illustrated handling, the last Catch response, and its outcome. The pictures summarize public observations; they are not chronological replay frames or proof of what caused an outcome. **Look closer** enlarges the observations; **More detail** contains the factual text. Heist totals appear only after the entire act, never against an individual lift.
-
-All eight contestants have fixed seats in **Pick a face**, including your unvotable **YOU** seat and removed contestants marked **OUT**. Votes and incoming counts are public immediately. Each voter points a finger at their current target; the direction follows the screen layout. The same players in **The lifts** are voting shortcuts, including when reviewing older rounds. Self-voting, removed targets and targets outside a runoff stay disabled everywhere.
-
-A tap casts a **hunch** immediately. **I’m sure!** becomes available after choosing someone and toggles a public certainty marker, without changing vote weight. Choosing a different target starts as a hunch again. Players can change or skip their vote until **Lock vote** or the deadline. Certainty and locking are separate. Once everyone still onstage locks (eight players in the first round), the remaining timer is skipped. Otherwise the deadline counts each latest choice, including unlocked votes. Bots cast and lock at their scheduled decision time.
-
-The contestants with the most votes wear a temporary green snake hood; all tied leaders receive it, and zero votes produce no hood. It follows the public count, never the hidden role. A runoff resets votes, certainty, locks, counts and fingers, retaining all eight seats but only allowing tied targets. All active contestants vote again. A second tie leaves everyone in play. The result reveals only the removed contestant’s role.
-
-Watch mode and backstage show the same public information but cannot cast the human ballot. **My role** reveals your own private card on request. **Pause** freezes the clock with an inline **Resume** bar. Desktop puts voting beside the pictures; narrow layouts put voting first.
-
-The illustrations match the cast's onstage clothing, hair, skin, and glasses. Touch controls, keyboard selection, text equivalents, and reduced-motion preferences are supported. This visual direction still needs comprehension testing with the intended audience; implementation checks do not establish that children understand the clues.
-
-## Bot behavior and evidence
-
-Bots steer the capsule toward the center and slow it before it overshoots. They use its position and physical slide velocity to choose a target tilt, then operate their own cable to approach that tilt while climbing. The controller respects the tuned width. This replaces the earlier level-first controller and its extra hold allowance on a loaded end. A bot spotter walks at courtyard speed toward the lift whose capsule is furthest off center, or toward a lift in Catch; a Snake bot spotter arms the lift it reaches once its usual Rig timing arrives. Skill controls reaction delays, momentum anticipation, occasional over-pulls, and planned Catch accuracy. Catch plans are real input times derived from the configured window and zone. Snake bots retain their sabotage strategy: they know their own team, contend for the same Rig reservation, choose whether to over-pull or drop their boosted cable, and intentionally mistime Catch. They stop initiating sabotage after their team reaches two heists. All outcomes arise from the physical simulation and accepted taps.
-
-Every station contributes three receipts, in fixed location order: **outcome**, **the longest sustained observed handling interval**, and **the last Catch response**. Handling intervals consider high-held Pull, low-idle, and high-released Pull; ties use contestant number. Intervals shorter than 0.2 seconds are reported as no sustained interval. An act with a spotter adds one **spotter** receipt: the rescue area where they stood longest, the time there, and their saves and misses. Selection never consults secret events or roles. Live receipts never name Rig, a diverter, a motor multiplier, or an active role. Heist totals become public only after the act ends. Older receipts remain accessible. Loyal bots read the spotter card too: a miss raises suspicion a little, a save lowers it.
-
-Loyal bots weigh these public cards with random uncertainty, retaining decaying suspicion across acts. They never query other roles to choose a ballot. Snakes use the same evidence plus their legitimate teammate knowledge to deflect votes. Bots are fallible rule-based agents, not language models or models of human social behavior.
-
-Casting is 10 seconds, challenge up to 45, combined review/vote up to 35, runoff up to 10. Each resolved ballot has an additional five-second readable reveal. The finale remains open for inspection. With no early finishes or unanimous locking, three-act browser play reaches the finale in **265–295 seconds** (10 + 3 × (45 + 35 + 5), plus runoffs), with optional pauses adding time. The finale is manually dismissible; its viewing duration is not capped at the brief’s 20-second target. Completed lifts, unanimous locks, practice and early wins can finish sooner.
-
-## Developer scenes
-
-Open [the game with developer tools](index.html?dev=1) and expand **Dev scenes** in the timer bar. Add `?dev=1` to the normal game URL; add `&scene=vote` to open directly at a voting scene. Without `dev=1`, the scenario menu and its game-pause control are absent. This is a local prototype switch, not an access-control system.
-
-The menu includes **Your Snake role**, **Your Loyal role**, **Vote**, **Public votes**, **Catch timer**, **Early finish**, **Runoff**, **Deadlock**, both vote reveals, **Finale reveal**, **Watching**, **Backstage**, and **Round 2** (including the spotter). Loading a scene replaces the local episode and keeps your current lift tuning. Role cards hold the casting countdown while the game runs; other scenes pause the game for inspection. **Resume game** continues from that state. The existing timer switches remain independent.
-
-**Next bot vote**, **Bots lock votes**, **Finish another lift**, and **Timer ends** act on the current scene. They are disabled when inapplicable. Expiring a frozen phase resumes that phase clock and advances normally without changing which players are bots. **Fresh episode** starts normal play with random roles and clears scene timer holds. Opening or closing the menu alone never resets or pauses the game. The old voting-harness URL forwards here; there is one shared implementation of the scene shortcuts.
-
-## Development timer controls
-
-The sticky **DEV · TIMERS** bar is available in normal play, practice, watch mode, and voting fixtures. Opening lift pictures or instructions brings the same controls into the dialog so they remain accessible. **Freeze timer** stops only the current phase countdown. Physics, movement, bot decisions, Catch, Rig, voting, and animations keep running. It also holds the phase open after all lifts finish or everyone locks a vote; **Resume timer** permits the pending transition. It works for casting, the lift round, voting, runoff and the result reveal. The lobby and finale have no running phase countdown.
-
-**Other timers** independently freezes Catch (including the falling-capsule animation and tap window), Rig (hold and burst duration, including a spotter’s arming hold from a rescue area), or reload (including the short post-Catch reset). Each switch applies to that mechanic at every lift. Inputs can still resolve or cancel an action. Bot reaction times and physical movement are never frozen by these switches. The normal **Pause** button and Escape still pause the whole game.
-
-Frozen clocks resume at their saved time without catching up. Switches remain set across phases; starting a new episode or practice resets them. Timer holds are development tools and can extend a round beyond the normal duration.
+The **DEV · TIMERS** bar remains available during normal play. Freeze a phase countdown while physics and accepted inputs continue, or independently freeze Catch, Rig and reload timers. Opening instructions or clue details brings the same timer controls into the dialog. The full Pause remains separate. Scene steps act only on their current phase, including clue review.
 
 ## Run and validate
 
-From the repository root, optionally serve the game:
+From the repository root:
 
 ```sh
-python -m http.server 8000 --bind 127.0.0.1 --directory concepts/snake-show/browser
+python3 -m http.server 8000 --bind 127.0.0.1 --directory concepts/snake-show/browser
 ```
 
-Then open `http://127.0.0.1:8000`. Direct `file://` opening works too.
+Open [the local game](http://127.0.0.1:8000/). Directly opening `index.html` also works. No package installation or build is required.
 
-JavaScript and CSS URLs in `index.html` include content versions so an updated page does not reuse older cached controls. After editing an asset, update its `?v=` value to the first 12 lowercase hex characters of its SHA-256 hash. Verify the served page after a normal reload; a fresh isolated browser alone does not reproduce an existing tab's cache.
-
-Run the dependency-free engine suite:
+Run the dependency-free suite:
 
 ```sh
-node --test concepts/snake-show/browser/tests/engine.test.cjs concepts/snake-show/browser/tests/tuning.test.cjs concepts/snake-show/browser/tests/bots.test.cjs concepts/snake-show/browser/tests/voting.test.cjs concepts/snake-show/browser/tests/dev-tools.test.cjs
+node --test concepts/snake-show/browser/tests/engine.test.cjs concepts/snake-show/browser/tests/tuning.test.cjs concepts/snake-show/browser/tests/bots.test.cjs concepts/snake-show/browser/tests/voting.test.cjs concepts/snake-show/browser/tests/dev-tools.test.cjs concepts/snake-show/browser/tests/nursery.test.cjs
 ```
 
-For repeatable UI checks, use [Dev scenes](index.html?dev=1&scene=vote) inside the game. The [old voting fixture link](tests/voting-harness.html) forwards to the same view. Run the scene-controller regression tests with `node --test concepts/snake-show/browser/tests/dev-tools.test.cjs`.
-
-Optional browser checks require an existing Playwright installation and Chromium:
+Optional browser checks require an existing Playwright installation:
 
 ```sh
 node concepts/snake-show/browser/tests/browser-smoke.cjs
 node concepts/snake-show/browser/tests/tuning-browser.cjs
+node concepts/snake-show/browser/tests/nursery-browser.cjs
 ```
 
-Set `PLAYWRIGHT_MODULE` to an installed Playwright module path, `PROTOTYPE_BROWSER` to a Chrome/Chromium executable, and optionally `PROTOTYPE_SCREENSHOTS` to a screenshot output directory. Generated `test-artifacts/` is ignored. The browser tests launch an isolated headless browser against these local files, exercise actual controls, and check narrow layouts and errors. They never attach to an existing user browser. Known limitation, observed 9 September 2026: the 320-pixel overflow assertions in both scripts fail on the committed build as well as this one, with both system Google Chrome and Playwright’s cached Chromium. The cause was not investigated as part of the spotter change; the remaining checks in both scripts pass up to that assertion.
+Set `PLAYWRIGHT_MODULE` to an existing Playwright/Playwright Core module and `PROTOTYPE_BROWSER` to an installed Chromium/Chrome executable if needed. `PROTOTYPE_SCREENSHOTS` selects the screenshot folder. The nursery suite requires the server above, or a `PROTOTYPE_URL` pointing to its `index.html`; it verifies exact asset hashes and normal reloads in the same browser context. Generated `test-artifacts/` files are ignored.
 
-Append `?seed=11` to reproduce a cast and bot random stream; different human actions can still change its path. `?seed=11&test=1` additionally exposes the `snakeShowTest` inspection hook used by the browser suite. It is absent without the explicit `test=1` query. The full local state is inherently inspectable; hiding roles in the interface is not production secrecy.
+The suite covers two-motor invariants and spotters, baseline physics, Rig/Catch, phase deadlines, immediate public voting, confidence and locks, developer scenes, team entitlement and claim retries, persistence, duplicate individuals, exchange constraints, badge/current-holding separation, pending vote-out rewards, and desktop/320/390/768px layouts. It does not establish production security, multiplayer reliability, audience comprehension, or balance.
 
-The engine suite now asserts that every reachable lift has exactly two operators and that a spotter exists exactly when the cast is odd, across seeded episodes. Departures are not modeled in this build; the brief applies the same spotter rule to them. Before using the connected episode as evidence about the Roblox design, playtest the spotter with real players: whether being benched after a partner’s removal feels fair, how often a Snake spotter’s armed lift becomes a heist, and whether the Loyals’ two-for-one on a failed pair unbalances act 2. Also test comprehension, timing, observation across cameras, and phone controls. Bot outcomes do not establish social deduction quality, multiplayer fairness, or retention.
+Append `?seed=11` to reproduce the cast and bot stream. `&test=1` additionally exposes `snakeShowTest` for the isolated suite; it is absent in ordinary play. Internal `SnakeShow`, `Episode`, `act`, `pot` and `heists` identifiers remain for compatibility with the existing studies and fixtures; visible language follows v3. Offline state is inherently inspectable.
+
+After editing browser JavaScript or CSS, update each referenced `?v=` in `index.html` to the first 12 lowercase hex characters of that file’s SHA-256 hash. Check the served page after a normal reload as well as in isolated tests.
+
+## Preserving approved prototype behavior
+
+A new setting, vocabulary, creature or collection system builds on the working game. Compare behavioral changes against the last working revision before changing implementation or tests. The recovery reference is `b0d1d65`; its voting, input, timer, pairing, spotter, physics, bot and tuning assertions are retained with only the new fictional names and safe-landing copy adapted.
+
+Protect the default experience in tests: a hidden flag or skipped phase must not be needed to reproduce an approved interaction. Keep the shared 35-second vote, public signals, quick replay, independent developer clocks, Space-at-console focus behavior, numeric tuning controls, saved drafts and the approved preset unless the user explicitly changes those decisions. Update the current brief when an older written rule conflicts with an explicit user decision. These checks preserve behavior; they do not establish player comprehension or production balance.

@@ -20,25 +20,35 @@ function fixture(settings = approved) {
   return { ui, dev: Dev.create(ui) };
 }
 
+test('saved role-reveal scene URLs survive the Midnight Fair rename', () => {
+  for (const [scene, role] of [['Snake', 'Trickster'], ['Loyal', 'Keeper']]) {
+    const { ui, dev } = fixture();
+    assert.equal(dev.runScene(scene), true);
+    assert.equal(ui.game.phase, 'result');
+    assert.equal(ui.game.players[ui.game.lastVote.removed].role, role);
+    assert.equal(ui.game.study, true);
+  }
+});
+
 test('every dev scene opens with baseline and approved tuning, including the new spotter rules', () => {
-  const phases = { roleSnake:'casting', roleLoyal:'casting', vote:'vote', public:'vote', catch:'challenge', early:'challenge', runoff:'runoff', deadlock:'result', Snake:'result', Loyal:'result', finale:'finale', watch:'vote', backstage:'vote', history:'vote' };
+  const phases = { roleSnake:'casting', roleLoyal:'casting', vote:'vote', public:'vote', catch:'challenge', early:'challenge', runoff:'runoff', deadlock:'result', Trickster:'result', Keeper:'result', finale:'finale', watch:'vote', backstage:'vote', history:'vote' };
   for (const settings of [{}, approved]) for (const [scene] of Dev.scenes) {
     const { ui, dev } = fixture(settings), before = { ...ui.game.settings };
     assert.equal(dev.runScene(scene), true);
     const g = ui.game;
     assert.equal(g.phase, phases[scene], scene);
     assert.deepEqual(g.settings, before, 'loading a scene preserves tuning');
-    assert.equal(g.players.filter(p => p.role === 'Snake').length, 2);
+    assert.equal(g.players.filter(p => p.role === 'Trickster').length, 2);
     assert.ok(g.stations.every(s => s.ids.length === 2));
     if (scene.startsWith('role')) {
-      assert.equal(g.players[0].role, scene === 'roleSnake' ? 'Snake' : 'Loyal');
+      assert.equal(g.players[0].role, scene === 'roleSnake' ? 'Trickster' : 'Keeper');
       assert.equal(g.timers.phase.paused, true); assert.equal(ui.paused, false); assert.equal(ui.roleVisible, true);
     } else { assert.equal(ui.paused, true); assert.equal(ui.roleVisible, false); }
     if (scene === 'history') {
       assert.equal(g.act, 2); assert.equal(g.activeIds().length, 7);
       assert.equal(g.stations.length, 3); assert.equal(g.history[1].spotter.id, g.spotter);
     }
-    if (['Snake', 'Loyal'].includes(scene)) assert.equal(g.players[g.lastVote.removed].role, scene);
+    if (['Trickster', 'Keeper'].includes(scene)) assert.equal(g.players[g.lastVote.removed].role, scene);
     if (scene === 'catch') assert.equal(g.stationOf(0).state, 'catch');
     if (scene === 'early') assert.equal(g.stations.filter(s => g.stationFinished(s)).length, 1);
   }

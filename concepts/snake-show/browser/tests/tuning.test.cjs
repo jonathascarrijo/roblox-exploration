@@ -92,7 +92,7 @@ test('live Catch duration and zone drive eligibility and both needle passes', ()
 
 test('live Rig duration and hold preserve the single consumed team attempt', () => {
   const g = episode({ rigHold: .25, rigTime: 1 }), s = g.stations[0];
-  g.players[0].role = 'Snake'; g.pressRig(0); g.tick(.26);
+  g.players[0].role = 'Trickster'; g.pressRig(0); g.tick(.26);
   assert.equal(g.attempt.spent, true); const start = s.armedAt;
   g.applySettings({ rigTime: 6, rigForce: 3 }); assert.equal(s.burstUntil, start + 6);
   assert.equal(g.pressRig(0), false);

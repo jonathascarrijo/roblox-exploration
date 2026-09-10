@@ -4,19 +4,19 @@ const { Episode, POSITIONS, assignGroups, chooseSpotter, tally, winner, makeStat
 
 function fixture(ids = [0, 1]) {
   const g = new Episode({ seed: 11, mode: 'play' }); g.start(); g.nextPhase();
-  g.players.forEach(p => { p.bot = false; p.active = true; p.role = p.id < 2 ? 'Snake' : 'Loyal'; });
+  g.players.forEach(p => { p.bot = false; p.active = true; p.role = p.id < 2 ? 'Trickster' : 'Keeper'; });
   g.stations = [makeStation(ids, 0, rng(1))];
   for (const id of ids) { g.players[id].operated = true; g.players[id].station = 0; }
   return g;
 }
 
-test('casting gives exactly two random Snakes, six Loyals, and seven labeled bots', () => {
+test('casting gives exactly two random Tricksters, six Keepers, and seven labeled bots', () => {
   const pairs = new Set();
   for (let seed = 0; seed < 40; seed++) {
     const g = new Episode({ seed });
-    assert.equal(g.players.filter(p => p.role === 'Snake').length, 2);
+    assert.equal(g.players.filter(p => p.role === 'Trickster').length, 2);
     assert.equal(g.players.filter(p => p.bot).length, 7);
-    pairs.add(g.players.filter(p => p.role === 'Snake').map(p => p.id).join());
+    pairs.add(g.players.filter(p => p.role === 'Trickster').map(p => p.id).join());
   }
   assert.ok(pairs.size > 15);
 });
@@ -61,11 +61,11 @@ test('station delivery requires both ends and banks only one prize', () => {
   g.tick(5); assert.equal(g.pot, 1);
 });
 
-test('Rig reservation rejects Loyals and non-operators, contends once, cancels, and consumes at 1.5s', () => {
+test('Rig reservation rejects Keepers and non-operators, contends once, cancels, and consumes at 1.5s', () => {
   const g = fixture([0, 1]), s = g.stations[0];
   s.x = 0; g.players.forEach(p => { p.pulling = true; });
   assert.equal(g.pressRig(2), false, 'not at a console and not the spotter');
-  g.players[0].role = 'Loyal'; assert.equal(g.pressRig(0), false, 'Loyals have no Rig'); g.players[0].role = 'Snake';
+  g.players[0].role = 'Keeper'; assert.equal(g.pressRig(0), false, 'Keepers have no Rig'); g.players[0].role = 'Trickster';
   assert.equal(g.pressRig(0), true); assert.equal(g.pressRig(1), false);
   g.tick(.7); g.releaseRig(0); assert.equal(g.attempt.reserved, null); assert.equal(g.attempt.spent, false);
   assert.equal(g.pressRig(1), true); g.tick(1.51);
@@ -126,7 +126,7 @@ test('Catch clears both the diverter and the burst, but keeps the attempt consum
   g.fault(s); g.tick(3.01); assert.equal(s.heists, 0);
 });
 
-function spotterFixture(role = 'Snake') {
+function spotterFixture(role = 'Trickster') {
   const g = fixture([0, 1]), p = g.players[2];
   p.role = role; p.spotting = true; p.operated = false; p.station = -1; g.spotter = 2;
   g.spotLog = { id: 2, seconds: [0], saves: 0, misses: 0 };
@@ -134,7 +134,7 @@ function spotterFixture(role = 'Snake') {
 }
 const rescueArea = index => ({ x: POSITIONS[index].x, y: POSITIONS[index].y + 60 });
 
-test('a Snake spotter arms a lift only from its rescue area, with no motor change; leaving the area cancels the hold', () => {
+test('a Trickster spotter arms a lift only from its rescue area, with no motor change; leaving the area cancels the hold', () => {
   const g = spotterFixture(), s = g.stations[0], p = g.players[2];
   g.players[0].pulling = true; g.players[1].pulling = true;
   assert.equal(g.pressRig(2), false, 'outside every rescue area');
@@ -152,8 +152,8 @@ test('a Snake spotter arms a lift only from its rescue area, with no motor chang
   g.fault(s); g.tick(3.01); assert.equal(s.heists, 1, 'an uncaught spill at the armed lift is a heist');
 });
 
-test('a Loyal spotter cannot arm; a spotter can Catch at the lift they stand beside and both taps are recorded', () => {
-  const loyal = spotterFixture('Loyal'); Object.assign(loyal.players[2], rescueArea(0));
+test('a Keeper spotter cannot arm; a spotter can Catch at the lift they stand beside and both taps are recorded', () => {
+  const loyal = spotterFixture('Keeper'); Object.assign(loyal.players[2], rescueArea(0));
   assert.equal(loyal.pressRig(2), false);
   const g = spotterFixture(), s = g.stations[0], p = g.players[2];
   g.fault(s); g.tick(.3); assert.equal(g.pressCatch(2, 0), 'ineligible', 'not inside the rescue area');
@@ -177,12 +177,12 @@ test('the spotter receipt is public, names the longest stay and the taps, and le
   const g = spotterFixture(), p = g.players[2]; Object.assign(p, rescueArea(0));
   g.pressRig(2); g.tick(1.6); g.tick(2);
   const review = g.reviewSnapshot(); assert.equal(review.spotter.kind, 'spotter');
-  assert.doesNotMatch(JSON.stringify(review), /SECRET|heists|events|role|armed|Rig|Snake/);
+  assert.doesNotMatch(JSON.stringify(review), /SECRET|heists|events|role|armed|Rig|Trickster/);
   g.finishChallenge();
   const card = g.history[0].spotter;
   assert.equal(card.id, 2); assert.equal(card.station, 'East lift'); assert.ok(card.seconds > 3.5);
-  assert.match(card.text, /spotted this act without a console/); assert.match(card.text, /East lift rescue area/);
-  assert.doesNotMatch(JSON.stringify(card), /Rig|diverter|Snake|Loyal|armed|burst/);
+  assert.match(card.text, /spotted this trial without a console/); assert.match(card.text, /East lift rescue area/);
+  assert.doesNotMatch(JSON.stringify(card), /Rig|diverter|Trickster|Keeper|armed|burst/);
   const none = fixture([0, 1]); none.finishChallenge(); assert.equal(none.history[0].spotter, null);
 });
 
@@ -221,15 +221,15 @@ test('every receipt set has equal public coverage and no role/Rig leakage', () =
   const g = fixture(), s = g.stations[0];
   g.privateEvent(s, 'rig', 'SECRET ROLE AND RIG'); s.armedBy = 0; g.fault(s); g.tick(3.01); g.finishChallenge();
   assert.deepEqual(s.publicCards.map(c => c.kind), ['outcome', 'handling', 'response']);
-  assert.doesNotMatch(JSON.stringify(s.publicCards), /SECRET|Rig|diverter|Snake|doubled|burst|speed/);
+  assert.doesNotMatch(JSON.stringify(s.publicCards), /SECRET|Rig|diverter|Trickster|doubled|burst|speed/);
   assert.match(JSON.stringify(g.history[0].stations[0].events), /SECRET/);
 });
 
-test('Loyal bot ballots do not consult other players’ roles', () => {
-  const g = fixture(); g.players[2].role = 'Loyal'; g.candidates = [0, 1, 2, 3];
+test('Keeper bot ballots do not consult other players’ roles', () => {
+  const g = fixture(); g.players[2].role = 'Keeper'; g.candidates = [0, 1, 2, 3];
   g.players[2].suspicion = [1, 2, 0, 3, 0, 0, 0, 0]; g.random = () => .4;
   const first = g.botBallot(g.players[2]);
-  g.players[0].role = 'Loyal'; g.players[3].role = 'Snake';
+  g.players[0].role = 'Keeper'; g.players[3].role = 'Trickster';
   assert.equal(g.botBallot(g.players[2]), first);
 });
 
@@ -249,14 +249,14 @@ test('first tie creates a runoff; second tie consumes the act without removal', 
   assert.equal(g.history[0].votes.length, 2);
 });
 
-test('win conditions require two heists AND a surviving Snake after the final vote', () => {
+test('win conditions require two heists AND a surviving Trickster after the final vote', () => {
   const g = fixture();
   assert.equal(winner(g.players, 2, 2), null);
   assert.equal(winner(g.players, 2, 3, false), null);
-  assert.equal(winner(g.players, 2, 3).team, 'Snakes');
-  assert.equal(winner(g.players, 0, 2).team, 'Loyals');
-  g.players[0].active = false; assert.equal(winner(g.players, 2, 3).team, 'Snakes');
-  g.players[1].active = false; assert.equal(winner(g.players, 2, 1).team, 'Loyals');
+  assert.equal(winner(g.players, 2, 3).team, 'Tricksters');
+  assert.equal(winner(g.players, 0, 2).team, 'Keepers');
+  g.players[0].active = false; assert.equal(winner(g.players, 2, 3).team, 'Tricksters');
+  g.players[1].active = false; assert.equal(winner(g.players, 2, 1).team, 'Keepers');
 });
 
 test('seeded episodes at different bot skills finish, remain finite, respect one heist/act, and reach both outcomes', () => {
@@ -274,7 +274,7 @@ test('seeded episodes at different bot skills finish, remain finite, respect one
     assert.ok(g.stations.every(s => [...s.h, ...s.v, s.x].every(Number.isFinite)));
     assert.equal(g.heists, g.history.reduce((sum, h) => sum + h.heists, 0));
   }
-  assert.deepEqual([...outcomes].sort(), ['Loyals', 'Snakes']);
+  assert.deepEqual([...outcomes].sort(), ['Keepers', 'Tricksters']);
 });
 
 test('frame size does not change fixed-step physics or seed determinism', () => {
@@ -306,7 +306,7 @@ test('live votes publish each accepted choice and count immediately and reset fo
   assert.equal(g.castVote(0,2),true); assert.equal(g.liveVotes().totals[2],1); assert.equal(g.liveVotes().totals[1],0); g.castVote(0,1);
   g.castVote(1,2); g.castVote(2,null);
   const live=g.liveVotes(); assert.deepEqual(live.skipped,[2]); assert.equal(live.totals[2],1);
-  assert.doesNotMatch(JSON.stringify(live),/role|Snake|Loyal|removed|confidence/);
+  assert.doesNotMatch(JSON.stringify(live),/role|Trickster|Keeper|removed|confidence/);
   g.finishVote(); assert.equal(g.phase,'runoff');
   assert.deepEqual(g.lastVote.totals,live.totals);
   assert.deepEqual(g.liveVotes().choices,{}); assert.deepEqual(g.liveVotes().skipped,[]);
@@ -317,7 +317,7 @@ test('live votes publish each accepted choice and count immediately and reset fo
 
 test('an already-decided episode still ends without offering a meaningless vote', () => {
   const g=fixture(); g.act=2; g.heists=0; g.finishChallenge();
-  assert.equal(g.outcome.team,'Loyals'); assert.equal(g.phase,'finale');
+  assert.equal(g.outcome.team,'Keepers'); assert.equal(g.phase,'finale');
 });
 
 test('early finish exposes only completed public observations and waits for the last lift', () => {

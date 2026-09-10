@@ -55,93 +55,108 @@
       this.line(0, 0, -10, 30, '#536057', 3); this.line(0, 0, 10, 30, '#536057', 3); this.line(0, 0, 1, 33, '#536057', 3);
       this.rect(-12, -17, 25, 17, 3, '#3e5046'); this.poly([[13, -14], [24, -19], [24, 0], [13, -3]], '#243e35'); this.ellipse(-4, -9, 2, 2, '#e98255'); c.restore();
     }
-    treasure(x, y, scale = 1) {
-      const c = this.ctx; c.save(); c.translate(x, y); c.scale(scale, scale);
-      this.ellipse(0, 12, 20, 7, '#25473820'); this.rect(-18, -25, 36, 40, 13, '#f8efbdbf', '#fff9d2');
-      this.poly([[-12, -5], [-7, -17], [1, -9], [9, -19], [13, -4], [10, 5], [-9, 5]], '#e9ad37', '#b7842c');
-      this.rect(-11, 4, 22, 5, 2, '#f4ca63'); this.ellipse(0, -3, 3, 3, '#699f87'); this.line(-12, -18, -12, -9, '#fff9df', 2);
-      c.restore();
+    moonmop(x, y, scale = 1, baby = {variant: 'lilac'}, pose = '') {
+      this.creatureImages ||= new Map();
+      const key = baby.variant + ':' + pose;
+      if (!this.creatureImages.has(key)) {
+        const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(MidnightNursery.art(baby, pose));
+        this.creatureImages.set(key, img);
+      }
+      const img = this.creatureImages.get(key);
+      if (img.complete && img.naturalWidth) this.ctx.drawImage(img, x - 130 * scale, y - 180 * scale, 260 * scale, 205 * scale);
+    }
+    pod(x, y, radius = 23) {
+      this.ellipse(x, y, radius, radius, '#d3dcff44');
+      this.moonmop(x, y + radius * .68, radius * 1.7 / 260);
+      const c = this.ctx; c.beginPath(); c.arc(x, y, radius, 0, Math.PI * 2); c.strokeStyle = '#d2e5fa'; c.lineWidth = 2; c.stroke();
+      this.line(x - radius * .5, y - radius * .57, x - radius * .64, y - radius * .1, '#ffffffdd', 2);
+      this.rect(x - radius * .6, y + radius * .75, radius * 1.2, 4, 2, '#b2a0d4');
+    }
+    lantern(x, y, scale = 1) {
+      this.line(x, y - 30 * scale, x, y, '#9584af', 2);
+      this.ellipse(x, y + 10 * scale, 24 * scale, 26 * scale, '#f7cd6a12');
+      this.rect(x - 8 * scale, y, 16 * scale, 20 * scale, 5 * scale, '#f6d38b');
+      this.line(x - 9 * scale, y, x + 9 * scale, y, '#9b775f', 2);
+    }
+    tent(x, y, label, color = '#8877b0') {
+      this.ellipse(x, y + 28, 70, 17, '#080c203d');
+      this.rect(x - 65, y - 27, 130, 61, 6, '#4d466c');
+      this.poly([[x - 80, y - 23], [x, y - 91], [x + 80, y - 23]], color, '#ba9bbf');
+      this.poly([[x - 12, y - 30], [x + 12, y - 30], [x + 37, y + 33], [x - 37, y + 33]], '#ffe1a177');
+      this.line(x, y - 91, x, y - 111, '#d1ad84', 2);
+      this.poly([[x, y - 112], [x + 22, y - 105], [x, y - 97]], '#efd393');
+      this.text(label, x, y + 57, 11, '#efe0fd', 750);
+      this.lantern(x - 55, y - 20, .75); this.lantern(x + 55, y - 20, .75);
     }
     courtyard(game, view) {
-      const c = this.ctx;
-      this.rect(0, 0, 1000, 650, 0, '#92a778'); this.rect(48, 107, 908, 494, 30, '#567553');
-      this.rect(65, 120, 870, 464, 25, '#d5d2ad'); this.rect(76, 130, 849, 439, 20, '#e8dfbe');
-      c.save(); c.beginPath(); c.roundRect(76, 130, 849, 439, 20); c.clip();
-      for (let x = 50; x < 960; x += 49) for (let y = 115; y < 590; y += 33) { this.rect(x + (Math.floor(y / 33) % 2) * 24, y, 47, 31, 1, '#e9e0bf', '#ddd3b12e'); }
-      c.restore();
-      // Terraced villa and the show sign.
-      this.rect(144, 32, 737, 112, 8, '#6b6e492b'); this.rect(132, 13, 735, 118, 8, '#f3e8c5');
-      this.poly([[118, 13], [147, 0], [852, 0], [883, 13]], '#ad7452'); this.rect(132, 14, 735, 15, 0, '#d7c7a0');
-      for (const x of [164, 227, 697, 760]) { this.rect(x, 49, 43, 62, 22, '#476c5c'); this.rect(x + 5, 54, 33, 49, 16, '#8caa83'); this.line(x + 21, 56, x + 21, 104, '#dfd6b7', 3); this.line(x + 5, 78, x + 37, 78, '#dfd6b7', 3); }
-      this.rect(305, 25, 383, 99, 8, '#234c3d'); this.rect(317, 35, 359, 78, 4, '#2e5b47', '#b6ba74');
-      this.text('S N A K E  S H O W', 497, 74, 28, '#f2e9b9', 800); this.text('T H E   V I L L A', 498, 97, 10, '#c4d9a4', 650);
-      this.rect(329, 123, 337, 10, 3, '#d2c6a0'); this.rect(313, 133, 369, 9, 3, '#c9bc99'); this.rect(303, 143, 389, 8, 3, '#baaf8f');
-      // Inset ornamental pool keeps the villa's visual identity; lift pits are lava.
-      this.rect(331, 201, 343, 300, 64, '#cec79f'); this.rect(343, 211, 320, 278, 57, '#fff0c8');
-      this.rect(352, 220, 302, 260, 50, '#6eab9b'); this.rect(359, 227, 288, 244, 45, '#78b8a4');
-      c.save(); c.beginPath(); c.roundRect(359, 227, 288, 244, 45); c.clip();
-      for (let y = 242; y < 480; y += 24) for (let x = 365; x < 650; x += 40) {
-        const drift = this.reduced ? 0 : Math.sin(this.time * .6 + y) * 4;
-        this.line(x + drift, y, x + 23 + drift, y - 3, '#bbe2bc42', 2);
-      }
-      c.restore();
-      this.ellipse(500, 352, 59, 24, '#276b6030'); this.ellipse(493, 341, 47, 24, '#ebd297'); this.ellipse(493, 337, 40, 19, '#f6ebbf');
-      this.treasure(493, 324, 1.3);
-      this.text('THE TREASURE POOL', 500, 443, 10, '#295f50', 750);
-      for (const x of [284, 686]) for (const y of [253, 421]) { this.rect(x, y, 29, 64, 8, '#b8ac83'); this.rect(x - 1, y - 3, 27, 60, 6, '#f7edd0'); this.rect(x + 2, y + 2, 21, 15, 4, '#d1bc86'); }
-      const live = game.phase === 'challenge';
+      const c = this.ctx, live = game.phase === 'challenge';
+      const sky = c.createLinearGradient(0, 0, 0, 650); sky.addColorStop(0, '#151b38'); sky.addColorStop(1, '#34324b');
+      this.rect(0, 0, 1000, 650, 0, sky);
+      for (let i = 0; i < 90; i++) this.ellipse((i * 131.73) % 980 + 10, (i * 79.9) % 620, i % 4 ? 1 : 1.8, i % 4 ? 1 : 1.8, '#d7cded77');
+      this.ellipse(820, 62, 29, 29, '#f8e6b5'); this.ellipse(832, 51, 26, 26, '#19203c');
+      this.text('T H E  M I D N I G H T  F A I R', 497, 57, 27, '#f5e7c8', 800);
+      this.text('L A N T E R N S  ·  L I T T L E  F R I E N D S  ·  S E C R E T S', 497, 82, 10, '#c6b1d8', 650);
+      this.rect( 60, 128, 880, 466, 48, '#323b4b', '#5b5574');
+      this.rect( 80, 153, 840, 418, 37, '#766b8155');
+      // The moon garden preserves the established walkable ring and rescue distances.
+      this.rect(331, 201, 343, 300, 64, '#9c87ad');
+      this.rect(342, 212, 321, 278, 57, '#344665');
+      this.rect(354, 225, 296, 252, 49, '#465571');
+      for (let i = 0; i < 15; i++) { const x = 374 + i * 71 % 256, y = 246 + i * 37 % 203; this.line(x, y, x + 18, y, '#c5bfe82d', 2); }
+      this.ellipse(499, 359, 89, 37, '#c6b1cf'); this.ellipse(499, 352, 80, 30, '#f0dec7');
+      this.moonmop(500, 349, .52, {variant:'lilac'}, 'sleep');
+      this.text('THE MOON NURSERY', 500, 420, 13, '#f0e0fc', 750);
+      this.text('A safe nest at the end of every route.', 500, 443, 10, '#c4c1dc', 500);
       for (let i = 0; i < 4; i++) {
         const pos = POSITIONS[i], s = game.stations[i];
-        this.rect(pos.x - 62, pos.y - 43, 124, 53, 10, '#baac83');
-        this.rect(pos.x - 58, pos.y - 46, 116, 47, 8, '#6d7653');
-        this.rect(pos.x - 49, pos.y - 38, 98, 27, 5, '#d57d46');
-        this.line(pos.x - 42, pos.y - 28, pos.x + 39, pos.y - 31, '#eeb160', 3);
-        this.rect(pos.x - 46, pos.y - 21, 92, 9, 3, '#e0c88e');
         if (live && s) {
+          this.tent(pos.x, pos.y - 19, s.name.toUpperCase());
           const near = Math.hypot(game.players[0].x - pos.x, game.players[0].y - pos.y) < 105;
-          c.strokeStyle = near && !game.players[0].operated ? '#fff2b9' : '#456d4b55'; c.lineWidth = 2; c.setLineDash([6, 5]); c.beginPath(); c.ellipse(pos.x, pos.y + 10, 87, 55, 0, 0, Math.PI * 2); c.stroke(); c.setLineDash([]);
-          this.text(s.name.toUpperCase(), pos.x, pos.y - 63, 11, '#2e5038', 800);
-          this.text(s.state === 'catch' ? 'CATCH!' : s.delivered ? 'DELIVERED ✓' : 'RESCUE AREA', pos.x, pos.y + 66, 10, s.state === 'catch' ? '#b44929' : '#577453');
-        } else {
-          this.text(i === 0 ? 'PRACTICE' : i === 1 ? 'PRIZE LIFT' : i === 2 ? 'BACKSTAGE' : 'PRIZE LIFT', pos.x, pos.y - 60, 10, '#496342', 800);
-          this.treasure(pos.x, pos.y - 36, .52);
-        }
+          c.strokeStyle = near && !game.players[0].operated ? '#f6d991' : '#c9b1d888'; c.lineWidth = 2; c.setLineDash([6, 5]); c.beginPath(); c.ellipse(pos.x, pos.y + 10, 87, 55, 0, 0, Math.PI * 2); c.stroke(); c.setLineDash([]);
+          this.text(s.state === 'catch' ? 'CATCH!' : s.delivered ? 'DELIVERED ✓' : 'RESCUE AREA', pos.x, pos.y + 76, 10, s.state === 'catch' ? '#ffe1a1' : '#cbb9dc', 750);
+        } else this.tent(pos.x, pos.y - 17, ['PRACTICE WITH A BOT', 'MOONMOP LIFT', 'EXCHANGE GARDEN', 'MY NURSERY'][i], ['#8175a7', '#aa7796', '#628f91', '#887cb3'][i]);
       }
-      this.umbrella(130, 305, 41, '#ca885e'); this.umbrella(872, 356, 42, '#e2c085');
-      this.camera(299, 187); this.camera(696, 177, true); this.camera(131, 539);
-      this.palm(89, 168, 1.12); this.palm(906, 164, 1.12); this.palm(89, 554, 1.08); this.palm(918, 552, 1.08);
-      this.rect(410, 537, 174, 37, 9, '#254f3f'); this.text(live ? 'THE VILLA · ON AIR' : 'JOIN THE SHOW  ↗', 497, 560, 11, '#f1e5b1', 800);
-      let cast = game.players.filter(p => p.active || game.phase === 'lobby');
-      cast = [...cast].sort((a, b) => a.y - b.y);
+      for (const y of [298, 411]) for (const x of [291, 698]) { this.rect(x - 12, y, 24, 55, 6, '#af95a1'); this.rect(x - 10, y + 5, 20, 13, 4, '#e0b78d'); }
+      for (const x of [113, 890]) for (const y of [190, 364, 552]) {
+        this.line(x, y, x, y - 45, '#605976', 4); this.ellipse(x, y - 51, 27, 22, '#485a63'); this.ellipse(x - 14, y - 57, 20, 18, '#58706c'); this.lantern(x + 9, y - 33, .8);
+      }
+      for (let x = 117; x < 931; x += 85) { this.line(x, 119, x + 85, 122, '#9c86ad', 1); this.lantern(x + 42, 144, .75); }
+      this.rect(410, 537, 174, 37, 9, '#66537d', '#c0a3c5'); this.text(live ? 'THE FAIR · RESCUE PATH' : 'ENTER A ROUND  ↗', 497, 560, 11, '#f6e4b6', 800);
+      const cast = game.players.filter(p => p.active || game.phase === 'lobby').sort((a, b) => a.y - b.y);
       for (const p of cast) {
         let x = p.x, y = p.y;
-        if (game.phase === 'lobby' && p.id !== 0) { x = 220 + (p.id % 4) * 181 + Math.sin(this.time * .27 + p.id * 3) * 16; y = p.id < 4 ? 187 : 551 + Math.cos(this.time * .3 + p.id) * 9; }
+        if (game.phase === 'lobby' && p.id !== 0) { x = 220 + (p.id % 4) * 181; y = p.id < 4 ? 187 : 546; }
         this.person(p, x, y, .87, p.id === 0 && game.mode !== 'watch', false, p.id === 0 && view.moving);
         this.nameplate(p, x, y + 12, p.id === 0 && game.mode !== 'watch', true);
+        if (game.phase === 'lobby' && p.id === 0) {
+          const baby = this.collection?.babies.find(b => b.id === this.collection.companion);
+          if (view.moving) this.lastWalk = this.time;
+          if (baby) this.moonmop(x - 41, y + 3 + (view.moving && !this.reduced ? Math.sin(this.time * 10) * 2 : 0), .23, baby, this.time - (this.lastWalk || 0) > 8 ? 'sleep' : '');
+        }
+        if (game.phase === 'lobby' && p.id === 1) this.moonmop(x + 35, y + 5, .22, this.collection?.botBabies[0]);
       }
-      if (view.destination) { c.strokeStyle = '#b36339'; c.lineWidth = 2; c.beginPath(); c.ellipse(view.destination.x, view.destination.y, 9, 5, 0, 0, Math.PI * 2); c.stroke(); }
-      this.poly([[0, 0], [1000, 0], [1000, 650], [970, 650], [966, 81], [29, 90], [30, 650], [0, 650]], '#1c3c3120');
+      if (view.destination) { c.strokeStyle = '#f0d095'; c.lineWidth = 2; c.beginPath(); c.ellipse(view.destination.x, view.destination.y, 9, 5, 0, 0, Math.PI * 2); c.stroke(); }
     }
     lift(game, index) { root.drawPrizeLift(this, game, index); }
     voteStage(game) {
-      this.rect(0, 0, 1000, 650, 0, '#234737');
-      this.rect(65, 50, 870, 490, 24, '#315741');
+      this.rect(0, 0, 1000, 650, 0, '#20233e');
+      this.rect(65, 50, 870, 490, 24, '#343553');
       for (let i = 0; i < 9; i++) this.poly([[i * 125 - 80, 0], [i * 125 + 40, 0], [i * 125 + 190, 570], [i * 125 - 160, 570]], i % 2 ? '#72985709' : '#e3d98308');
-      this.rect(255, 78, 490, 120, 12, '#173a2f', '#939a63');
-      const title = game.phase === 'casting' ? 'WELCOME TO THE CAST' : game.phase === 'finale' ? 'THE FINAL REVEAL' : game.phase === 'evidence' ? 'THE CAMERAS WERE ROLLING' : game.phase === 'result' ? 'THE VOTES ARE IN' : game.phase === 'runoff' ? 'ONE MORE VOTE' : 'TRUST YOUR INSTINCT';
-      this.text('S N A K E   S H O W', 500, 119, 16, '#c1d690', 800); this.text(title, 500, 161, 25, '#f3e8bb', 800);
-      this.ellipse(500, 522, 420, 44, '#16362c'); this.rect(90, 446, 820, 62, 9, '#aeaa75'); this.rect(90, 445, 820, 13, 4, '#dad09c'); this.rect(118, 508, 764, 21, 4, '#767f53');
+      this.rect(255, 78, 490, 120, 12, '#222139', '#939a63');
+      const title = game.phase === 'casting' ? 'WELCOME TO THE FAIR' : game.phase === 'finale' ? 'THE FINAL REVEAL' : game.phase === 'evidence' ? 'THE CLUES ARE READY' : game.phase === 'result' ? 'THE VOTES ARE IN' : game.phase === 'runoff' ? 'ONE MORE VOTE' : 'TRUST YOUR INSTINCT';
+      this.text('T H E  M I D N I G H T  F A I R', 500, 119, 16, '#cab2e0', 800); this.text(title, 500, 161, 25, '#f3e8bb', 800);
+      this.ellipse(500, 522, 420, 44, '#1b1c35'); this.rect(90, 446, 820, 62, 9, '#7e7195'); this.rect(90, 445, 820, 13, 4, '#ba9bbb'); this.rect(118, 508, 764, 21, 4, '#534b6c');
       game.players.forEach((p, i) => {
         const x = 147 + i * 101, active = p.active || game.phase === 'finale' || game.phase === 'casting';
-        this.rect(x - 36, 374, 72, 75, 7, active ? '#5a7650' : '#364f3b'); this.rect(x - 36, 373, 72, 9, 3, active ? '#a4b373' : '#516745');
+        this.rect(x - 36, 374, 72, 75, 7, active ? '#75658c' : '#3b3851'); this.rect(x - 36, 373, 72, 9, 3, active ? '#af91c0' : '#6a597b');
         if (active) this.person(p, x, 371, 1.45, p.id === 0 && game.mode !== 'watch');
         this.text(String(i + 1).padStart(2, '0'), x, 405, 20, '#e7dfa8', 800); this.text(p.name, x, 430, 11, '#e9e5c1', 700);
-        if (!p.active || game.phase === 'finale') this.text(p.role.toUpperCase(), x, 478, 10, p.role === 'Snake' ? '#e9ad77' : '#d5e795', 800);
+        if (!p.active || game.phase === 'finale') this.text(p.role.toUpperCase(), x, 478, 10, p.role === 'Trickster' ? '#e9ad77' : '#d3c0ed', 800);
       });
       if (game.phase === 'result' && game.lastVote) {
         const id = game.lastVote.removed;
-        this.text(id === null ? 'DEADLOCK · EVERYONE STAYS' : `${game.players[id].name.toUpperCase()} LEAVES THE SHOW · ${game.players[id].role.toUpperCase()}`, 500, 579, 22, '#eaddac', 750);
-      } else this.text(game.phase === 'evidence' ? 'Observe the action. Make your own call.' : game.phase === 'casting' ? 'Six Loyals. Two Snakes. One unforgettable episode.' : 'Eight faces. A few very good secrets.', 500, 579, 16, '#d7dfb2', 500);
+        this.text(id === null ? 'DEADLOCK · EVERYONE STAYS' : `${game.players[id].name.toUpperCase()} RESTS THIS ROUND · ${game.players[id].role.toUpperCase()}`, 500, 579, 22, '#eaddac', 750);
+      } else this.text(game.phase === 'evidence' ? 'Observe the action. Make your own call.' : game.phase === 'casting' ? 'Six Keepers. Two Tricksters. One little Moonmop.' : 'Eight faces. A few very good secrets.', 500, 579, 16, '#d7dfb2', 500);
       if (['result', 'finale'].includes(game.phase)) for (let i = 0; i < 55; i++) {
         const x = (i * 137.5) % 1000, y = this.reduced ? (i * 83) % 550 : (this.time * (17 + i % 5) + i * 73) % 550;
         this.rect(x, y, 5, 9, 1, ['#d4c771', '#c87d54', '#a1bd81', '#e6d5a6'][i % 4]);

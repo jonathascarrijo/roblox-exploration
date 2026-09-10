@@ -1,8 +1,10 @@
 # Snake Show (v1 pitch, archived)
 
+**Current design:** [The Midnight Fair v3](../midnight-fair-design-v3.md). The supersession chain and original pitch below are historical.
+
 > **Archived on September 5, 2026.** This is the original concept pitch, kept
 > for history. It is superseded by
-> [`snake-show-design-brief-v2.md`](../snake-show-design-brief-v2.md), which is
+> [`snake-show-design-brief-v2.md`](snake-show-design-brief-v2.md), which is
 > the source of truth. Several ideas below were changed or dropped there; see
 > Annex A of the brief for the reasons. The Context section at the end still
 > holds the market case study and the Innersloth IP note.

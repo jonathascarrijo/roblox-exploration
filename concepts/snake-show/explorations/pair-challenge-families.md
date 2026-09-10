@@ -1,12 +1,14 @@
 # Cooperative pair challenge families: exploration
 
+**Reading status:** this remains supporting research and design exploration. The comparisons between partner roles, candidate blockers, and proposed playtests are still relevant. Use the [challenge catalogue](../challenges/README.md) for current individual rules and the [creature catalogue](../creatures/README.md) for species pairings. The [current design brief](../midnight-fair-design-v3.md) supersedes the older show setting, audience discrepancy, and reward context below. The dated analysis is preserved; its candidates are not adopted by inclusion.
+
 9 September 2026 · Design exploration · No family in this document is adopted, scoped, or scheduled
 
-Prize Lift establishes one kind of cooperation: two people continually adjust the same unstable object. Snake Show can explore other relationships between partners while keeping its central question: **did my partner struggle, or did they use my trust to steal the prize?** The [design brief](snake-show-design-brief-v2.md) plans two more mechanically distinct challenge families after Prize Lift is validated, and it requires each family to describe normal play, sabotage, prevention, evidence, and rewards before it enters the backlog. This document merges two explorations of candidates for that step. Both drew on the cooperative structure of Hazelight Studios' *It Takes Two* (2021) and *Split Fiction* (2025) and adapted it to a game where one partner may be secretly working against the other.
+Prize Lift establishes one kind of cooperation: two people continually adjust the same unstable object. Snake Show can explore other relationships between partners while keeping its central question: **did my partner struggle, or did they use my trust to steal the prize?** The [design brief](../archive/snake-show-design-brief-v2.md) plans two more mechanically distinct challenge families after Prize Lift is validated, and it requires each family to describe normal play, sabotage, prevention, evidence, and rewards before it enters the backlog. This document merges two explorations of candidates for that step. Both drew on the cooperative structure of Hazelight Studios' *It Takes Two* (2021) and *Split Fiction* (2025) and adapted it to a game where one partner may be secretly working against the other.
 
 Everything here is a proposal. Prize Lift's rules in the brief are the reference. Its settings came from a playable model; the values below are untested starting points chosen to match Prize Lift's timings, and most candidates have no values yet. This exploration does not change the first playable's scope, the episode structure, or the brief's **spotter** rule for odd casts, whose alternatives are recorded in the [pairing and elimination review](pairing-and-elimination-review.md). Every candidate requires exactly two contestants per station, so the spotter rule applies to all of them as the shared rules below state.
 
-The proposals follow the direction in [user-notes.txt](../../user-notes.txt): design for ages 9–15, use lava instead of water, and put something valuable or alive at stake. The brief still says 13–16 and uses a pool; those passages are not reconciled here. Audience is a design target, not an eligibility claim. Proposed sets use theatrical lava channels, valuable show props, and protected mascots. Failures end in a collection chute or a safety harness, no creature or contestant is ever shown hurt, and all stakes belong to the episode, never to a player's owned inventory.
+The proposals follow the direction in [user-notes.txt](../../../user-notes.txt): design for ages 9–15, use lava instead of water, and put something valuable or alive at stake. The brief still says 13–16 and uses a pool; those passages are not reconciled here. Audience is a design target, not an eligibility claim. Proposed sets use theatrical lava channels, valuable show props, and protected mascots. Failures end in a collection chute or a safety harness, no creature or contestant is ever shown hurt, and all stakes belong to the episode, never to a player's owned inventory.
 
 ## Terms used in this document
 
@@ -23,7 +25,7 @@ Act, heist, receipt, Prize Pot, Rig, Catch, rescue area, spotter, Loyal, and Sna
 
 ## What to take from the references
 
-The [reference catalog](../../research/cooperative-subgames-catalog.md) identifies 265 activities across *It Takes Two* and *Split Fiction*, separating interdependent cooperation, parallel tasks, competition, and scripted interactions. Different tools that require each other are one recurring pattern; identical jobs and playful exploration matter too. The catalog's [community research](../../research/cooperative-subgames-catalog.md#community-favorites-and-replay-appeal), checked on 9 September 2026, adds evidence about enjoyment and replay. Six design lessons are useful here.
+The [reference catalog](../../../research/cooperative-subgames-catalog.md) identifies 265 activities across *It Takes Two* and *Split Fiction*, separating interdependent cooperation, parallel tasks, competition, and scripted interactions. Different tools that require each other are one recurring pattern; identical jobs and playful exploration matter too. The catalog's [community research](../../../research/cooperative-subgames-catalog.md#community-favorites-and-replay-appeal), checked on 9 September 2026, adds evidence about enjoyment and replay. Six design lessons are useful here.
 
 1. **Two contributions, one goal.** Complementary tools make each player's contribution visible; identical tools can also demand close cooperation. In Snake Show, jobs can differ as long as every pair in the act faces the same two jobs and job assignment is independent of secret roles.
 2. **Trust windows.** One player holds a platform, a switch, or a timer while the other moves through danger. Progress depends on the partner keeping their word. This is the natural home for betrayal: the Rig is what breaks the hold.
@@ -89,7 +91,7 @@ Two patterns stand out. Identical jobs with shared coupling produce shared blame
 
 ### Spotlight Sprint
 
-![Spotlight Sprint concept illustration: one contestant lights stepping plates while a partner carries a sun jewel across lava.](images/pair-challenges/spotlight-sprint.png)
+![Spotlight Sprint concept illustration: one contestant lights stepping plates while a partner carries a sun jewel across lava.](../images/challenges/spotlight-sprint.png)
 
 **The scene.** A contestant carries a huge sun jewel across a broken catwalk above theatrical lava. Their partner operates a studio spotlight. Unlit stepping plates are transparent; lighting one makes it solid. A short, visible afterglow keeps a plate solid after the beam moves away.
 
@@ -105,7 +107,7 @@ Two patterns stand out. Identical jobs with shared coupling produce shared blame
 
 ### Bridge Keeper
 
-![Bridge Keeper concept illustration: the Keeper holds a drawbridge segment level while the Courier remotely drives a crown cart across lava.](images/bridge-keeper.png)
+![Bridge Keeper concept illustration: the Keeper holds a drawbridge segment level while the Courier remotely drives a crown cart across lava.](../images/challenges/bridge-keeper.png)
 
 **The scene.** A three-segment drawbridge crosses the lava between the start platform and the delivery platform, with a stone pillar between segments. Each segment hinges at its near pillar. Raised, it lies flat and the cart can cross. Released, its far end sinks toward the lava over about two seconds and the segment becomes a ramp. The **Keeper** stands at the bridge motor console. The **Courier** stands at a remote console that drives a small cart carrying the cargo. Both avatars stay on solid ground. A fixed camera shows the whole bridge, both consoles, and the rescue area.
 
@@ -127,7 +129,7 @@ Two patterns stand out. Identical jobs with shared coupling produce shared blame
 
 ### Vault Volley
 
-![Vault Volley concept illustration: two contestants launch and catch a golden mechanical egg through a hoop above lava.](images/pair-challenges/vault-volley.png)
+![Vault Volley concept illustration: two contestants launch and catch a golden mechanical egg through a hoop above lava.](../images/challenges/vault-volley.png)
 
 **The scene.** Two contestants stand at opposing launch-and-catch machines over a lava trench. They pass an oversized golden mechanical egg, the hatchling's egg in the living-mascot presentation, from machine to machine through moving hoops until it reaches the vault. Each successful handoff turns the receiving basket into the next launcher, so the jobs swap every time. Four handoffs give each player two sends and two receives; three is the shorter option if four do not fit, at the cost of one extra send for one player. The intermediate egg stays onstage, and only the last handoff banks a delivery.
 
@@ -143,7 +145,7 @@ Two patterns stand out. Identical jobs with shared coupling produce shared blame
 
 **Reference-informed comparison.** Storyboard an operator-and-pilot variant alongside the basket version. The sender chooses launch charge and release time; the partner steers the egg's small fins in flight toward a fixed receiving cradle using one horizontal control. Landing swaps jobs as before. The reference is SF-065, where the launched player retains movement control. Test whether steering feels expressive and worth repeating, rather than merely correcting someone else's bad launch. This variant still needs a sender's counter to deliberate bad steering; pilot agency alone does not fix the sabotage ladder.
 
-![Vault Volley pilot variant: one contestant charges the launcher while a partner steers the golden egg's fins toward a fixed receiving cradle.](images/pair-challenges/vault-volley-pilot.png)
+![Vault Volley pilot variant: one contestant charges the launcher while a partner steers the golden egg's fins toward a fixed receiving cradle.](../images/challenges/vault-volley-pilot.png)
 
 **First test.** Establish a normal counter for both jobs before advancing this family to a playable expansion. Then find whether there is room between effortless tracking and an impossible last-second throw. If every heist reduces to the identical Catch test regardless of the preceding volley, the main interaction is not contributing enough counterplay. Start with fixed hoops, no random gusts, and no per-handoff countdown; the Gameshow reactions justify testing pressure separately. Check the landing marker on a phone and compare voluntary repeat play for the basket and pilot versions.
 
@@ -151,7 +153,7 @@ Two patterns stand out. Identical jobs with shared coupling produce shared blame
 
 ### Critter Crossing
 
-![Critter Crossing concept illustration: one contestant positions glowing fruit while a partner aligns a rotating bridge for a crowned jeweled beetle.](images/critter-crossing.png)
+![Critter Crossing concept illustration: one contestant positions glowing fruit while a partner aligns a rotating bridge for a crowned jeweled beetle.](../images/challenges/critter-crossing.png)
 
 **The scene.** A jeweled beetle with an oversized crown waits on a safe island. The pair escorts this original show mascot across a miniature obstacle garden to its display habitat.
 
@@ -167,7 +169,7 @@ Two patterns stand out. Identical jobs with shared coupling produce shared blame
 
 ### Lantern Walk
 
-![Lantern Walk concept illustration: contestants on opposite banks use rail-mounted lanterns to guide a golden hatchling along a causeway toward its nest.](images/lantern-walk.png)
+![Lantern Walk concept illustration: contestants on opposite banks use rail-mounted lanterns to guide a golden hatchling along a causeway toward its nest.](../images/challenges/lantern-walk.png)
 
 **The scene.** A straight stone causeway with no rails crosses the lava moat from the perch to the nest. The cargo is the golden hatchling, which walks the causeway on its own. Two consoles face each other across the moat, one on each bank, and each has a lantern on a rail that glides along the bank level with the hatchling. Both jobs are identical.
 
@@ -187,7 +189,7 @@ Two patterns stand out. Identical jobs with shared coupling produce shared blame
 
 ### Bubble Trouble
 
-![Bubble Trouble revised concept illustration: one contestant changes bubble size while a partner steers the clockwork songbird through a narrow gate and into a rising air vent; the controls have no pressure gauge.](images/pair-challenges/bubble-trouble-v2.png)
+![Bubble Trouble revised concept illustration: one contestant changes bubble size while a partner steers the clockwork songbird through a narrow gate and into a rising air vent; the controls have no pressure gauge.](../images/challenges/bubble-trouble-v2.png)
 
 **The scene.** A small clockwork songbird travels inside a transparent protective bubble through a studio wind tunnel. The route alternates narrow gates with upward air vents.
 
@@ -221,7 +223,7 @@ Two patterns stand out. Identical jobs with shared coupling produce shared blame
 
 ### Ember Escort
 
-![Ember Escort concept illustration: the Courier drives a crown sled toward shelter while the Guard turns a sled-mounted shield between the wind machine and the crown.](images/pair-challenges/ember-escort.png)
+![Ember Escort concept illustration: the Courier drives a crown sled toward shelter while the Guard turns a sled-mounted shield between the wind machine and the crown.](../images/challenges/ember-escort.png)
 
 **Status and reason to explore.** This is a paper-design lead, not an additional family ready for the candidate comparison. Collapsing Star's shared shield (SF-S06a) suggests a relationship that the existing list does not explicitly test: one partner keeps protection aligned while the other chooses when to advance. Community praise includes spectacle and tension, so enjoyment of this particular rule remains a hypothesis.
 
@@ -235,7 +237,7 @@ Two patterns stand out. Identical jobs with shared coupling produce shared blame
 
 ### Stretcher Run
 
-![Stretcher Run concept illustration: two contestants carry a sleeping hatchling on a sliding cushion between them around a walkway bend above lava.](images/stretcher-run.png)
+![Stretcher Run concept illustration: two contestants carry a sleeping hatchling on a sliding cushion between them around a walkway bend above lava.](../images/challenges/stretcher-run.png)
 
 **The scene.** A winding elevated walkway crosses the lava from the start gate to the nest, about 15 seconds at walking pace. Both avatars carry a stretcher with the hatchling asleep on its cushion. The stretcher is a fixed-length pole between the two avatars, so they cannot separate farther than its length, and the cushion slides along the pole. A fixed overhead camera shows the whole walkway for each station. Both jobs are identical.
 
@@ -253,7 +255,7 @@ Two patterns stand out. Identical jobs with shared coupling produce shared blame
 
 ### Cargo Shuffle
 
-![Cargo Shuffle concept illustration: one contestant drives a trolley around a curve while a partner shifts a large golden trophy to balance it.](images/pair-challenges/cargo-shuffle.png)
+![Cargo Shuffle concept illustration: one contestant drives a trolley around a curve while a partner shifts a large golden trophy to balance it.](../images/challenges/cargo-shuffle.png)
 
 **The scene.** A tiny delivery trolley carries an absurdly large golden show trophy around a winding service track. Corners overlook lava collection channels.
 
@@ -323,4 +325,4 @@ These are working concepts, not recreations of either reference game's levels. T
 
 All family names are working titles whose availability has not been checked. Characters, equipment, layouts, and audiovisual assets need their own development. The golden hatchling and the crowned beetle are original mascot proposals whose designs must stay distinct from existing game mascots. The lava and living-cargo presentation follows the user's direction and keeps the brief's rule that no creature or contestant is ever harmed on camera.
 
-The [illustration generation notes](images/pair-challenges/generation-notes-2026-09-09.md) record the prompts for Ember Escort, the Vault Volley pilot variant, and the revised Bubble Trouble image. Illustrations communicate the proposals; the written rules remain authoritative.
+The [illustration generation notes](../images/challenges/generation-notes-2026-09-09.md) record the prompts for Ember Escort, the Vault Volley pilot variant, and the revised Bubble Trouble image. Illustrations communicate the proposals; the written rules remain authoritative.

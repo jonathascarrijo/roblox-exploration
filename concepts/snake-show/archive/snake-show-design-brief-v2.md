@@ -2,7 +2,11 @@
 
 Version 2, spotter rule · 9 September 2026 · Design for prototype validation
 
-**Design status:** Prize Lift always has exactly two motors and two operators under comparable challenge conditions. The former odd-cast trio rule is withdrawn. An odd cast is handled by the **spotter** rule defined in the episode chapter: the removed contestant’s last lift partner plays the next act without a console. The alternatives that were considered are recorded in the [pairing and elimination review](pairing-and-elimination-review.md).
+**Superseded design brief:** [The Midnight Fair — design v3](../midnight-fair-design-v3.md) is the current consolidated draft. This document preserves the earlier mechanics and rationale for the existing Snake Show studies; its audience, setting, terminology, and collection direction must be read with the v3 changes.
+
+**Design status:** Prize Lift always has exactly two motors and two operators under comparable challenge conditions. The former odd-cast trio rule is withdrawn. An odd cast is handled by the **spotter** rule defined in the episode chapter: the removed contestant’s last lift partner plays the next act without a console. The alternatives that were considered are recorded in the [pairing and elimination review](../explorations/pairing-and-elimination-review.md).
+
+**Collection direction, agreed 10 September 2026:** each participating member of the winning episode team earns one baby creature, including players voted out. Personal delivery and personal heist requirements are removed. AFK exclusion needs a separate participation rule. The user approved a selected lobby companion, a Present action, affectionate or impressed reactions with creature responses, baby gatherings, a three-baby showcase, and a portrait nook. [Collection design pass 2](../explorations/fantasy-collection-design-pass-2.md) records that direction; [pass 3](../explorations/fantasy-collection-design-pass-3.md) evaluates the user's selectable badge proposal and two outcome-dependent color ideas. These are design decisions for the collection pivot; they are not implemented by the existing browser game. The broader fantasy setting, badges, color weighting, and detailed interaction rules remain under discussion.
 
 ## What the game is
 
@@ -35,6 +39,8 @@ The **lobby** is the arrival area outside an episode. It contains the play butto
 ## Art direction and character identity
 
 Use rounded shapes, glossy props, warm sunlight, teal pool water, and coral or violet show graphics. The tone is an exaggerated party competition. A stolen prize disappears through a theatrical hatch; a removed contestant exits through confetti. There is no combat or death in the core game.
+
+**Living-prize visual, selected 10 September 2026.** The user chose [Moonmop](../images/creatures/03-moonmop-v3-long-ears.png), a round lilac baby creature with enormous broad floppy ears that drag on the ground, a cream face, and a softly glowing paddle tail. When she sleeps, she rests her head on her tail as a pillow and drapes her ears over her body as a blanket. The [latest character study](../images/creatures/moonmop-design-pass-v3-2026-09-10.md) records this user-directed refinement. For Prize Lift, Moonmop rides inside a clear protective pod; this is the visual identity of the prize capsule used in the rules below. The updated key art uses theatrical lava following the user's notes; pool terminology below still describes the earlier prototype staging. **Moonmop Lift** is the proposed challenge name shown in the artwork, pending a naming decision. Prize Lift remains the name used in these rules and the playable prototypes. The [artwork notes](../images/creatures/moonmop-lift-edit-2026-09-10.md) record the edit and its references.
 
 Players keep recognizable humanoid avatars with compatible outfits and standardized gameplay visibility. Each episode assigns a stable contestant number, portrait, and nameplate so evidence remains readable despite elaborate cosmetics. Snakes have no publicly visible uniform or marker. Their role and teammate information appear only on their own private interface.
 
@@ -73,7 +79,7 @@ Eight contestants form four pairs. A removal leaves seven, and seven cannot be p
 - **A Snake spotter can still attempt a heist.** See “Arming from the rescue area” in the hidden-heist chapter. The act therefore remains a heist opportunity, and the early Loyal win for two unsuccessful opportunities applies unchanged.
 - **Departures.** A departure that leaves an odd cast follows the same rule from the next act: the departed contestant’s last partner spots. A departure is never repaired with a third motor, a bot partner, or an excluded contestant.
 
-Two consequences need playtesting rather than more design. Voting out one operator of a suspicious pair also takes the other off a console for an act, a two-for-one for the Loyals that the vote simulation in Annex A did not model. And a contestant benched before a deadlock spots twice in a row; if deadlocks turn out to be common, revisit the vote structure before changing this rule. Alternatives that were rejected, including a vote runner-up bench, a public draw, and a second wave of lifts, are recorded in the [pairing and elimination review](pairing-and-elimination-review.md).
+Two consequences need playtesting rather than more design. Voting out one operator of a suspicious pair also takes the other off a console for an act, a two-for-one for the Loyals that the vote simulation in Annex A did not model. And a contestant benched before a deadlock spots twice in a row; if deadlocks turn out to be common, revisit the vote structure before changing this rule. Alternatives that were rejected, including a vote runner-up bench, a public draw, and a second wave of lifts, are recorded in the [pairing and elimination review](../explorations/pairing-and-elimination-review.md).
 
 ## Evidence: 10 seconds; voting: 25 seconds, plus a 10-second runoff when tied
 
@@ -111,7 +117,7 @@ Reaching the shelf with the capsule aboard banks one delivery into the Prize Pot
 
 ## Proposed settings
 
-Distances are in tray half-lengths, so the tray is two units long. These values were tuned by hand in the playable model at [`prototypes/prize-lift-coupled-cables.html`](prototypes/prize-lift-coupled-cables.html), where every row is a slider. They are starting points for the tests below, not validated balance.
+Distances are in tray half-lengths, so the tray is two units long. These values were tuned by hand in the playable model at [`prototypes/prize-lift-coupled-cables.html`](../prototypes/prize-lift-coupled-cables.html), where every row is a slider. They are starting points for the tests below, not validated balance.
 
 | Setting | Proposed value | Name in the model |
 |---|---|---|
@@ -309,7 +315,7 @@ Promotional images should show actual recognizable situations: partners at a cha
 
 ## Content that adds variety without losing readability
 
-Begin with one villa and, after validating Prize Lift, add two more mechanically distinct challenge families. A challenge family is a reusable type of activity with variations in layout, timing, partner structure, and evidence coverage. New families must define their own heist action, counterplay, and receipt rules before implementation. Candidate families and the shared rules they must satisfy are explored in the [pair challenge families exploration](pair-challenge-families.md); none is adopted or scheduled.
+Begin with one villa and, after validating Prize Lift, add two more mechanically distinct challenge families. A challenge family is a reusable type of activity with variations in layout, timing, partner structure, and evidence coverage. New families must define their own heist action, counterplay, and receipt rules before implementation. Candidate families and the shared rules they must satisfy are explored in the [pair challenge families exploration](../explorations/pair-challenge-families.md); none is adopted or scheduled.
 
 A later season can add a visual theme, one challenge family, selected cosmetics, and a shared event. Bigger settings such as a cruise ship or ski lodge should retain familiar controls and clear evidence. A **modifier** changes one announced rule for an episode; introduce these only after the base format is understood and test each interaction.
 
@@ -323,7 +329,7 @@ Future ranked competition, spectator hosting, player trading, and creator-author
 
 Build one small villa set, Prize Lift, eight-player casting, two secret teams, the heist counter, an automatic receipt board, secret voting, a short factual reveal, and a clear New Episode action. Use simple temporary art—a **gray-box prototype**—while preserving the visual cues needed for cooperation and deduction.
 
-The connected browser episode implements the two-motor rule and the spotter, including arming from the rescue area; see the [browser README](browser/README.md). Its passing tests establish the rules’ internal consistency, not their balance or fairness with real players.
+The connected browser episode implements the two-motor rule and the spotter, including arming from the rescue area; see the [browser README](../browser/README.md). Its passing tests establish the rules’ internal consistency, not their balance or fairness with real players.
 
 Add two more challenge families and a small earned cosmetic collection after the initial gameplay test. Advanced customization, additional role types, ranked matchmaking, trading, and multiple public queues are outside this first scope. Generous resources should improve observation, iteration, accessibility, and polish before increasing the number of systems.
 
@@ -363,7 +369,7 @@ All characters, branding, art, sound, and show presentation must be original or 
 
 ## Decisions the prototype must resolve
 
-Motor count is fixed at two, not a tuning variable. The spotter rule is the adopted answer to an odd cast. The open questions around it are the Loyals’ two-for-one on a failed pair, the repeat-spotter cost after a deadlock, and whether arming from the rescue area is strong enough without a motor burst. The [format review](pairing-and-elimination-review.md) records the alternatives.
+Motor count is fixed at two, not a tuning variable. The spotter rule is the adopted answer to an odd cast. The open questions around it are the Loyals’ two-for-one on a failed pair, the repeat-spotter cost after a deadlock, and whether arming from the rescue area is strong enough without a motor burst. The [format review](../explorations/pairing-and-elimination-review.md) records the alternatives.
 
 The two-heist target, the 1½-second Rig hold, the five-second Rig burst and its multipliers, the three-second Catch window and quarter-second zone, the motor force and speed limits, the capsule’s friction and start offset, the pool depth, receipt coverage, runoff length, and episode length are test settings. Two Prize Lift rules remain open from its review: whether the Snake team keeps one attempt per act or each Snake gets one, and whether a caught capsule returns to the center or to the edge it fell from. The core question is whether players enjoy cooperation, notice a plausible betrayal, reason about evidence, and feel fairly treated when wrong.
 
@@ -441,7 +447,7 @@ Rig now arms concealed routing rather than creating a mandatory disturbance. Its
 
 ## Prize Lift: coupled cables replace the paced motor
 
-The refinement above never stated how the winch responded to input, and heist feasibility depended entirely on that. A simulation of one plausible model, bounded cable reach with load shifts larger than the red boundary, showed a Snake could always force a fault, and that the heist then hung on the partner’s single Catch tap: about 16% Snake wins against average partners with the shared attempt, rising to 37% with one attempt per Snake. A first mockup of that analysis is kept at [`prototypes/prize-lift-under-the-hood.html`](prototypes/prize-lift-under-the-hood.html).
+The refinement above never stated how the winch responded to input, and heist feasibility depended entirely on that. A simulation of one plausible model, bounded cable reach with load shifts larger than the red boundary, showed a Snake could always force a fault, and that the heist then hung on the partner’s single Catch tap: about 16% Snake wins against average partners with the shared attempt, rising to 37% with one attempt per Snake. A first mockup of that analysis is kept at [`prototypes/prize-lift-under-the-hood.html`](../prototypes/prize-lift-under-the-hood.html).
 
 The revised chapter replaces the paced motor with one motor per cable, constant force, a capsule that loads the nearer cable, and a tray with no walls. In the playable model, a plain motor cannot out-tilt an attentive partner; only the Rig burst can. Sabotage therefore depends on a tool the rules can meter instead of on a quirk of the winch, and refusing to pull sinks the tray instead of stalling it. Three decisions followed play: the Rig is a timed burst rather than a standing state, the pool sits deeper than the tray can tilt so nobody can sink it alone, and receipts do not record speed. Settings were tuned by hand and remain hypotheses. The Catch is still the bottleneck; attempts per act and the catch-zone width remain the balance dials.
 

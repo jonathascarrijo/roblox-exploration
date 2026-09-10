@@ -3,24 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#162c2c">
-  <title>Snake Show — The villa is live</title>
+  <meta name="theme-color" content="#25243b">
+  <title>The Midnight Fair — A little magic. A little mischief.</title>
   <!-- Content versions prevent a cached script from running against newer markup. -->
   <link rel="stylesheet" href="style.css?v=6d1bab3bf891">
-  <script defer src="lift-settings.js?v=fff1915433bc"></script>
-  <script defer src="engine.js?v=9c78b6afdd74"></script>
-  <script defer src="scene.js?v=736649c6fe65"></script>
-  <script defer src="lift-scene.js?v=b674bf3ac944"></script>
+  <script defer src="lift-settings.js?v=a80ad013bdc1"></script>
+  <script defer src="engine.js?v=b51b92df71ad"></script>
+  <script defer src="nursery.js?v=f124833e3f3b"></script>
+  <script defer src="nursery-view.js?v=f6d9d0e3c32f"></script>
+  <script defer src="scene.js?v=72585ebecaa0"></script>
+  <script defer src="lift-scene.js?v=88b5f24b35f3"></script>
   <link rel="stylesheet" href="vote.css?v=66211255af18">
-  <script defer src="vote-view.js?v=966fb0c0b002"></script>
-  <script defer src="dev-tools.js?v=afcd77c76c5a"></script>
-  <script defer src="app.js?v=11c967515a1e"></script>
+  <link rel="stylesheet" href="fair.css?v=29dd6b5860e3">
+  <script defer src="vote-view.js?v=60413e809dc4"></script>
+  <script defer src="dev-tools.js?v=3fd91690dcc6"></script>
+  <script defer src="app.js?v=77176ca46de5"></script>
 </head>
 <body>
   <div class="app">
     <header class="topbar">
-      <a class="brand" href="index.html" aria-label="Snake Show home"><span class="brand-mark">S<span>•</span></span><span>SNAKE<span class="brand-light">SHOW</span></span></a>
-      <div class="live"><i></i> THE VILLA IS LIVE</div>
+      <a class="brand" href="index.html" aria-label="The Midnight Fair home"><span class="brand-mark">☾</span><span class="brand-name">THE MIDNIGHT<br><strong>FAIR</strong></span></a>
+      <div class="live"><i></i> THE LANTERNS ARE LIT</div>
       <div class="top-actions"><button id="earlyReviewToggle" class="quiet" hidden>Round so far</button><button id="pause" class="quiet" hidden>Pause</button><button id="tuneToggle" class="quiet" aria-expanded="false" aria-controls="tuningPanel">Tune lift</button><button id="sound" class="quiet" aria-pressed="false">Sound off</button><button id="help" class="icon-button" aria-label="How to play">?</button></div>
     </header>
 
@@ -39,43 +42,43 @@
 
     <main>
       <div class="episode-bar">
-        <div><span id="eyebrow" class="eyebrow">WELCOME TO THE VILLA</span><h1 id="heading">Trust is part of the game.</h1></div>
-        <div id="scoreboard" class="scoreboard"><div><span>PRIZE POT</span><b id="pot">0</b></div><div><span>HEISTS</span><b><span id="heists">0</span><small>/ 2</small></b></div><div class="clock"><span id="phaseLabel">LOBBY</span><b id="timer">—</b></div></div>
+        <div><span id="eyebrow" class="eyebrow">WELCOME TO THE MIDNIGHT FAIR</span><h1 id="heading">A little magic. A little mischief.</h1></div>
+        <div id="scoreboard" class="scoreboard"><div><span>DELIVERIES</span><b id="pot">0</b></div><div><span>DIVERSIONS</span><b><span id="heists">0</span><small>/ 2</small></b></div><div class="clock"><span id="phaseLabel">LOBBY</span><b id="timer">—</b></div></div>
       </div>
 
       <div class="layout">
         <section class="stage" aria-label="Game stage">
-          <div class="stage-top"><span id="cameraLabel">CAM 01 <b>THE COURTYARD</b></span><div><span id="castCount">8 CONTESTANTS</span></div></div>
-          <div class="canvas-wrap"><canvas id="scene" width="1000" height="650" aria-label="2D villa. Use arrow keys or WASD to walk, or tap a destination."></canvas><div id="sceneCaption" class="scene-caption">A little teamwork. A little betrayal.</div></div>
+          <div class="stage-top"><span id="cameraLabel">THE LANTERN GARDEN</span><div><span id="castCount">8 CONTESTANTS</span></div></div>
+          <div class="canvas-wrap"><canvas id="scene" width="1000" height="650" aria-label="2D midnight fair. Use arrow keys or WASD to walk, or tap a destination."></canvas><div id="sceneCaption" class="scene-caption">A little magic. A little mischief.</div></div>
           <div id="stationTabs" class="station-tabs" hidden></div>
           <div class="stage-bottom"><span id="sceneHint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to explore <span class="dot-separator">•</span> Tap to walk</span><span class="local-badge">LOCAL SIMULATION</span></div>
         </section>
 
         <aside class="sidebar">
           <section id="lobbyPanel" class="panel welcome">
-            <span class="eyebrow coral">THE CAST IS WAITING</span><h2>Eight players.<br>Two secret Snakes.<br><em>Who do you trust?</em></h2>
-            <p>Lift the villa’s golden treasures above the lava. Catch a falling capsule. Watch the lifts. Vote out the Snakes.</p>
+            <span class="eyebrow coral">MOONMOP LIFT · COLLECTION STUDY</span><h2>Eight visitors.<br>Two secret Tricksters.<br><em>One little Moonmop.</em></h2>
+            <p>Guide protected Moonmop pods to their moon nests. Watch your partner. Win with your team and adopt one baby — even if you were voted out.</p>
             <button id="play" class="primary">Play with 7 bots <span>↗</span></button>
             <div class="button-pair"><button id="practice" class="secondary">Practice a lift</button><button id="watch" class="secondary">Watch bots</button></div>
-            <p class="fine">You + 7 labeled bots · about 5 minutes<br>No account or download. Roles are random.</p>
+            <p class="fine">You + 7 labeled bots · about 5 minutes<br>Local collection · no account. Roles are random.</p>
           </section>
 
           <section id="gamePanel" class="panel" hidden>
             <div class="row"><span id="panelEyebrow" class="eyebrow coral">YOUR PRIVATE CARD</span><button id="roleToggle" class="text-button" hidden>Hide role</button></div>
-            <h2 id="panelTitle">The show is starting.</h2><p id="panelText"></p>
+            <h2 id="panelTitle">The fair is opening.</h2><p id="panelText"></p>
             <div id="privateRole" class="role-card" hidden></div>
             <div id="liftHud" hidden><div class="row meter-label"><span id="tiltText">Keep the tray level</span><b id="heightText">0%</b></div><div class="height-meter"><i id="heightFill"></i></div></div>
-            <div id="catchPanel" class="catch-panel" hidden><div class="row"><b>CATCH THE CAPSULE!</b><span id="catchTime">3.0s</span></div><div class="catch-track"><span class="catch-zone"></span><i id="needle"></i></div><p id="catchHint">One fresh tap. Aim for the gold zone.</p></div>
+            <div id="catchPanel" class="catch-panel" hidden><div class="row"><b>CATCH THE MOONMOP POD!</b><span id="catchTime">3.0s</span></div><div class="catch-track"><span class="catch-zone"></span><i id="needle"></i></div><p id="catchHint">One fresh tap. Aim for the gold zone.</p></div>
             <div id="controls" class="controls" hidden><button id="pull" class="primary hold-button">Hold to pull <kbd>SPACE</kbd></button><button id="catch" class="primary catch-button" hidden>Catch! <kbd>C</kbd></button><button id="rig" class="rig-button hold-button" hidden>Hold to rig <kbd>R</kbd></button><p id="rigHint" class="fine" hidden></p><button id="interact" class="secondary" hidden>Join console <kbd>E</kbd></button><button id="leave" class="text-button">Leave console</button></div>
             <details id="mechanicsPanel" class="mechanics-panel" hidden><summary>Motor readouts <span>height · load · hold</span></summary><div id="motorReadouts"></div><p class="fine">Hold is measured over the last 2s. “Needs” estimates an unboosted motor’s hold duty; it does not identify a Rig.</p></details>
-            <button id="continue" class="primary" hidden>Enter the first act →</button>
+            <button id="continue" class="primary" hidden>Enter the first trial →</button>
             <div id="speedControls" class="row" hidden><label for="speed">Playback speed</label><select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></div>
-            <button id="nextEpisode" class="secondary" hidden>New episode</button>
+            <button id="nextEpisode" class="secondary" hidden>New round ↗</button><button id="returnFair" class="text-button" hidden>Return to the fair</button>
           </section>
 
           <section id="tuningPanel" class="panel tuning-panel" hidden>
-            <div class="row"><span class="eyebrow coral">PRIZE LIFT · WORKING DRAFT</span><button id="closeTuning" class="text-button" aria-label="Close tuning">Close</button></div>
-            <h2>Tune the lift.</h2><p class="tuning-intro">Changes apply live to every lift. Start offset applies to the next capsule. These are draft settings.</p>
+            <div class="row"><span class="eyebrow coral">MOONMOP LIFT · WORKING DRAFT</span><button id="closeTuning" class="text-button" aria-label="Close tuning">Close</button></div>
+            <h2>Tune the lift.</h2><p class="tuning-intro">Changes apply live to every lift. Start offset applies to the next pod. These are draft settings.</p>
             <div class="button-pair"><button id="tuneRestart" class="secondary">Restart same practice</button><button id="tuneDefaults" class="secondary">Restore prototype</button></div>
             <div id="tuningSliders" class="tuning-scroll"></div>
             <details class="tuning-derived"><summary>What these settings imply</summary><div id="tuningDerived"></div><p class="fine">Two-cable estimates. Tray mass 2; winch inertia 0.6; delivery +2.6; upper stop +2.8; lava −1.8; max height gap 1.6. Catch zone starts at 60%.</p></details>
@@ -83,6 +86,7 @@
             <p id="tuningStatus" class="fine" role="status">Prototype baseline. Changes are saved in this browser.</p>
           </section>
 
+          <section id="nurseryPanel" class="panel nursery-entry"><span class="eyebrow coral">YOUR LITTLE CONSTELLATION</span><h2>My Nursery</h2><p id="nurseryCount"></p><p id="pendingStatus" class="fine" role="status"></p><div id="lobbyCompanion"></div><button id="openNursery" class="secondary">Meet your babies →</button><div class="button-pair"><button id="openSocial" class="text-button">Meet &amp; present</button><button id="openExchange" class="text-button">Exchange garden</button></div><p id="lobbyBadge" class="fine"></p><p id="collectionWarning" class="fine" role="status"></p></section>
           <section class="panel cast-panel"><div class="row"><span class="eyebrow">MEET THE CAST</span><span id="castSummary" class="fine">1 YOU + 7 BOTS</span></div><div id="cast" class="cast-grid"></div><p id="castNote" class="fine">Same faces. Secret allegiances.</p></section>
         </aside>
       </div>
@@ -90,8 +94,8 @@
       <section id="evidencePanel" class="vote-room" aria-label="Voting room" hidden>
         <div id="votePaused" class="vote-paused" role="status" hidden><b>Paused</b><button id="voteResume">Resume ▶</button><button id="voteQuit">Return to lobby</button></div>
         <div class="vote-room-heading">
-          <div><span id="voteRoomStep" class="vote-kicker">LOOK & VOTE</span><h2 id="voteRoomTitle" tabindex="-1">Who is the Snake?</h2><p id="voteRoomHint">Look at the lifts. Pick a face.</p></div>
-          <div class="vote-tools"><button id="voteRoleToggle" class="text-button" aria-expanded="false" aria-controls="votePrivateRole" hidden>My role</button><label id="voteSpeedControls" hidden>Speed <select id="voteSpeed" aria-label="Voting playback speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label><button id="voteNewEpisode" class="text-button" hidden>New episode</button><div class="vote-clock" id="voteClock"><span id="voteClockLabel">Vote ends in</span><b id="voteSeconds">35</b><span>seconds</span></div></div>
+          <div><span id="voteRoomStep" class="vote-kicker">CLUES & BALLOT</span><h2 id="voteRoomTitle" tabindex="-1">Who is the Trickster?</h2><p id="voteRoomHint">Look at the lifts. Pick a face.</p></div>
+          <div class="vote-tools"><button id="voteRoleToggle" class="text-button" aria-expanded="false" aria-controls="votePrivateRole" hidden>My role</button><label id="voteSpeedControls" hidden>Speed <select id="voteSpeed" aria-label="Voting playback speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label><button id="voteNewEpisode" class="text-button" hidden>New round ↗</button><button id="voteReturnFair" class="text-button" hidden>Return to the fair</button><div class="vote-clock" id="voteClock"><span id="voteClockLabel">Vote ends in</span><b id="voteSeconds">35</b><span>seconds</span></div></div>
         </div>
         <div id="votePrivateRole" class="vote-private-role" hidden></div>
         <div id="voteWaiting" class="vote-waiting" hidden><b id="voteWaitingTitle">Waiting for the other lifts…</b><span id="voteWaitingHint">Voting opens when everyone finishes.</span><button id="watchLifts" class="secondary">Watch lifts →</button></div>
@@ -99,14 +103,14 @@
         <div id="runoffNotice" class="runoff-notice" hidden></div>
         <div class="vote-content">
           <section id="roundMemories" class="round-memories" aria-label="Round in pictures">
-            <div class="memory-toolbar"><h3 id="memoryHeading">The lifts</h3><label>Round <select id="receiptAct" aria-label="Round to review"></select></label><span class="memory-note">A mistake can happen to anyone.</span></div>
+            <div class="memory-toolbar"><h3 id="memoryHeading">The lifts</h3><label>Trial <select id="receiptAct" aria-label="Trial to review"></select></label><span class="memory-note">A mistake can happen to anyone.</span></div>
             <div id="receipts" class="receipt-grid"></div>
           </section>
           <section id="votePanel" class="pick-panel" aria-labelledby="voteHeading" hidden>
-            <div class="pick-heading"><div><h3 id="voteHeading">Pick a face.</h3><p id="voteHint">Your vote is shown to everyone.</p></div><span class="ballot-progress" id="ballotProgress" aria-label="Votes cast"></span></div>
+            <div class="pick-heading"><div><h3 id="voteHeading">Pick a face.</h3><p id="voteHint">Tap to vote. Lock when you’re ready.</p></div><span class="ballot-progress" id="ballotProgress" aria-label="Votes cast"></span></div>
             <div id="candidates" class="candidates"></div>
             <div class="ballot-footer">
-              <span class="ballot-status" id="ballotStatus" role="status">Everyone can see each vote.</span>
+              <span class="ballot-status" id="ballotStatus" role="status">Who’s your hunch?</span>
               <button id="certain" class="certainty-button" aria-pressed="false" disabled>I’m sure!</button>
               <button id="abstain" class="skip-button">Skip vote</button>
               <button id="lockVote" class="lock-button" disabled>Lock vote</button>
@@ -116,16 +120,17 @@
         <div id="voteResult" class="vote-reveal" aria-live="polite" hidden></div>
       </section>
 
-      <section id="finalePanel" class="panel finale-panel" hidden><span class="eyebrow coral">THAT’S A WRAP</span><h2 id="winner"></h2><p id="winnerReason"></p><div id="revealCast" class="reveal-cast"></div><h3>The episode, unmasked.</h3><p class="fine">Actual recorded actions, with private sabotage revealed.</p><div id="replay" class="replay"></div><button id="replayEpisode" class="primary">Play another episode ↗</button></section>
+      <section id="finalePanel" class="panel finale-panel" hidden><span class="eyebrow coral">A NEW NEST, A NEW STORY</span><h2 id="winner"></h2><p id="winnerReason"></p><div id="adoption" class="adoption" aria-live="polite"></div><button id="adoptionNursery" class="secondary">Return to the fair &amp; My Nursery →</button><div id="revealCast" class="reveal-cast"></div><h3>The round, revealed.</h3><p class="fine">Actual recorded actions, with private sabotage revealed.</p><div id="replay" class="replay"></div><button id="replayEpisode" class="primary">Play another round ↗</button></section>
 
       <div id="mobileMove" class="mobile-move" aria-label="Movement controls"><button data-move="up" aria-label="Walk up">↑</button><div><button data-move="left" aria-label="Walk left">←</button><button data-move="down" aria-label="Walk down">↓</button><button data-move="right" aria-label="Walk right">→</button></div></div>
-      <footer><span>ORIGINAL CAST. QUESTIONABLE ALLEGIANCES.</span><a href="README.md">Prototype notes ↗</a><a href="../prototypes/index.html">Interaction studies ↗</a></footer>
+      <footer><span>SOFT EARS. SECRET ALLIANCES.</span><a href="README.md">Prototype notes ↗</a><a href="../prototypes/index.html">Interaction studies ↗</a></footer>
     </main>
   </div>
 
-  <dialog id="helpDialog"><button id="closeHelp" class="dialog-close" aria-label="Close instructions">×</button><span class="eyebrow coral">YOUR FIRST EPISODE</span><h2>Keep your friends close.<br>Watch their cables.</h2><ol><li><b>Know your role.</b> Six Loyals protect the treasures. Two Snakes secretly sabotage. Snakes need two heists and one survivor after the last vote.</li><li><b>Work your cable.</b> Hold Space or Pull to raise your end; release to lower it. Tilt to guide the ball inward, then slow it near center. Every corner must reach the gold delivery line.</li><li><b>Save the capsule.</b> If it slips, press C or Catch when the needle is in the gold zone. You get one tap per fall. Someone else can still save after a miss.</li><li id="rigHelp"><b>Play the Snake.</b> Hold R or Rig for 1.5 seconds to arm the team’s one attempt. Your motor doubles for 5 seconds. A rigged, uncaught spill is a heist; lava contact is only a failed lift.</li><li><b>Spot when the cast is odd.</b> Every lift has exactly two motors. If your partner is voted out and the cast is odd, you spot the next act: no console, but you can walk into any rescue area to Catch there. Your longest stay and your taps become a receipt.</li><li><b>Follow the evidence.</b> Finish early to see the pictures while the others play. When every lift finishes or 45 seconds run out, you have 35 seconds to look at the pictures and vote. Everyone sees the votes as they arrive. Tap a face to vote; change it until you lock it or time is up. When everyone locks, voting ends early. Every vote starts as a hunch. Tap “I’m sure!” to show certainty. You cannot vote for yourself. A tie gets a runoff. Voted out? Follow the episode backstage or start again.</li></ol><p>Walk with WASD / arrows or tap the courtyard. E uses a nearby console. Escape pauses. Sound is optional. Practice uses the same physics with one Loyal bot.</p><p class="fine">This is an offline browser adaptation for one player. Bots and balance are experimental; there is no online matchmaking or persistent economy.</p><button id="gotIt" class="primary">Got it. Let’s play.</button></dialog>
+  <dialog id="helpDialog"><button id="closeHelp" class="dialog-close" aria-label="Close instructions">×</button><span class="eyebrow coral">YOUR FIRST ROUND</span><h2>Keep your friends close.<br>Watch their cables.</h2><ol><li><b>Know your team.</b> Six Keepers protect the fair nursery. Two Tricksters secretly divert pods to the Mischief Court. Tricksters need two diversions and one survivor after the last vote. Both nurseries care for the babies.</li><li><b>Lift Moonmop safely.</b> Hold Space or Pull to raise your cable; release to lower it. Keep the protected pod near center. Both tray corners must reach the moon-nest line.</li><li><b>Catch a slipping pod.</b> Press C or Catch in the gold zone. One tap per fault; others can still save after a miss. An unrescued pod disappears into the opaque safety housing above the theatrical lava. Neither route hurts Moonmop.</li><li id="rigHelp"></li><li><b>Spot when the cast is odd.</b> If your partner was voted out, you may spot the next trial. Walk into rescue areas to Catch. Every lift still has exactly two operators. Spotters still vote and can earn their team’s reward.</li><li><b>Read clues and vote together.</b> Voting opens immediately when the lifts finish, with one shared 35-second clock. Everyone sees choices, pointing and counts live. Tap a face to place or change your hunch; “I’m sure!” shows confidence without extra vote weight. You can skip, change your mind, then lock when ready. If everyone locks, the vote ends early. No self-votes. Ties get a 10-second runoff; a second tie removes nobody.</li><li><b>Win with your team. Adopt one baby.</b> Every participating winner receives one Moonmop, including voted-out teammates. Personal deliveries, saves and Rig credit are not required. Practice and watching award none. Your owned babies are never put at risk.</li></ol><p>WASD / arrows or tap to walk. E uses a console. Escape pauses. A removed player can follow public clues, or return to the fair while the bots finish the round in this tab.</p><p class="fine">One player and local bots. Palette odds, participation rules, badges and social interactions are prototype choices. Nursery progress saves only in this browser; there is no online play or real player exchange.</p><button id="gotIt" class="primary">Got it. Let’s play.</button></dialog>
+  <dialog id="nurseryDialog" class="nursery-dialog" aria-labelledby="nurseryTitle"><div class="row"><div><span class="eyebrow coral">THE MIDNIGHT FAIR</span><h2 id="nurseryTitle">My Nursery</h2></div><button id="closeNursery" class="icon-button" aria-label="Close nursery">×</button></div><div id="nurseryBody"></div><p id="nurseryStatus" role="status" class="nursery-status"></p></dialog>
   <dialog id="cameraDialog" class="camera-dialog" aria-labelledby="cameraTitle"><div class="camera-dialog-heading"><div><span class="vote-kicker">ROUND IN PICTURES</span><h2 id="cameraTitle">The lift</h2></div><button id="closeCamera" class="icon-button" aria-label="Close lift pictures">×</button></div><div id="cameraDetails"></div><p class="camera-caption">These are separate observations. A mistake can happen to anyone.</p></dialog>
-  <div id="pauseOverlay" class="pause-overlay" hidden><section class="panel"><span class="eyebrow coral">COMMERCIAL BREAK</span><h2 id="pauseTitle">The show is paused.</h2><p>Your episode waits for you. Held controls have been released.</p><button id="resume" class="primary">Resume the show →</button><button id="quit" class="text-button">Return to lobby</button></section></div>
+  <div id="pauseOverlay" class="pause-overlay" hidden><section class="panel"><span class="eyebrow coral">A MOMENT BENEATH THE MOON</span><h2 id="pauseTitle">The round is paused.</h2><p>Your round waits for you. Held controls have been released.</p><button id="resume" class="primary">Resume the round →</button><button id="quit" class="text-button">Return to lobby</button></section></div>
   <div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
 </body>
 </html>

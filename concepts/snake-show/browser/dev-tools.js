@@ -5,11 +5,11 @@
   if (!commonJS && new URLSearchParams(location.search).get('dev') !== '1') return;
   const Engine = commonJS ? require('./engine.js') : root.SnakeShow;
   const scenes = [
-    ['roleSnake', 'Your Snake role'], ['roleLoyal', 'Your Loyal role'],
+    ['roleSnake', 'Your Trickster role'], ['roleLoyal', 'Your Keeper role'],
     ['vote', 'Vote'], ['public', 'Public votes'], ['catch', 'Catch timer'],
     ['early', 'Early finish'], ['runoff', 'Runoff'], ['deadlock', 'Deadlock'],
-    ['Snake', 'Snake reveal'], ['Loyal', 'Loyal reveal'], ['finale', 'Finale reveal'],
-    ['watch', 'Watching'], ['backstage', 'Backstage'], ['history', 'Round 2']
+    ['Trickster', 'Trickster reveal'], ['Keeper', 'Keeper reveal'], ['finale', 'Finale reveal'],
+    ['watch', 'Watching'], ['backstage', 'Rest area'], ['history', 'Trial 2']
   ];
   const actions = [
     ['oneVote', 'Next bot vote'], ['botLocks', 'Bots lock votes'],
@@ -24,18 +24,20 @@
   };
   function create(ui) {
     function runScene(kind) {
+      // Keep saved scene URLs working after the role names change.
+      kind = ({ Snake: 'Trickster', Loyal: 'Keeper' })[kind] || kind;
       if (!scenes.some(([id]) => id === kind)) return false;
       if (kind.startsWith('role')) {
-        const wanted = kind === 'roleSnake' ? 'Snake' : 'Loyal';
+        const wanted = kind === 'roleSnake' ? 'Trickster' : 'Keeper';
         let seed = 1;
         while (new Engine.Episode({ seed }).players[0].role !== wanted) seed++;
         ui.reset('play', true, seed);
-        ui.game.setTimerPaused('phase', true);
+        ui.game.study = true; ui.game.setTimerPaused('phase', true);
         ui.showScene(true);
         return true;
       }
       ui.reset('watch', true, 11);
-      const g = ui.game;
+      const g = ui.game; g.study = true;
       g.nextPhase();
       if (kind === 'catch') {
         g.mode = 'play'; g.players.forEach(p => p.bot = false);
@@ -62,7 +64,7 @@
           g.castVote(0, 1); g.castVote(1, 2); g.finishVote();
           if (kind === 'deadlock') g.finishVote();
         }
-        if (['Snake', 'Loyal'].includes(kind)) {
+        if (['Trickster', 'Keeper'].includes(kind)) {
           const target = g.players.find(p => p.role === kind).id;
           for (const p of g.players) g.castVote(p.id, p.id === target ? null : target);
           g.finishVote();
@@ -118,12 +120,12 @@
     const menu = document.createElement('details');
     menu.id = 'devScenes'; menu.className = 'dev-scenes';
     menu.innerHTML = '<summary>Dev scenes</summary><div class="dev-scenes-content">' +
-      '<p>Scenes restart this local episode. Your lift tuning is kept.</p>' +
+      '<p>Scenes restart this local round. Your lift tuning is kept.</p>' +
       '<div class="dev-scene-buttons" role="group" aria-label="Load a dev scene">' +
       scenes.map(([id, label]) => `<button data-dev-scene="${id}">${label}</button>`).join('') + '</div>' +
       '<div class="dev-scene-buttons dev-scene-steps" role="group" aria-label="Step the current scene">' +
       actions.map(([id, label]) => `<button data-dev-step="${id}">${label}</button>`).join('') + '</div>' +
-      '<button data-dev-fresh>Fresh episode</button></div>';
+      '<button data-dev-fresh>Fresh round</button></div>';
     host.append(pauseButton, menu);
     pauseButton.addEventListener('click', () => ui.paused ? ui.resume() : ui.pause());
     menu.addEventListener('click', e => {

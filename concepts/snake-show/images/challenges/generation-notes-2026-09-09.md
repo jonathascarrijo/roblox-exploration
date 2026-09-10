@@ -1,6 +1,6 @@
 # Pair challenge illustration prompts — 9 September 2026
 
-Generated with the built-in `image_gen` tool. These images illustrate proposals in [the challenge exploration](../../pair-challenge-families.md); the written rules remain authoritative. Existing source illustrations are preserved.
+Generated with the built-in `image_gen` tool. These images illustrate proposals in [the challenge exploration](../../explorations/pair-challenge-families.md); the written rules remain authoritative. Existing source illustrations are preserved.
 
 | Final asset | Purpose | Input |
 | --- | --- | --- |

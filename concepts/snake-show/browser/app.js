@@ -4,6 +4,9 @@
   const { FIXED, DEFAULTS, SLIDERS, catchGeometry, neededDuty, speeds } = LiftSettings;
   const $ = id => document.getElementById(id);
   const scene = new SnakeScene($('scene'));
+  let localStore; try { localStore = localStorage; } catch {}
+  const collection = new MidnightNursery.Collection(localStore), pendingRounds = [];
+  let nurseryUI;
   const timerHome = document.createComment('Development timer bar home');
   $('devTimers').before(timerHome);
   function placeTimerControls(dialog = null) {
@@ -40,7 +43,12 @@
     osc.connect(gain); gain.connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime + length);
   }
   function reset(mode = 'play', start = false, runSeed = seed()) {
-    releaseInputs(); game = new Episode({ seed: runSeed, mode, settings: draft }); paused = false; lastPhase = '';
+    releaseInputs();
+    if (game && !game.study && game.mode === 'play' && !game.players[0].active && !['lobby', 'finale'].includes(game.phase)) {
+      for (const name of Object.keys(game.timers)) game.setTimerPaused(name, false);
+      pendingRounds.push(game);
+    }
+    game = new Episode({ seed: runSeed, mode, settings: draft }); paused = false; lastPhase = ''; game.study = devMode;
     earlyReviewOpen = false; earlyReviewSeen = false; earlySignature = '';
     selected = null; shownAct = 1; roleVisible = true; accumulated = 0; castSignature = ''; tabSignature = ''; revealSignature = '';
     view = { camera: 'villa', station: 0, destination: null, moving: false };
@@ -58,7 +66,7 @@
     const zone = catchGeometry(draft), balanced = speeds(draft), heavy = speeds(draft, 1);
     const duty = share => { const value = neededDuty(draft, share); return value > 1 ? 'cannot lift' : `${Math.round(value * 100)}% hold`; };
     $('tuningDerived').innerHTML = [
-      ['Prize at your end', duty(1)], ['Prize centered', duty(.5)], ['Prize at far end', duty(0)],
+      ['Pod at your end', duty(1)], ['Pod centered', duty(.5)], ['Pod at far end', duty(0)],
       ['Centered speed ↑ / ↓', `${balanced.up.toFixed(2)} / ${balanced.down.toFixed(2)} u/s`],
       ['Heavy-end speed ↑ / ↓', `${heavy.up.toFixed(2)} / ${heavy.down.toFixed(2)} u/s`],
       ['Static tilt threshold', `${(Math.atan(draft.mus / draft.roll) * 180 / Math.PI).toFixed(1)}°`],
@@ -100,7 +108,7 @@
     if (!s || !$('mechanicsPanel').open) return;
     const load = shares(s), duty = s.ids.map((_, i) => s.duty.length ? s.duty.filter(sample => sample.held[i]).length / s.duty.length : 0);
     const estimate = load.map(value => { const need = neededDuty(game.settings, value, s.ids.length); return need > 1 ? 'cannot lift' : `${Math.round(need * 100)}%`; });
-    $('motorReadouts').innerHTML = `<table><thead><tr><th></th>${s.ids.map((id, i) => `<th>M${i + 1}<small>${id === 0 && game.mode !== 'watch' ? 'You' : game.players[id].name}</small></th>`).join('')}</tr></thead><tbody><tr><th>Height</th>${s.h.map(h => `<td>${h.toFixed(2)}</td>`).join('')}</tr><tr><th>Prize load</th>${load.map(w => `<td>${Math.round(clamp(w, 0, 1) * 100)}%</td>`).join('')}</tr><tr><th>Holding</th>${duty.map((value, i) => `<td>${Math.round(value * 100)}%<small>needs ~${estimate[i]}</small></td>`).join('')}</tr><tr><th>Motor</th>${s.held.map(on => `<td>${s.state === 'lifting' && on ? 'ON ↑' : 'off ↓'}</td>`).join('')}</tr></tbody></table>`;
+    $('motorReadouts').innerHTML = `<table><thead><tr><th></th>${s.ids.map((id, i) => `<th>M${i + 1}<small>${id === 0 && game.mode !== 'watch' ? 'You' : game.players[id].name}</small></th>`).join('')}</tr></thead><tbody><tr><th>Height</th>${s.h.map(h => `<td>${h.toFixed(2)}</td>`).join('')}</tr><tr><th>Pod load</th>${load.map(w => `<td>${Math.round(clamp(w, 0, 1) * 100)}%</td>`).join('')}</tr><tr><th>Holding</th>${duty.map((value, i) => `<td>${Math.round(value * 100)}%<small>needs ~${estimate[i]}</small></td>`).join('')}</tr><tr><th>Motor</th>${s.held.map(on => `<td>${s.state === 'lifting' && on ? 'ON ↑' : 'off ↓'}</td>`).join('')}</tr></tbody></table>`;
   }
   function releaseInputs() {
     keys.clear(); for (const values of Object.values(holds)) values.clear();
@@ -108,7 +116,7 @@
     for (const id of ['pull', 'rig']) $(id).classList.remove('pressed');
     if (view) { view.destination = null; view.moving = false; }
   }
-  function pause(reason = 'The show is paused.') {
+  function pause(reason = 'The round is paused.') {
     if (game.phase === 'lobby' || paused) return;
     paused = true; releaseInputs(); set('pauseTitle', reason); const inVoteRoom = earlyReviewOpen || ['vote', 'runoff', 'result'].includes(game.phase);
     show('pauseOverlay', !inVoteRoom && !devMode); updateUI(); (devMode ? $('devSimulationPause') : inVoteRoom ? $('voteResume') : $('resume')).focus();
@@ -127,6 +135,9 @@
     if (game.phase === 'lobby') {
       const p = game.players[0];
       if (Math.hypot(p.x - POSITIONS[0].x, p.y - POSITIONS[0].y) < 110) reset('practice', true);
+      else if (Math.hypot(p.x - POSITIONS[2].x, p.y - POSITIONS[2].y) < 110) nurseryUI.open('exchange');
+      else if (Math.hypot(p.x - POSITIONS[3].x, p.y - POSITIONS[3].y) < 110) nurseryUI.open();
+      else if (Math.hypot(p.x - POSITIONS[1].x, p.y - POSITIONS[1].y) < 110) reset('play', true);
       else if (Math.hypot(p.x - 497, p.y - 554) < 115) reset('play', true);
       return;
     }
@@ -177,7 +188,7 @@
     button.addEventListener('keyup', e => { if (['Space', 'Enter'].includes(e.code)) { e.preventDefault(); e.stopPropagation(); actionUp(action, e.code); } });
   }
   window.addEventListener('keydown', e => {
-    if ($('helpDialog').open || $('cameraDialog').open) return;
+    if ($('helpDialog').open || $('cameraDialog').open || $('nurseryDialog').open) return;
     if (e.code === 'Escape') { e.preventDefault(); paused ? resume() : pause(); return; }
     if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName) || e.altKey || e.ctrlKey || e.metaKey) return;
     if (paused) return;
@@ -196,8 +207,8 @@
     const action = { Space: 'pull', KeyR: 'rig', KeyC: 'catch' }[e.code];
     if (action) actionUp(action, e.code);
   });
-  window.addEventListener('blur', () => { releaseInputs(); pause('The show paused while you were away.'); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) { releaseInputs(); pause('The show paused while you were away.'); } });
+  window.addEventListener('blur', () => { releaseInputs(); pause('The round paused while you were away.'); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { releaseInputs(); pause('The round paused while you were away.'); } });
   for (const button of document.querySelectorAll('[data-move]')) {
     const code = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' }[button.dataset.move];
     button.addEventListener('pointerdown', e => { e.preventDefault(); button.setPointerCapture(e.pointerId); keys.add(code); view.destination = null; });
@@ -211,7 +222,7 @@
     if (view.destination.x > 320 && view.destination.x < 684 && view.destination.y > 198 && view.destination.y < 496) view.destination.x = view.destination.x < 500 ? 314 : 690;
   });
   function move(dt) {
-    if (!movable()) { view.moving = false; return; }
+    if ($('nurseryDialog').open || !movable()) { view.moving = false; return; }
     const p = game.players[0]; let dx = 0, dy = 0;
     if (keys.has('KeyA') || keys.has('ArrowLeft')) dx--;
     if (keys.has('KeyD') || keys.has('ArrowRight')) dx++;
@@ -219,7 +230,7 @@
     if (keys.has('KeyS') || keys.has('ArrowDown')) dy++;
     if (!dx && !dy && view.destination) {
       let target = view.destination;
-      // Walk around the pool via the nearest end when crossing the courtyard.
+      // Walk around the pool via the nearest end when crossing the fair garden.
       const across = p.x < 324 && target.x > 680 || p.x > 680 && target.x < 324;
       const central = p.y > 186 && p.y < 508;
       if (across && central) target = { x: p.x, y: p.y < 347 ? 181 : 518 };
@@ -228,6 +239,7 @@
     }
     const mag = Math.hypot(dx, dy); view.moving = mag > 0;
     if (!mag) return;
+    game.participate(0);
     const step = Math.min(140 * dt, view.destination ? mag : Infinity); dx = dx / mag * step; dy = dy / mag * step;
     const blocked = (x, y) => x > 324 && x < 680 && y > 196 && y < 502;
     const nx = clamp(p.x + dx, 97, 904), ny = clamp(p.y + dy, 170, 560);
@@ -240,7 +252,7 @@
     if (!force && signature === castSignature) return; castSignature = signature;
     $('cast').innerHTML = game.players.map(p => `<div class="cast-member ${p.id === 0 && game.mode !== 'watch' ? 'you' : ''} ${!p.active ? 'out' : ''}">${avatar(p)}<span class="number">${String(p.id + 1).padStart(2, '0')}</span><b>${p.name}</b><small>${!p.active && game.mode !== 'practice' || game.phase === 'finale' ? p.role : p.id === spotting ? (p.id === 0 && game.mode !== 'watch' ? 'YOU · SPOTTER' : 'SPOTTER') : p.id === 0 && game.mode !== 'watch' ? 'YOU' : 'BOT'}</small></div>`).join('');
     set('castSummary', game.mode === 'watch' ? '8 BOTS · SPECTATING' : game.mode === 'practice' ? 'YOU + 1 PRACTICE BOT' : '1 YOU + 7 BOTS');
-    set('castNote', game.mode === 'watch' ? 'Autonomous play. Roles stay hidden until revealed.' : !game.players[0].active && game.mode !== 'practice' ? 'You are backstage. Your original team’s result still counts.' : 'Same faces. Secret allegiances.');
+    set('castNote', game.mode === 'watch' ? 'Autonomous play. Roles stay hidden until revealed.' : !game.players[0].active && game.mode !== 'practice' ? 'You are rest area. Your original team’s result still counts.' : 'Fair visitors. Secret allegiances.');
   }
   function renderTabs(force) {
     const signature = game.stations.map(s => s.state).join() + view.station + view.camera;
@@ -261,7 +273,7 @@
     set('memoryHeading', shownAct === game.act ? 'The lifts' : 'Round ' + shownAct + ' · The lifts');
     const latest = game.history.at(-1);
     // Heists are revealed only when the entire act ends.
-    $('voteRoundSummary').innerHTML = game.phase === 'challenge' ? '<span class="round-prize">' + VoteView.icon('check') + '<b>' + game.stations.filter(s => game.stationFinished(s)).length + ' / ' + game.stations.length + '</b> lifts finished</span>' : '<span class="round-prize delivered">' + VoteView.icon('crown') + '<b>' + latest.pot + '</b> delivered</span><span class="round-prize stolen">' + VoteView.icon('snake') + '<b>' + latest.heists + '</b> stolen this round</span>';
+    $('voteRoundSummary').innerHTML = game.phase === 'challenge' ? '<span class="round-prize">' + VoteView.icon('check') + '<b>' + game.stations.filter(s => game.stationFinished(s)).length + ' / ' + game.stations.length + '</b> lifts finished</span>' : '<span class="round-prize delivered">' + VoteView.icon('crown') + '<b>' + latest.pot + '</b> delivered</span><span class="round-prize stolen">' + VoteView.icon('snake') + '<b>' + latest.heists + '</b> diverted this trial</span>';
     voteSignature = '';
     if (['vote', 'runoff'].includes(game.phase) && $('candidates').children.length) refreshPublicVotes();
   }
@@ -314,7 +326,7 @@
       $(`vote-count-${p.id}`).setAttribute('aria-label', `${state.count} vote${state.count === 1 ? '' : 's'}`);
       $(`vote-count-${p.id}`).classList.toggle('has-votes', state.count > 0);
       const target = state.target === null ? null : game.players[state.target];
-      const choice = target ? `${state.certain ? '!' : '?'} → ${target.name}` : state.skipped ? 'Skipped' : !p.active ? 'Backstage' : '…';
+      const choice = target ? `${state.certain ? '!' : '?'} → ${target.name}` : state.skipped ? 'Skipped' : !p.active ? 'Rest area' : '…';
       set(`voter-choice-${p.id}`, (live.locked.includes(p.id) ? '✓ ' : '') + choice);
       $(`voter-choice-${p.id}`).classList.toggle('has-choice', !!target);
       const arm = button.querySelector('.pointing-arm'), elbow = button.querySelector('.pointing-elbow');
@@ -338,22 +350,26 @@
   function renderVoteResult() {
     const result = game.lastVote; if (!result) return;
     if (game.phase === 'runoff') {
-      $('runoffNotice').innerHTML = `<b>Tied!</b><span class="tied-faces">${result.tied.map(id => `<span>${VoteView.portrait(game.players[id])}<b>${game.players[id].name}</b></span>`).join('')}</span><span>Vote again.</span>`;
+      $('runoffNotice').innerHTML = `<b>Tied!</b><span class="tied-faces">${result.tied.map(id => `<span>${VoteView.portrait(game.players[id])}<b>${game.players[id].name}</b></span>`).join('')}</span><span>Vote again.</span><span class="runoff-tally">${Object.entries(result.totals).map(([id, count]) => `${game.players[id].name}: ${count}`).join(' · ')}</span>`;
     } else $('voteResult').innerHTML = VoteView.result(result, game.players);
   }
   function renderFinale() {
     if (revealSignature === `${game.seed}:${game.act}`) return;
     revealSignature = `${game.seed}:${game.act}`;
-    set('winner', `${game.outcome.team} win the show.`); set('winnerReason', game.outcome.reason + (game.mode === 'watch' ? '' : ` You ${game.players[0].role === (game.outcome.team === 'Snakes' ? 'Snake' : 'Loyal') ? 'win with' : 'played for'} the ${game.players[0].role === 'Snake' ? 'Snakes' : 'Loyals'}${game.players[0].active ? '.' : ', even from backstage.'}`));
-    $('revealCast').innerHTML = game.players.map(p => `<div class="reveal-person ${p.role === 'Snake' ? 'snake' : ''}">${VoteView.rolePortrait(p)}<b>${p.name}${p.id === 0 && game.mode !== 'watch' ? ' · You' : ''}</b><span>${p.role} · ${p.active ? 'survived' : 'removed'}</span></div>`).join('');
-    $('replay').innerHTML = game.history.map(h => `<article class="replay-act"><h3>Act ${h.act} <span class="fine">${h.heists} heist · ${h.pot} delivered</span></h3>${h.stations.flatMap(s => s.events.filter(e => ['rig', 'heist', 'cleared', 'catch', 'lava', 'delivery', 'loss'].includes(e.kind)).map(e => ({ ...e, place: s.name }))).sort((a, b) => a.time - b.time).map(e => `<p class="${e.private ? 'secret' : ''}"><b>${e.time.toFixed(1)}s · ${e.place}</b><br>${escape(e.text)}</p>`).join('') || '<p>No decisive lift events recorded.</p>'}${h.spotter ? `<p><b>Spotter</b><br>${escape(h.spotter.text)}</p>` : ''}${h.votes.map(v => `<p><b>${v.runoff ? 'Runoff' : 'Vote'}</b><br>${v.accepted.map(b => `${game.players[b.voter].name} → ${game.players[b.target].name}`).join(' · ')}${v.accepted.length ? '.' : 'Everyone abstained.'}<br>${v.removed === null ? 'Tie.' : `${game.players[v.removed].name} received the most votes.`}</p>`).join('')}</article>`).join('');
+    set('winner', `${game.outcome.team} win the round.`); set('winnerReason', game.outcome.reason + (game.mode === 'watch' ? '' : ` You ${game.players[0].role === (game.outcome.team === 'Tricksters' ? 'Trickster' : 'Keeper') ? 'win with' : 'played for'} the ${game.players[0].role === 'Trickster' ? 'Tricksters' : 'Keepers'}${game.players[0].active ? '.' : ', even from the rest area.'}`));
+    const adopted = collection.award(game);
+    nurseryUI?.refresh();
+    const nurseryName = game.outcome.team === 'Tricksters' ? 'the Mischief Court’s cushion nest' : 'the fair’s moon nursery';
+    $('adoption').innerHTML = `<div>${MidnightNursery.art(adopted || {variant:'lilac'}, 'Hello!')}</div><div><span class="eyebrow coral">${adopted ? 'MEET YOUR NEW BABY' : 'SAFE IN BOTH NURSERIES'}</span><h3>${adopted ? `A ${MidnightNursery.shade(adopted).name} Moonmop joins you.` : 'Moonmop is home.'}</h3><p>The pods arrive at ${nurseryName}. A tiny ear unfolds; a glowing tail settles into a pillow.</p><p>${adopted ? escape(adopted.origin) + ' One team victory, one individual — even from the rest area.' : game.study ? 'Developer scenes grant no collection rewards.' : game.mode === 'watch' ? 'Watching bots grants no adoption.' : !game.participants.has(0) ? 'No local participation was recorded, so this round grants no adoption.' : 'Your team did not win this time. Your owned babies are safe; the next round is a new chance.'}</p>${adopted ? '<small>Color and rarity use the provisional study palette.</small>' : ''}</div>`;
+    $('revealCast').innerHTML = game.players.map(p => `<div class="reveal-person ${p.role === 'Trickster' ? 'snake' : ''}">${VoteView.rolePortrait(p)}<b>${p.name}${p.id === 0 && game.mode !== 'watch' ? ' · You' : ''}</b><span>${p.role} · ${p.active ? 'survived' : 'removed'}${game.rewardEligible(p.id) ? ' · earns a baby' : ''}</span></div>`).join('');
+    $('replay').innerHTML = game.history.map(h => `<article class="replay-act"><h3>Trial ${h.act} <span class="fine">${h.heists} diversion · ${h.pot} delivered</span></h3>${h.stations.flatMap(s => s.events.filter(e => ['rig', 'heist', 'cleared', 'catch', 'lava', 'delivery', 'loss'].includes(e.kind)).map(e => ({ ...e, place: s.name }))).sort((a, b) => a.time - b.time).map(e => `<p class="${e.private ? 'secret' : ''}"><b>${e.time.toFixed(1)}s · ${e.place}</b><br>${escape(e.text)}</p>`).join('') || '<p>No decisive lift events recorded.</p>'}${h.spotter ? `<p><b>Spotter</b><br>${escape(h.spotter.text)}</p>` : ''}${h.votes.map(v => `<p><b>${v.runoff ? 'Runoff' : 'Vote'}</b><br>${v.accepted.map(b => `${game.players[b.voter].name} → ${game.players[b.target].name}`).join(' · ')}${v.accepted.length ? '.' : 'Everyone abstained.'}<br>${v.removed === null ? 'Tie.' : `${game.players[v.removed].name} received the most votes.`}</p>`).join('')}</article>`).join('');
   }
   function phaseChanged() {
     lastPhase = game.phase; earlyReviewOpen = false; earlyReviewSeen = false; earlySignature = ''; selected = null; releaseInputs();
     $('cameraDialog').close();
     if (game.phase === 'vote') { roleVisible = false; if (tuningOpen) openTuning(false); }
     if (game.phase === 'challenge') {
-      // The spotter has no console and starts in the courtyard.
+      // The spotter has no console and starts in the fair garden.
       const me = game.players[0];
       view.station = me.active && me.station >= 0 ? me.station : 0; view.camera = me.spotting ? 'villa' : 'lift';
       shownAct = game.act;
@@ -366,8 +382,8 @@
     if (['vote', 'runoff'].includes(game.phase)) renderCandidates();
     if (['runoff', 'result'].includes(game.phase)) renderVoteResult();
     if (game.phase === 'finale') renderFinale();
-    const words = { casting: 'Your private role is ready.', challenge: 'Prize Lift begins. Hold Pull to lift your cable.', vote: 'Voting is open. Look at the lifts and pick a face.', runoff: 'The vote tied. A runoff is open.', result: 'The votes are in.', finale: `${game.outcome?.team} win the show.`, 'practice-result': 'Practice complete.' };
-    announce(words[game.phase] || 'Welcome to the villa.'); if (game.phase !== 'lobby') tone(game.phase === 'finale' ? 880 : 440, .16);
+    const words = { casting: 'Your private role is ready.', challenge: 'Moonmop Lift begins. Hold Pull to lift your cable.', vote: 'Voting is open. Look at the lifts and pick a face.', runoff: 'The vote tied. A runoff is open.', result: 'The votes are in.', finale: `${game.outcome?.team} win the round.`, 'practice-result': 'Practice complete.' };
+    announce(words[game.phase] || 'Welcome to the fair.'); if (game.phase !== 'lobby') tone(game.phase === 'finale' ? 880 : 440, .16);
     renderCast(true); renderTabs(true);
     const destination = { challenge: 'heading', vote: 'voteRoomTitle', runoff: 'voteRoomTitle', result: 'voteRoomTitle', finale: 'finalePanel' }[game.phase];
     if (destination) requestAnimationFrame(() => {
@@ -380,6 +396,8 @@
     if (lastPhase !== game.phase) phaseChanged();
     const phase = game.phase, p = game.players[0], watch = game.mode === 'watch', practice = game.mode === 'practice';
     document.body.dataset.phase = phase;
+    show('nurseryPanel', phase === 'lobby');
+    set('pendingStatus', pendingRounds.length ? `${pendingRounds.length} earlier round${pendingRounds.length === 1 ? ' is' : 's are'} still playing. Stay in this tab for any team-win adoption.` : '');
     const timed = !!DURATIONS[phase] && phase !== 'finale';
     set('devPhaseTime', timed ? Math.ceil(Math.max(0, DURATIONS[phase] - game.timerClock())) + 's' : '—');
     set('devPhaseName', ({casting:'Casting', challenge:'Lift round', vote:'Voting', runoff:'Runoff', result:'Reveal'})[phase] || 'No phase timer');
@@ -428,13 +446,13 @@
     show('pauseOverlay', paused && !voteRoom); show('votePaused', voteRoom && paused); set('pause', paused ? 'Resume' : 'Pause');
     show('votePanel', voting); show('voteResult', phase === 'result'); show('runoffNotice', phase === 'runoff');
     show('roundMemories', phase !== 'result'); show('voteRoundSummary', phase !== 'result');
-    show('voteSpeedControls', voteRoom && watch); show('voteNewEpisode', voteRoom && (watch || !p.active));
+    show('voteSpeedControls', voteRoom && watch); show('voteNewEpisode', voteRoom && (watch || !p.active)); show('voteReturnFair', voteRoom && (watch || !p.active));
     if ($('voteSpeed').value !== $('speed').value) $('voteSpeed').value = $('speed').value;
     if (voteRoom) {
       const seconds = Math.ceil(Math.max(0, DURATIONS[phase] - game.timerClock()));
-      set('voteRoomStep', `ROUND ${game.act} / 3`);
-      set('voteRoomTitle', phase === 'result' ? 'The votes are in!' : phase === 'runoff' ? 'One more vote!' : early ? 'What happened?' : 'Who is the Snake?');
-      set('voteRoomHint', phase === 'result' ? '' : early ? 'Your lift is done. Take a look!' : watch ? 'Watch the cast choose.' : !p.active ? 'You’re backstage. Watch the vote.' : 'Look at the lifts. Pick a face.');
+      set('voteRoomStep', `TRIAL ${game.act} / 3`);
+      set('voteRoomTitle', phase === 'result' ? 'The votes are in!' : phase === 'runoff' ? 'One more vote!' : early ? 'What happened?' : 'Who is the Trickster?');
+      set('voteRoomHint', phase === 'result' ? '' : early ? 'Your lift is done. Take a look!' : watch ? 'Watch the cast choose.' : !p.active ? 'You’re in the rest area. Watch the vote.' : 'Look at the lifts. Pick a face.');
       set('voteClockLabel', paused ? 'Game paused' : game.timers.phase.paused ? 'Timer frozen' : phase === 'result' ? 'Next in' : early ? 'Lifts end in' : 'Vote ends in');
       set('voteSeconds', String(seconds));
       $('voteClock').style.setProperty('--remaining', `${Math.max(0, 100 - game.timerClock() / DURATIONS[phase] * 100)}%`);
@@ -442,23 +460,23 @@
       if ($('resultCountdown')) set('resultCountdown', String(seconds));
     } show('finalePanel', phase === 'finale');
     show('speedControls', watch && phase !== 'finale');
-    show('nextEpisode', !lobby && (watch || !p.active || phase === 'finale')); show('roleToggle', !lobby && !watch && !practice && phase !== 'finale');
+    show('nextEpisode', !lobby && (watch || !p.active || phase === 'finale')); show('returnFair', !lobby && (watch || !p.active || phase === 'finale' || phase === 'practice-result')); show('roleToggle', !lobby && !watch && !practice && phase !== 'finale');
     show('privateRole', !lobby && !watch && !practice && roleVisible && phase !== 'finale');
     set('roleToggle', roleVisible ? 'Hide role' : 'Show role');
-    const teammate = game.players.find(q => q.id !== 0 && q.role === 'Snake');
-    const roleText = p.role === 'Snake' ? `<b>You are a Snake.</b><small>Your teammate is ${teammate.name}. Steal two treasures and keep one Snake onstage after the final vote.</small>` : '<b>You are a Loyal.</b><small>Protect the prizes. Stop two heists, or vote out both Snakes. Watch what contestants do.</small>';
+    const teammate = game.players.find(q => q.id !== 0 && q.role === 'Trickster');
+    const roleText = p.role === 'Trickster' ? `<b>You are a Trickster.</b><small>Your teammate is ${teammate.name}. Divert two protected pods and keep one Trickster active after the final vote. Each participating team winner adopts one Moonmop.</small>` : '<b>You are a Keeper.</b><small>Keep diversions below two, or vote out both Tricksters. Each participating team winner adopts one Moonmop.</small>';
     const roleHtml = `<div class="role-intro">${VoteView.rolePortrait(p)}<div class="role-copy">${roleText}</div></div>`;
     if ($('privateRole').innerHTML !== roleHtml) $('privateRole').innerHTML = roleHtml;
     if ($('votePrivateRole').innerHTML !== roleHtml) $('votePrivateRole').innerHTML = roleHtml;
-    $('privateRole').className = 'role-card' + (p.role === 'Snake' ? ' snake' : '');
+    $('privateRole').className = 'role-card' + (p.role === 'Trickster' ? ' snake' : '');
     set('pot', String(game.pot)); set('heists', String(game.heists));
     set('phaseLabel', ({ 'practice-result': 'PRACTICE', challenge: 'ON THE CLOCK', result: 'REVEAL' })[phase] || phase.toUpperCase());
     set('timer', DURATIONS[phase] && phase !== 'finale' ? `${Math.ceil(Math.max(0, DURATIONS[phase] - game.timerClock()))}s` : '—');
-    set('castCount', `${game.activeIds().length} ${lobby ? 'CONTESTANTS' : 'ONSTAGE'}`);
-    set('eyebrow', lobby ? 'WELCOME TO THE VILLA' : practice ? 'PRACTICE · YOU + ONE LOYAL BOT' : watch ? `SIMULATED EPISODE · 8 BOTS · ACT ${Math.max(1, game.act)} / 3` : `EPISODE ${String(game.seed % 1000).padStart(3, '0')} · ACT ${Math.max(1, game.act)} / 3`);
-    const headings = { lobby: 'Trust is part of the game.', casting: 'Every good show has a secret.', challenge: p.active || watch ? 'Keep the treasure. Watch your partner.' : 'The show goes on, backstage.', vote: 'Who do you trust?', runoff: 'A tie. Make your vote count.', result: 'One vote can change the show.', finale: 'The secrets are out.', 'practice-result': 'Ready for the real show?' };
+    set('castCount', `${game.activeIds().length} ${lobby ? 'CONTESTANTS' : 'ACTIVE'}`);
+    set('eyebrow', lobby ? 'WELCOME TO THE MIDNIGHT FAIR' : practice ? 'PRACTICE · YOU + ONE KEEPER BOT' : watch ? `SIMULATED ROUND · 8 BOTS · TRIAL ${Math.max(1, game.act)} / 3` : `ROUND ${String(game.seed % 1000).padStart(3, '0')} · TRIAL ${Math.max(1, game.act)} / 3`);
+    const headings = { lobby: 'A little magic. A little mischief.', casting: 'Every fair has a little mischief.', challenge: p.active || watch ? 'Lift Moonmop. Watch your partner.' : 'The round continues from the rest area.', vote: 'Who do you trust?', runoff: 'A tie. Make your vote count.', result: 'One vote can change the round.', finale: 'The secrets are out.', 'practice-result': 'Ready to visit the fair?' };
     set('heading', headings[phase]);
-    set('cameraLabel', lobby || challenge && view.camera === 'villa' ? 'CAM 01   THE COURTYARD' : challenge || phase === 'practice-result' ? `CAM ${String(view.station + 2).padStart(2, '0')}   ${s?.name.toUpperCase() || 'PRIZE LIFT'}` : 'CAM 06   THE VOTING STAGE');
+    set('cameraLabel', lobby || challenge && view.camera === 'villa' ? 'FAIR   THE LANTERN GARDEN' : challenge || phase === 'practice-result' ? `STATION ${String(view.station + 1).padStart(2, '0')}   ${s?.name.toUpperCase() || 'MOONMOP LIFT'}` : 'THE CLUE PAVILION');
     show('controls', challenge && !watch && p.active); show('liftHud', challenge && !!s);
     show('mechanicsPanel', ['challenge', 'practice-result'].includes(phase) && !!s && view.camera === 'lift');
     renderMechanics(s);
@@ -466,22 +484,22 @@
     $('pull').classList.toggle('pressed', p.pulling && own);
     show('catch', canCatch); show('catchPanel', challenge && s?.state === 'catch');
     $('catch').disabled = !canCatch || s?.taps.has(0);
-    show('rig', p.role === 'Snake' && !!rigStation && rigStation.state !== 'catch'); show('rigHint', challenge && p.role === 'Snake' && !watch && p.active);
+    show('rig', p.role === 'Trickster' && !!rigStation && rigStation.state !== 'catch'); show('rigHint', challenge && p.role === 'Trickster' && !watch && p.active);
     $('rig').disabled = !rigStation || rigStation.state !== 'lifting' || game.attempt.spent || game.attempt.reserved !== null && game.attempt.reserved !== 0;
     $('rig').classList.toggle('pressed', p.rigging && !!rigStation);
     const rigProgress = game.attempt.reserved === 0 ? clamp((game.timerClock('rig') - game.attempt.since) / game.settings.rigHold, 0, 1) : 0;
     set('rig', game.attempt.spent ? 'Team attempt used' : rigProgress ? `Keep holding… ${Math.ceil(rigProgress * 100)}%` : spotting ? `Hold to rig the ${near ? near.name : 'nearest lift'} · R` : 'Hold to rig · R');
-    set('rigHint', game.attempt.spent ? armedStation ? (armedStation.burstUntil ? `Rig armed. ${Math.max(0, armedStation.burstUntil - game.timerClock('rig')).toFixed(1)}s of motor burst. An uncaught spill completes the heist.` : `Rig armed at the ${armedStation.name}. No motor changed. An uncaught spill there completes the heist.`) : 'The team attempt is consumed for this act.' : game.attempt.reserved !== null && game.attempt.reserved !== 0 ? 'Your teammate is holding Rig. The team attempt is reserved.' : spotting ? `Spotter · Stand in a rescue area and hold ${game.settings.rigHold}s to arm that lift. No motor changes. One shared attempt this act.` : `Private · Hold ${game.settings.rigHold}s. One shared attempt this act.`);
+    set('rigHint', game.attempt.spent ? armedStation ? (armedStation.burstUntil ? `Rig armed. ${Math.max(0, armedStation.burstUntil - game.timerClock('rig')).toFixed(1)}s of motor burst. An uncaught spill completes the diversion.` : `Rig armed at the ${armedStation.name}. No motor changed. An uncaught spill there completes the diversion.`) : 'The team attempt is consumed for this trial.' : game.attempt.reserved !== null && game.attempt.reserved !== 0 ? 'Your teammate is holding Rig. The team attempt is reserved.' : spotting ? `Spotter · Stand in a rescue area and hold ${game.settings.rigHold}s to arm that lift. No motor changes. One shared attempt this trial.` : `Private · Hold ${game.settings.rigHold}s. One shared attempt this trial.`);
     show('interact', challenge && !watch && p.active && !p.operated && !!near);
     set('interact', near?.ids.includes(0) ? 'Join your console · E' : 'Watch nearby lift · E');
     show('leave', challenge && !watch && p.active && (p.operated || view.camera === 'lift'));
-    set('leave', p.operated ? 'Leave console · walk to rescue' : 'Back to courtyard');
+    set('leave', p.operated ? 'Leave console · walk to rescue' : 'Back to fair garden');
     if (s) {
       const progress = clamp(Math.min(...s.h) / FIXED.finish * 100, 0, 100);
       set('heightText', `${Math.round(progress)}%`); $('heightFill').style.width = `${progress}%`;
       const i = s.ids.indexOf(0), aims = centeringTargets(s), predicted = s.h.map((h, j) => h + s.v[j] * .3);
       const error = i < 0 ? 0 : predicted[i] - predicted[1 - i] - aims[i] + aims[1 - i];
-      set('tiltText', own ? error > .04 ? 'Release → steady the ball' : error < -.04 ? 'Pull → steady the ball' : 'Keep climbing · watch the ball' : `2 cables · ${s.catches} saves`);
+      set('tiltText', own ? error > .04 ? 'Release → steady the pod' : error < -.04 ? 'Pull → steady the pod' : 'Keep climbing · watch the pod' : `2 cables · ${s.catches} saves`);
       if (s.state === 'catch') {
         set('catchTime', `${Math.max(0, game.settings.catchWin - game.timerClock('catch') + s.catchAt).toFixed(1)}s`);
         set('catchHint', s.taps.has(0) && !watch ? 'Your tap is used. Others can still save.' : !canCatch ? 'Watch for a save. Enter the rescue area to help.' : 'One fresh tap. Aim for the gold zone.');
@@ -490,22 +508,22 @@
     const zone = catchGeometry(game.settings);
     document.querySelector('.catch-zone').style.left = `${zone.start * 100}%`;
     document.querySelector('.catch-zone').style.width = `${zone.width * 100}%`;
-    const titles = { casting: watch ? 'The bots are being cast.' : 'Your secret starts here.', challenge: watch ? 'The cast is on its own.' : !p.active ? 'Welcome backstage.' : s?.state === 'catch' ? 'Don’t let it fall.' : own ? 'You control one cable.' : spotting ? 'You spot this act.' : 'The courtyard is yours.', vote: watch ? 'The bots are voting.' : p.active ? 'Make your call.' : 'Follow the vote backstage.', runoff: 'The vote needs a runoff.', result: game.lastVote?.removed === null ? 'Deadlock. Everyone stays.' : `${game.players[game.lastVote?.removed]?.name} leaves the show.`, finale: 'The full story is below.', 'practice-result': game.practiceResult === 'delivered' ? 'Treasure delivered!' : 'One more practice?' };
-    set('panelTitle', titles[phase] || 'Welcome to the show.');
-    set('panelEyebrow', challenge ? practice ? 'LEARN THE LIFT' : watch || !p.active ? 'LIVE FROM THE VILLA' : 'PRIZE LIFT · YOUR NEXT MOVE' : voting ? 'OPEN VOTE' : 'YOUR EPISODE');
-    const texts = { casting: watch ? 'Eight labeled bots. Two randomly assigned Snakes. Their roles stay hidden from this camera until the show reveals them.' : 'Your role belongs to you. Every contestant looks ordinary onstage. Read your objective, then enter the first act.', challenge: watch ? s?.message : !p.active ? 'You can follow the public cameras and receipts. Your votes and controls are closed. Your original team can still win.' : own ? s?.state === 'lifting' ? 'Tilt to guide the ball toward center, then steady it as you climb. Hold Pull to raise your cable; release to lower it.' : s?.message : p.operated ? 'You are watching another lift. Select your own camera to use Pull, or leave your console to help rescue.' : spotting ? 'Your partner was voted out, so you spot this act with no console. Walk into a rescue area to Catch at that lift. Every lift still has two motors.' : 'Walk to a marked rescue area. You can Catch at nearby lifts, or return to your assigned console.', vote: 'Look at the lifts and vote. Everyone can see the choices and counts as votes come in.', runoff: 'Only tied contestants can receive votes. Everyone still onstage votes again. A second tie removes nobody.', result: game.lastVote?.removed === null ? 'Nobody is removed. This act’s vote is used; the episode continues.' : `${game.players[game.lastVote?.removed]?.name} was a ${game.players[game.lastVote?.removed]?.role}. Completed heists are not undone.`, finale: 'All roles are revealed. The reconstruction below uses the actual lift events and ballots from your episode.', 'practice-result': game.practiceResult === 'delivered' ? 'You and Leo lifted the golden treasure using the same cable physics as the episode. Ready to meet the rest of the cast?' : 'Guide the ball toward center and slow it before it rolls across. Both operators still need to lift; a spill needs one well-timed Catch.' };
+    const titles = { casting: watch ? 'The bots are being cast.' : 'Your secret starts here.', challenge: watch ? 'The cast is on its own.' : !p.active ? 'Welcome to the rest area.' : s?.state === 'catch' ? 'Catch the protected pod.' : own ? 'You control one cable.' : spotting ? 'You spot this trial.' : 'The fair garden is yours.', vote: watch ? 'The bots are voting.' : p.active ? 'Make your call.' : 'Follow the vote from the rest area.', runoff: 'The vote needs a runoff.', result: game.lastVote?.removed === null ? 'Deadlock. Everyone stays.' : `${game.players[game.lastVote?.removed]?.name} leaves the round.`, finale: 'The full story is below.', 'practice-result': game.practiceResult === 'delivered' ? 'Moonmop delivered!' : 'One more practice?' };
+    set('panelTitle', titles[phase] || 'Welcome to the round.');
+    set('panelEyebrow', challenge ? practice ? 'LEARN THE LIFT' : watch || !p.active ? 'LIVE FROM THE FAIR' : 'MOONMOP LIFT · YOUR NEXT MOVE' : voting ? 'SECRET BALLOT' : 'YOUR ROUND');
+    const texts = { casting: watch ? 'Eight labeled bots. Two randomly assigned Tricksters. Their roles stay hidden from this view until the round reveals them.' : 'Your role belongs to you. Every visitor looks ordinary during a trial. Read your objective, then enter the first trial.', challenge: watch ? s?.message : !p.active ? 'You can follow the public views and clues. Your votes and controls are closed. Your original team can still win and earn your adoption.' : own ? s?.state === 'lifting' ? 'Tilt to guide the pod toward center, then steady it as you climb. Hold Pull to raise your cable; release to lower it.' : s?.message : p.operated ? 'You are watching another lift. Select your own station to use Pull, or leave your console to help rescue.' : spotting ? 'Your partner was voted out, so you spot this trial with no console. Walk into a rescue area to Catch at that lift. Every lift still has two motors.' : 'Walk to a marked rescue area. You can Catch at nearby lifts, or return to your assigned console.', vote: 'Look at the lifts and vote. Everyone can see each choice and count from the start. Change your hunch until you lock it.', runoff: 'Only tied contestants can receive votes. Everyone still active votes again. A second tie removes nobody.', result: game.lastVote?.removed === null ? 'Nobody is removed. This trial’s vote is used; the round continues.' : `${game.players[game.lastVote?.removed]?.name} was a ${game.players[game.lastVote?.removed]?.role}. Completed diversions are not undone.`, finale: 'All roles are revealed. The reconstruction below uses the actual lift events and ballots from your round.', 'practice-result': game.practiceResult === 'delivered' ? 'You and Leo lifted the protected Moonmop pod using the same cable physics as the round. Ready to meet the rest of the cast?' : 'Guide the pod toward center and slow it before it rolls across. Both operators still need to lift; a spill needs one well-timed Catch.' };
     set('panelText', texts[phase] || '');
     show('continue', ['casting', 'practice-result'].includes(phase));
-    set('continue', phase === 'practice-result' ? 'Practice again →' : 'Enter the first act →');
+    set('continue', phase === 'practice-result' ? 'Practice again →' : 'Enter the first trial →');
     if (phase === 'practice-result') show('nextEpisode', true);
-    set('sceneCaption', lobby ? 'A little teamwork. A little betrayal.' : challenge ? s?.message || 'Walk into a marked rescue area to help.' : phase === 'casting' ? 'Your role is private. Your actions are on camera.' : phase === 'finale' ? `${game.outcome.team} win the show.` : phase === 'result' ? titles.result : 'Scroll down to the receipts and ballot.');
-    set('sceneHint', lobby || challenge && view.camera === 'villa' ? 'WASD / arrows to walk · Tap a destination · E to interact' + (spotting ? ' · C: catch' + (p.role === 'Snake' ? ' · R: rig' : '') : '') : challenge && own ? 'SPACE: pull · C: catch' + (p.role === 'Snake' ? ' · R: rig' : '') : challenge ? 'Select a camera below · Escape to pause' : 'The cameras record actions. The cast decides who to trust.');
+    set('sceneCaption', lobby ? 'Every pod has a safe landing. Every round has a secret.' : challenge ? s?.message || 'Walk into a marked rescue area to help.' : phase === 'casting' ? 'Your role is private. Your actions leave clues.' : phase === 'finale' ? `${game.outcome.team} win the round.` : phase === 'result' ? titles.result : 'Read the clues and choose a suspect.');
+    set('sceneHint', lobby || challenge && view.camera === 'villa' ? 'WASD / arrows to walk · Tap a destination · E to interact' + (spotting ? ' · C: catch' + (p.role === 'Trickster' ? ' · R: rig' : '') : '') : challenge && own ? 'SPACE: pull · C: catch' + (p.role === 'Trickster' ? ' · R: rig' : '') : challenge ? 'Select a station below · Escape to pause' : 'Clues record actions. The cast decides who to trust.');
     if (voting) {
       const canVote = !watch && p.active, locked = game.locked.has(0), target = game.ballots[0], certain = game.confidences[0] === 'Certain';
       selected = canVote && Number.isInteger(target) ? target : null;
       set('voteHeading', !canVote ? 'The cast is voting.' : phase === 'runoff' ? 'Choose between them.' : 'Pick a face.');
       set('voteHint', !canVote ? 'Watch the fingers. Count the votes.' : locked ? 'Your vote is locked.' : 'Tap to vote. Lock when you’re ready.');
-      set('ballotStatus', watch ? 'Watching the vote' : !p.active ? 'Backstage · watching' : selected !== null ? game.players[selected].name + (certain ? ' — I’m sure!' : ' — just a hunch') : game.voted.has(0) ? locked ? 'Skip locked.' : 'Skipped. You can still vote.' : 'Who’s your hunch?');
+      set('ballotStatus', watch ? 'Watching the vote' : !p.active ? 'Rest area · watching' : selected !== null ? game.players[selected].name + (certain ? ' — I’m sure!' : ' — just a hunch') : game.voted.has(0) ? locked ? 'Skip locked.' : 'Skipped. You can still vote.' : 'Who’s your hunch?');
       show('certain', canVote); show('abstain', canVote); show('lockVote', canVote);
       $('lockVote').disabled = locked || !game.voted.has(0); set('lockVote', locked ? '✓ Locked' : 'Lock vote');
       $('certain').disabled = selected === null || locked;
@@ -529,15 +547,17 @@
   $('pause').addEventListener('click', () => paused ? resume() : pause());
   $('voteResume').addEventListener('click', resume); $('voteQuit').addEventListener('click', () => reset()); $('resume').addEventListener('click', resume); $('quit').addEventListener('click', () => reset());
   $('continue').addEventListener('click', () => { if (game.phase === 'practice-result') reset('practice', true); else if (game.phase === 'casting') { game.nextPhase(); updateUI(true); } });
-  $('nextEpisode').addEventListener('click', () => reset('play', true)); $('replayEpisode').addEventListener('click', () => reset('play', true));
+  $('nextEpisode').addEventListener('click', () => reset('play', true));
+  $('returnFair').addEventListener('click', () => reset()); $('replayEpisode').addEventListener('click', () => reset('play', true));
   for (const id of ['roleToggle', 'voteRoleToggle']) $(id).addEventListener('click', () => { roleVisible = !roleVisible; updateUI(); });
   $('interact').addEventListener('click', interact);
   $('leave').addEventListener('click', () => { releaseInputs(); game.operate(0, false); view.camera = 'villa'; view.destination = null; updateUI(true); });
-  $('receiptAct').addEventListener('change', () => { shownAct = Number($('receiptAct').value); renderReceipts(); });
+  $('receiptAct').addEventListener('change', () => { shownAct = Number($('receiptAct').value); game.participate(0); renderReceipts(); });
   $('receipts').addEventListener('click', e => {
     const shortcut = e.target.closest('[data-vote-shortcut]');
     if (shortcut) { if (!shortcut.disabled) voteFor(Number(shortcut.dataset.voteShortcut)); return; }
     const button = e.target.closest('[data-receipt]'); if (!button) return;
+    game.participate(0);
     const record = receiptRecord(), station = record?.stations[Number(button.dataset.receipt)];
     if (!station?.cards) return;
     set('cameraTitle', `${station.name} · ${station.ids.map(id => game.players[id].name).join(' + ')}`);
@@ -555,12 +575,13 @@
   $('watchLifts').addEventListener('click', () => setEarlyReview(false));
   $('voteSpeed').addEventListener('change', () => { $('speed').value = $('voteSpeed').value; });
   $('voteNewEpisode').addEventListener('click', () => reset('play', true));
+  $('voteReturnFair').addEventListener('click', () => reset());
   $('lockVote').addEventListener('click', () => { if (game.lockVote(0)) updateUI(); });
   $('certain').addEventListener('click', () => { if (game.setCertain(0, game.confidences[0] !== 'Certain')) updateUI(); });
   $('abstain').addEventListener('click', () => { if (game.castVote(0, null)) { selected = null; updateUI(); } });
   function openHelp() {
     const p = game.settings;
-    $('rigHelp').textContent = `Play the Snake. Hold R or Rig for ${p.rigHold} seconds. For ${p.rigTime} seconds, motor force is multiplied by ${p.rigForce} and pull-down by ${p.rigDown}. A rigged, uncaught spill is a heist; lava contact is only a failed lift. A Snake spotter can instead hold Rig inside a rescue area to arm that lift without changing any motor.`;
+    $('rigHelp').textContent = `Play the Trickster. Hold R or Rig for ${p.rigHold} seconds. For ${p.rigTime} seconds, motor force is multiplied by ${p.rigForce} and pull-down by ${p.rigDown}. A rigged, uncaught spill is a diversion; lava contact is only a failed lift. A Trickster spotter can instead hold Rig inside a rescue area to arm that lift without changing any motor.`;
     if (game.phase !== 'lobby') pause(); placeTimerControls($('helpDialog')); $('helpDialog').showModal();
   }
   $('help').addEventListener('click', openHelp); for (const id of ['gotIt', 'closeHelp']) $(id).addEventListener('click', () => $('helpDialog').close());
@@ -569,6 +590,10 @@
     const elapsed = lastTime ? Math.min(.1, (now - lastTime) / 1000) : 0; lastTime = now;
     if (!paused && !$('helpDialog').open) {
       drawTime += elapsed; move(elapsed);
+      for (let i = pendingRounds.length - 1; i >= 0; i--) {
+        const previous = pendingRounds[i]; previous.tick(elapsed);
+        if (previous.phase === 'finale') { const baby = collection.award(previous); pendingRounds.splice(i, 1); nurseryUI.refresh(); if (baby) { announce('Your earlier team won. A Moonmop is waiting in My Nursery.'); if ($('nurseryDialog').open) nurseryUI.render(); } }
+      }
       const speed = game.mode === 'watch' ? Number($('speed').value) : 1;
       accumulated += elapsed * speed;
       while (accumulated >= 1 / 60) {
@@ -598,6 +623,11 @@
   });
   $('mechanicsPanel').addEventListener('toggle', () => renderMechanics(game?.stations[view.station]));
   $('mechanicsPanel').open = innerWidth > 850;
+  nurseryUI = mountNursery(collection, { beforeOpen: releaseInputs, onChange: state => { scene.collection = state; } });
+  $('openNursery').addEventListener('click', () => nurseryUI.open());
+  $('openSocial').addEventListener('click', () => nurseryUI.open('social'));
+  $('openExchange').addEventListener('click', () => nurseryUI.open('exchange'));
+  $('adoptionNursery').addEventListener('click', () => { reset(); nurseryUI.open(); });
   buildTuning(); reset(); requestAnimationFrame(frame);
   if (devMode) {
     devTools = SnakeShowDev.mount({
@@ -610,5 +640,5 @@
     if (initialScene) { devTools.open(); devTools.runScene(initialScene); }
   }
   // Explicit local test entry point; absent during ordinary play.
-  if (params.get('test') === '1') window.snakeShowTest = { get game() { return game; }, get view() { return view; }, get paused() { return paused; }, update: () => updateUI(true), reset, pause, resume };
+  if (params.get('test') === '1') window.snakeShowTest = { get collection() { return collection; }, get pendingRounds() { return pendingRounds; }, get game() { return game; }, get view() { return view; }, get paused() { return paused; }, update: () => updateUI(true), reset, pause, resume };
 })();

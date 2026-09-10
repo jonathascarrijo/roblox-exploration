@@ -1,8 +1,8 @@
 # Snake Show interaction prototypes
 
-5 September 2026 · Proposed interactions based on the [design brief v2](../snake-show-design-brief-v2.md).
+5 September 2026 · Proposed interactions based on the [design brief v2](../archive/snake-show-design-brief-v2.md).
 
-**Design correction, 8–9 September 2026:** Prize Lift requires exactly two operators and two motors under comparable conditions, and an odd cast names a **spotter**: the removed contestant’s last lift partner plays the next act without a console. These studies follow that rule. The Catch/Rig fixture pairs Maya and Leo, with Nia as a Snake spotter who can arm the lift from the rescue area; the receipt/vote rehearsal pairs the cast and shows the spotter with one public card. See the [pairing and elimination review](../pairing-and-elimination-review.md) for the alternatives that were considered. The coupled-cables study remains an isolated two-motor model.
+**Design correction, 8–9 September 2026:** Prize Lift requires exactly two operators and two motors under comparable conditions, and an odd cast names a **spotter**: the removed contestant’s last lift partner plays the next act without a console. These studies follow that rule. The Catch/Rig fixture pairs Maya and Leo, with Nia as a Snake spotter who can arm the lift from the rescue area; the receipt/vote rehearsal pairs the cast and shows the spotter with one public card. See the [pairing and elimination review](../explorations/pairing-and-elimination-review.md) for the alternatives that were considered. The coupled-cables study remains an isolated two-motor model.
 
 Open [the prototype room](index.html) in a modern browser. All new pages work directly from disk, with no build, account, network requests, fonts, or external assets. Keep the HTML files, scripts, and `prototype.css` together. The existing Prize Lift files are unchanged.
 

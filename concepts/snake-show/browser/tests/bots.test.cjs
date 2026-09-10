@@ -7,7 +7,7 @@ function fixture(settings = {}, count = 2, seed = 11) {
   const g = new Episode({ mode: 'practice', seed, settings: { botSkill: 100, ...settings } }); g.start();
   const ids = Array.from({ length: count }, (_, i) => i);
   g.stations = [makeStation(ids, 0, rng(seed), g.settings)];
-  for (const id of ids) Object.assign(g.players[id], { bot: true, operated: true, active: true, role: 'Loyal', station: 0 });
+  for (const id of ids) Object.assign(g.players[id], { bot: true, operated: true, active: true, role: 'Keeper', station: 0 });
   return g;
 }
 
@@ -52,29 +52,29 @@ test('skill changes reaction time immediately without resetting the lift or the 
   assert.equal(Lift.importDraft('{"version":1,"settings":{"width":1.2}}').botSkill, 75);
 });
 
-test('a bot spotter walks to a rescue area, and a Snake spotter arms the lift it stands beside', () => {
-  for (const role of ['Loyal', 'Snake']) {
+test('a bot spotter walks to a rescue area, and a Trickster spotter arms the lift it stands beside', () => {
+  for (const role of ['Keeper', 'Trickster']) {
     const g = new Episode({ seed: 3, mode: 'watch', settings: { botSkill: 100 } }); g.start(); g.nextPhase();
     g.players[6].active = false; g.lastRemoved = 6; g.beginAct();
     const p = g.players[g.spotter]; p.role = role; p.rigAt = 1;
-    g.players.forEach(q => { if (q.id !== p.id && q.role === 'Snake') q.role = 'Loyal'; });
+    g.players.forEach(q => { if (q.id !== p.id && q.role === 'Trickster') q.role = 'Keeper'; });
     assert.equal(p.bot, true); assert.equal(p.station, -1);
     const start = { x: p.x, y: p.y }; g.tick(6);
     assert.notDeepEqual({ x: p.x, y: p.y }, start, 'the spotter moved');
     assert.ok(g.nearStation(p.id), 'the spotter reached a rescue area');
-    assert.equal(g.attempt.spent, role === 'Snake');
+    assert.equal(g.attempt.spent, role === 'Trickster');
     const armed = g.stations.find(s => s.armedBy === p.id);
-    if (role === 'Snake') { assert.ok(armed); assert.equal(armed.burstUntil, 0); } else assert.equal(armed, undefined);
+    if (role === 'Trickster') { assert.ok(armed); assert.equal(armed.burstUntil, 0); } else assert.equal(armed, undefined);
   }
 });
 
-test('Catch skill applies to future falls and does not make a Snake cooperative', () => {
+test('Catch skill applies to future falls and does not make a Trickster cooperative', () => {
   for (const botSkill of [0, 100]) {
     const g = fixture({ botSkill }), s = g.stations[0]; g.random = () => .5; g.fault(s);
     for (const at of Object.values(s.catchPlan)) assert.equal(inCatchZone(s, s.catchAt + at), botSkill === 100);
     const plan = { ...s.catchPlan }; g.applySettings({ botSkill: 100 - botSkill });
     assert.deepEqual(s.catchPlan, plan, 'a live skill edit does not rewrite an ongoing Catch');
   }
-  const g = fixture(), s = g.stations[0]; g.mode = 'play'; g.players[1].role = 'Snake'; g.random = () => .5; g.fault(s);
+  const g = fixture(), s = g.stations[0]; g.mode = 'play'; g.players[1].role = 'Trickster'; g.random = () => .5; g.fault(s);
   assert.equal(inCatchZone(s, s.catchAt + s.catchPlan[1]), false);
 });

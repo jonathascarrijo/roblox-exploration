@@ -30,7 +30,7 @@
     return a;
   }
   function assignGroups(active, act) {
-    // Every Prize Lift has exactly two operators. An odd cast must name a
+    // Every Moonmop Lift has exactly two operators. An odd cast must name a
     // spotter (see chooseSpotter) before its remaining contestants are paired.
     if (active.length % 2) throw new Error('assignGroups needs an even cast; choose a spotter first.');
     const order = [...active];
@@ -65,20 +65,20 @@
     return { totals, tied, accepted, removed: tied.length === 1 ? tied[0] : null, abstentions: active.length - accepted.length };
   }
   function winner(players, heists, completedActs, afterVote = true) {
-    if (!players.some(p => p.active && p.role === 'Snake')) return { team: 'Loyals', reason: 'Both Snakes have been voted out.' };
-    if (heists + 3 - completedActs < 2) return { team: 'Loyals', reason: 'Two heists are now impossible. The treasures are safe.' };
-    if (completedActs >= 3 && afterVote) return { team: heists >= 2 ? 'Snakes' : 'Loyals', reason: heists >= 2 ? 'Two treasures stolen, and a Snake survived the final vote.' : 'The Snakes failed to steal two treasures.' };
+    if (!players.some(p => p.active && p.role === 'Trickster')) return { team: 'Keepers', reason: 'Both Tricksters have been voted out.' };
+    if (heists + 3 - completedActs < 2) return { team: 'Keepers', reason: 'Two diversions are now impossible. The fair nursery wins.' };
+    if (completedActs >= 3 && afterVote) return { team: heists >= 2 ? 'Tricksters' : 'Keepers', reason: heists >= 2 ? 'Two pods diverted, and a Trickster survived the final vote.' : 'The Tricksters did not complete two diversions.' };
     return null;
   }
   function makeStation(ids, index, random, settings = { ...DEFAULTS }) {
-    if (ids.length !== 2) throw new Error('A Prize Lift station has exactly two operators.');
+    if (ids.length !== 2) throw new Error('A Moonmop Lift station has exactly two operators.');
     return {
       ids, index, name: PLACES[index], settings, state: 'lifting', h: [0, 0], v: [0, 0],
       held: [false, false], x: (random() < .5 ? -1 : 1) * settings.x0, vx: 0,
       armedBy: null, armedAt: 0, burstUntil: 0, rigDirection: true, catchAt: 0, taps: new Set(), catchPlan: {}, duty: [],
       reloadAt: 0, resetUntil: 0, delivered: false, losses: 0, catches: 0, heists: 0,
       events: [], tracks: ids.map(() => ({ highHold: 0, lowIdle: 0, highRelease: 0, maxHigh: 0, maxIdle: 0, maxRelease: 0 })),
-      publicCards: [], message: 'Bring the ball to center. Lift to the gold line.'
+      publicCards: [], message: 'Center Moonmop’s protected pod. Lift to the moon-nest line.'
     };
   }
   function shares(s) { return [(1 - s.x) / 2, (1 + s.x) / 2]; }
@@ -107,8 +107,10 @@
     constructor({ seed = Date.now(), mode = 'play', settings = {} } = {}) {
       this.settings = Lift.normalize(settings);
       this.seed = seed >>> 0; this.random = rng(this.seed); this.mode = mode;
+      this.roundId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+      this.participants = new Set(); this.study = false;
       const snakes = shuffle(CAST.map((_, i) => i), this.random).slice(0, 2);
-      this.players = CAST.map((c, id) => ({ ...c, id, role: mode === 'practice' ? 'Loyal' : snakes.includes(id) ? 'Snake' : 'Loyal',
+      this.players = CAST.map((c, id) => ({ ...c, id, role: mode === 'practice' ? 'Keeper' : snakes.includes(id) ? 'Trickster' : 'Keeper',
         active: mode !== 'practice' || id < 2, bot: mode === 'watch' || id !== 0, x: 360 + id * 40, y: 548,
         operated: false, pulling: false, rigging: false, pulseUntil: 0, catchHeld: false,
         nextThink: 0, motorChoice: false, mistakeUntil: 0, skill: .50 + this.random() * .32,
@@ -134,6 +136,13 @@
       timer.paused = paused; return true;
     }
     activeIds() { return this.players.filter(p => p.active).map(p => p.id); }
+    participate(id) {
+      if (this.mode === 'play' && this.players[id]?.active && ['challenge', 'vote', 'runoff'].includes(this.phase)) this.participants.add(id);
+    }
+    rewardEligible(id) {
+      return !this.study && this.mode === 'play' && this.phase === 'finale' && !!this.outcome && this.participants.has(id) &&
+        this.players[id]?.role === (this.outcome.team === 'Tricksters' ? 'Trickster' : 'Keeper');
+    }
     applySettings(values) {
       const settings = Lift.normalize({ ...this.settings, ...values }, true), oldWindow = this.settings.catchWin;
       const skillChanged = settings.botSkill !== this.settings.botSkill;
@@ -171,6 +180,7 @@
       this.act++; this.setPhase('challenge');
       this.attempt = { reserved: null, since: 0, spent: false, station: null };
       const active = this.activeIds();
+      for (const id of active) if (this.players[id].bot && this.mode === 'play') this.participants.add(id);
       this.spotter = this.mode === 'play' || this.mode === 'watch' ? chooseSpotter(active, this.lastRemoved, this.partners, this.spotter) : null;
       for (const p of this.players) { p.spotting = p.id === this.spotter; p.spotGoal = -1; p.spotThink = 0; }
       this.stations = assignGroups(active.filter(id => id !== this.spotter), this.act).map((ids, i) => makeStation(ids, i, this.random, this.settings));
@@ -203,12 +213,14 @@
     pressPull(id) {
       const p = this.players[id], s = this.stationOf(id);
       if (this.phase !== 'challenge' || !p?.active || !p.operated || s?.state !== 'lifting') return false;
+      this.participate(id);
       p.pulling = true; p.pulseUntil = this.phaseTime + this.settings.pulse; return true;
     }
     releasePull(id) { if (this.players[id]) this.players[id].pulling = false; }
     pressRig(id) {
       const p = this.players[id], s = this.rigStation(id);
-      if (this.phase !== 'challenge' || !p?.active || p.role !== 'Snake' || !(p.operated || p.spotting) || s?.state !== 'lifting' || this.attempt.spent || this.attempt.reserved !== null) return false;
+      if (this.phase !== 'challenge' || !p?.active || p.role !== 'Trickster' || !(p.operated || p.spotting) || s?.state !== 'lifting' || this.attempt.spent || this.attempt.reserved !== null) return false;
+      this.participate(id);
       p.rigging = true; this.attempt.reserved = id; this.attempt.since = this.timerClock('rig'); this.attempt.station = s.index; return true;
     }
     releaseRig(id) {
@@ -225,6 +237,7 @@
       p.catchHeld = true;
       if (this.phase !== 'challenge' || !s || s.state !== 'catch' || !this.eligibleCatch(id, s) || s.taps.has(id)) return 'ineligible';
       if (this.timerClock('catch') - s.catchAt >= this.settings.catchWin) return 'expired';
+      this.participate(id);
       s.taps.add(id);
       if (!inCatchZone(s, this.timerClock('catch'))) {
         this.publicEvent(s, 'catch', `${p.name} tapped outside the Catch zone.`, id, { saved: false });
@@ -232,7 +245,7 @@
         s.message = `${p.name} missed. Other contestants still have their tap.`;
         return 'miss';
       }
-      this.publicEvent(s, 'catch', `${p.name} caught the capsule.`, id, { saved: true });
+      this.publicEvent(s, 'catch', `${p.name} caught the Moonmop pod.`, id, { saved: true });
       if (p.spotting && this.spotLog) this.spotLog.saves++;
       if (s.armedBy !== null) this.privateEvent(s, 'cleared', s.burstUntil ? 'The catch cleared the armed diverter and motor burst.' : 'The catch cleared the armed diverter.');
       s.armedBy = null; s.burstUntil = 0; s.catches++; s.state = 'lifting';
@@ -246,11 +259,11 @@
       if (this.attempt.reserved !== null && this.attempt.station === s.index) this.releaseRig(this.attempt.reserved);
       s.state = 'catch'; s.catchAt = this.timerClock('catch'); s.taps.clear(); s.catchPlan = {}; s.held.fill(false);
       for (const id of s.ids) { const p = this.players[id]; p.pulling = false; p.pulseUntil = 0; p.rigging = false; }
-      this.publicEvent(s, 'spill', 'The capsule rolled off. Motors stopped for Catch.');
-      s.message = 'Capsule falling! One tap each. Aim for the gold zone.';
+      this.publicEvent(s, 'spill', 'The protected pod rolled off. Motors stopped for Catch.');
+      s.message = 'Pod slipping! One Catch tap each. Aim for the gold zone.';
       // A bot plans a real tap time with imperfect timing; it cannot command a save.
       for (const p of this.players.filter(p => p.bot && this.eligibleCatch(p.id, s))) {
-        const sabotage = p.role === 'Snake' && this.mode !== 'practice';
+        const sabotage = p.role === 'Trickster' && this.mode !== 'practice';
         const hit = !sabotage && this.random() < this.botAbility(p);
         const zone = catchGeometry(this.settings), returnPass = this.random() >= .5;
         const position = hit ? zone.center + (this.random() - .5) * zone.width * .75 : .1 + this.random() * .25;
@@ -260,13 +273,13 @@
     }
     lose(s) {
       if (s.state !== 'catch') return;
-      s.losses++; this.publicEvent(s, 'loss', 'The capsule was lost in the opaque collection housing.');
+      s.losses++; this.publicEvent(s, 'loss', 'The protected pod entered the collection housing safely. Its route is concealed.');
       if (s.armedBy !== null) {
         s.heists++;
-        this.privateEvent(s, 'heist', `The capsule ${this.players[s.armedBy].name} armed entered the Snake channel. Heist completed.`, s.armedBy);
+        this.privateEvent(s, 'heist', `The pod ${this.players[s.armedBy].name} armed arrived in the Mischief Court’s cushion nest. Diversion completed.`, s.armedBy);
       }
       s.armedBy = null; s.burstUntil = 0; s.state = 'reload'; s.reloadAt = this.timerClock('reload') + 3;
-      s.message = 'Capsule lost. A fresh treasure loads in 3 seconds.';
+      s.message = 'Pod safely collected. A fresh Moonmop pod loads in 3 seconds.';
     }
     endStation(s, result) {
       if (this.attempt.reserved !== null && this.attempt.station === s.index) this.releaseRig(this.attempt.reserved);
@@ -274,11 +287,11 @@
       s.armedBy = null; s.burstUntil = 0; s.held.fill(false); s.state = result;
       if (result === 'delivered') {
         s.delivered = true; this.pot++;
-        s.message = 'Treasure delivered! One prize banked.';
-        this.publicEvent(s, 'delivery', 'One golden treasure was delivered safely.');
+        s.message = 'Moonmop reached the moon nest! One delivery recorded.';
+        this.publicEvent(s, 'delivery', 'One protected Moonmop pod reached the fair nursery.');
       } else if (result === 'lava') {
-        s.message = 'Tray touched the lava. Lift failed — no Catch.';
-        this.publicEvent(s, 'lava', 'The tray touched the lava. Automatic drop; no Catch.');
+        s.message = 'Tray reached the safety boundary. Pod collected safely — no Catch.';
+        this.publicEvent(s, 'lava', 'The tray reached the lava boundary. The safety housing collected the pod; no Catch.');
       } else {
         s.message = 'Time is up. This lift did not deliver.';
         this.publicEvent(s, 'timeout', 'The lift did not deliver before the deadline.');
@@ -293,7 +306,7 @@
       if (this.phaseTime < p.nextThink) return p.motorChoice;
       const ability = this.botAbility(p);
       p.nextThink = this.phaseTime + .06 + (1 - ability) * .48;
-      if (p.role === 'Snake' && !this.attempt.spent && this.attempt.reserved === null && this.phaseTime >= p.rigAt && this.heists < 2) this.pressRig(p.id);
+      if (p.role === 'Trickster' && !this.attempt.spent && this.attempt.reserved === null && this.phaseTime >= p.rigAt && this.heists < 2) this.pressRig(p.id);
       if (p.rigging) return p.motorChoice = true;
       if (s.armedBy === p.id && this.timerClock('rig') < s.burstUntil) return p.motorChoice = s.rigDirection;
       // Skill controls added handling mistakes; it never changes hidden roles.
@@ -307,8 +320,8 @@
       return p.motorChoice;
     }
     botSpot(p, dt) {
-      // A bot spotter walks between rescue areas. Loyals cover the lift whose
-      // capsule is furthest off center; Snakes do the same and arm it. Movement
+      // A bot spotter walks between rescue areas. Keepers cover the lift whose
+      // capsule is furthest off center; Tricksters do the same and arm it. Movement
       // uses the same courtyard speed as the human contestant.
       if (this.phaseTime >= p.spotThink) {
         p.spotThink = this.phaseTime + 1 + (1 - this.botAbility(p)) * 1.5;
@@ -321,7 +334,7 @@
         const dx = target.x - p.x, dy = target.y - p.y, distance = Math.hypot(dx, dy);
         if (distance > 2) { const step = Math.min(140 * dt, distance); p.x += dx / distance * step; p.y += dy / distance * step; }
       }
-      if (p.role === 'Snake' && this.mode !== 'practice' && !this.attempt.spent && this.heists < 2) {
+      if (p.role === 'Trickster' && this.mode !== 'practice' && !this.attempt.spent && this.heists < 2) {
         const near = this.nearStation(p.id);
         if (this.attempt.reserved === null && near && near.state === 'lifting' && this.phaseTime >= p.rigAt) this.pressRig(p.id);
       }
@@ -374,7 +387,7 @@
       const reserved = this.attempt.reserved;
       if (reserved !== null) {
         const p = this.players[reserved], s = this.stations[this.attempt.station];
-        // The hold survives only while the Snake stays at that console, or, for
+        // The hold survives only while the Trickster stays at that console, or, for
         // the spotter, inside that station's rescue area.
         const present = p.spotting ? this.nearStation(reserved) === s : p.operated && this.stationOf(reserved) === s;
         if (!p.rigging || !present || !p.active || s.state !== 'lifting') this.releaseRig(reserved);
@@ -403,8 +416,8 @@
           if (s.state === 'catch' && this.timerClock('catch') - s.catchAt >= this.settings.catchWin) this.lose(s);
         } else if (s.state === 'reload' && this.timerClock('reload') >= s.reloadAt) {
           s.state = 'lifting'; s.h.fill(0); s.v.fill(0); s.x = (this.random() < .5 ? -1 : 1) * this.settings.x0; s.vx = 0;
-          s.message = 'Fresh capsule loaded. Bring it to center and keep lifting.';
-          this.publicEvent(s, 'reload', 'A fresh capsule loaded at the starting height.');
+          s.message = 'Fresh protected pod loaded. Center it and keep lifting.';
+          this.publicEvent(s, 'reload', 'A fresh Moonmop pod loaded at the starting height.');
         }
       }
       if (this.timers.phase.paused) return;
@@ -438,7 +451,7 @@
       const station = seconds >= .2 ? this.stations[at] : null;
       const taps = log.saves + log.misses;
       return { kind: 'spotter', id: p.id, ids: [p.id], station: station?.name || null, seconds, saves: log.saves, misses: log.misses,
-        text: `${p.name} spotted this act without a console. ${station ? `Longest stay: the ${station.name} rescue area, ${seconds.toFixed(1)}s.` : 'No sustained stay at any rescue area.'} ${taps ? `${log.saves} save${log.saves === 1 ? '' : 's'}, ${log.misses} miss${log.misses === 1 ? '' : 'es'}.` : 'No Catch input.'}` };
+        text: `${p.name} spotted this trial without a console. ${station ? `Longest stay: the ${station.name} rescue area, ${seconds.toFixed(1)}s.` : 'No sustained stay at any rescue area.'} ${taps ? `${log.saves} save${log.saves === 1 ? '' : 's'}, ${log.misses} miss${log.misses === 1 ? '' : 'es'}.` : 'No Catch input.'}` };
     }
     finishChallenge() {
       for (const s of this.stations) if (!['delivered', 'lava'].includes(s.state)) this.endStation(s, 'timeout');
@@ -474,6 +487,7 @@
     castVote(id, target) {
       if (!['vote', 'runoff'].includes(this.phase) || !this.players[id]?.active || this.locked.has(id) || this.timerClock() + 1e-8 >= DURATIONS[this.phase]) return false;
       if (target !== null && (target === id || !this.candidates.includes(target) || !this.players[target]?.active)) return false;
+      this.participate(id);
       if (this.ballots[id] !== target) this.confidences[id] = 'Hunch';
       this.ballots[id] = target; this.voted.add(id); return true;
     }
@@ -503,9 +517,9 @@
     botBallot(p) {
       const candidates = this.candidates.filter(id => id !== p.id);
       if (!candidates.length) return null;
-      // Loyals consult public receipts only. Snakes know their teammate and try
-      // to deflect suspicion; no ballot gets omniscient Loyal targeting.
-      const scored = candidates.map(id => ({ id, score: p.suspicion[id] + this.random() * 2.1 - (p.role === 'Snake' && this.players[id].role === 'Snake' ? 10 : 0) }));
+      // Keepers consult public receipts only. Tricksters know their teammate and try
+      // to deflect suspicion; no ballot gets omniscient Keeper targeting.
+      const scored = candidates.map(id => ({ id, score: p.suspicion[id] + this.random() * 2.1 - (p.role === 'Trickster' && this.players[id].role === 'Trickster' ? 10 : 0) }));
       scored.sort((a, b) => b.score - a.score); return scored[0].id;
     }
     finishVote() {

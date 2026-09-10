@@ -1,10 +1,12 @@
 # Prize Lift: pairing and elimination review
 
+**Reading status:** this remains the rationale for the two-operator and odd-cast spotter rules retained in the [current design brief](../midnight-fair-design-v3.md). Repeat spotting, the cost of losing console access after a partner is removed, and spotter sabotage strength still need playtesting. The unselected formats and dated implementation notes below provide context; they do not replace current rules or establish balance.
+
 8 September 2026 analysis · Decision recorded 9 September 2026
 
 ## Decision: pairs everywhere, and a spotter for an odd cast
 
-On 9 September 2026 the following format was selected and written into the [design brief](snake-show-design-brief-v2.md); the analysis below is the record of how it was chosen.
+On 9 September 2026 the following format was selected and written into the [design brief](../archive/snake-show-design-brief-v2.md); the analysis below is the record of how it was chosen.
 
 - Individual removals stay as before: without deadlocks the active cast goes 8 → 7 → 6 → 5.
 - Every Prize Lift has exactly two operators and two motors. There is no other tray.
@@ -17,7 +19,7 @@ Why this and not the others: it is deterministic, role-blind, explainable in one
 
 What still needs playtesting: the Loyals’ two-for-one on a failed pair, the repeat-spotter cost after a deadlock, and whether arming without a burst is strong enough against practiced pairs.
 
-The [design brief](snake-show-design-brief-v2.md) fixes the invariant: **every Prize Lift has exactly two motors and two operators under comparable conditions**. The third motor adds a second balance axis and another coordination relationship. A failure then mixes player behavior with a different task, weakening the interpretation of possible sabotage. Matching average success rates through tuning would not remove that difference.
+The [design brief](../archive/snake-show-design-brief-v2.md) fixes the invariant: **every Prize Lift has exactly two motors and two operators under comparable conditions**. The third motor adds a second balance axis and another coordination relationship. A failure then mixes player behavior with a different task, weakening the interpretation of possible sabotage. Matching average success rates through tuning would not remove that difference.
 
 ## The scheduling conflict
 
@@ -75,6 +77,6 @@ At the time of this analysis, the first useful comparison looked like removal bl
 
 ## Implementation status
 
-As of 9 September 2026 the [connected browser game](browser/README.md) implements the decision: `assignGroups` accepts only even casts, `chooseSpotter` names the spotter, `makeStation` builds two-ended trays only, the spotter can Catch from any rescue area and, as a Snake, arm from one without a motor change, bots can spot, and each act with a spotter records a spotter receipt. The engine suite asserts two operators per lift and a spotter exactly when the cast is odd across seeded episodes.
+As of 9 September 2026 the [connected browser game](../browser/README.md) implements the decision: `assignGroups` accepts only even casts, `chooseSpotter` names the spotter, `makeStation` builds two-ended trays only, the spotter can Catch from any rescue area and, as a Snake, arm from one without a motor change, bots can spot, and each act with a spotter records a spotter receipt. The engine suite asserts two operators per lift and a spotter exactly when the cast is odd across seeded episodes.
 
-The independent [interaction studies](prototypes/README.md) follow the same rule: the Catch/Rig fixture pairs Maya and Leo with Nia as a Snake spotter, and the receipt/vote rehearsal pairs the cast and adds the spotter card. Passing tests establish internal consistency, not balance or fairness with real players.
+The independent [interaction studies](../prototypes/README.md) follow the same rule: the Catch/Rig fixture pairs Maya and Leo with Nia as a Snake spotter, and the receipt/vote rehearsal pairs the cast and adds the spotter card. Passing tests establish internal consistency, not balance or fairness with real players.

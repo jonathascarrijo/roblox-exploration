@@ -7,10 +7,10 @@ test('illustrated lift summaries do not depend on hidden roles or private events
   const g=sample(), record=g.history[0];
   for(const s of record.stations) {
     const before=View.stationCard(s,g.players,0)+View.detail(s,g.players);
-    const players=g.players.map(p=>({...p,role:p.role==='Snake'?'Loyal':'Snake'}));
+    const players=g.players.map(p=>({...p,role:p.role==='Trickster'?'Keeper':'Trickster'}));
     const station={...s,events:[{kind:'rig',text:'SECRET RIG BY SOMEONE',private:true}]};
     assert.equal(View.stationCard(station,players,0)+View.detail(station,players),before);
-    assert.doesNotMatch(before,/SECRET|diverter|motor force|Snake|Loyal/);
+    assert.doesNotMatch(before,/SECRET|diverter|motor force|Trickster|Keeper/);
     assert.equal(View.facts(s,players).length,3);
     for(const card of s.cards) assert.ok(View.detail(s,players).includes(card.text.replace(/&/g,'&amp;').replace(/'/g,'&#39;')));
   }
@@ -18,10 +18,10 @@ test('illustrated lift summaries do not depend on hidden roles or private events
 test('delivery, lava and timeout have distinct pictures; losses never become individual heist claims', () => {
   const g=sample(), s=structuredClone(g.history[0].stations[0]);
   const pictures=new Set();
-  for(const [state,failed,label] of [['delivery',false,'Delivered!'],['lava',true,'Into the lava'],['timeout',true,'Time ran out']]) {
+  for(const [state,failed,label] of [['delivery',false,'Delivered!'],['lava',true,'Safety stop'],['timeout',true,'Time ran out']]) {
     s.cards[0]={...s.cards[0],state,failed,losses:2};
     const f=View.facts(s,g.players)[0]; assert.equal(f.label,label); pictures.add(f.image);
-    const card=View.stationCard(s,g.players,0); assert.match(card,/2 lost/); assert.doesNotMatch(card,/stolen|heist|Snake/);
+    const card=View.stationCard(s,g.players,0); assert.match(card,/2 collected/); assert.doesNotMatch(card,/stolen|heist|Trickster/);
   }
   assert.equal(pictures.size,3);
 });
@@ -37,10 +37,10 @@ test('pictures distinguish high Pull, low idle, high release, and lack of a sust
 test('the spotter card is public, offers the same vote shortcut, and distinguishes saves, misses, and no taps', () => {
   const g=sample(), pictures=new Set();
   for(const [saves,misses,label] of [[1,0,'1 caught · 0 missed'],[0,1,'0 caught · 1 missed'],[0,0,'No catch tried']]) {
-    const card={kind:'spotter',id:2,ids:[2],station:'West lift',seconds:12.4,saves,misses,text:'Nia spotted this act without a console.'};
+    const card={kind:'spotter',id:2,ids:[2],station:'West lift',seconds:12.4,saves,misses,text:'Nia spotted this trial without a console.'};
     const html=View.spotterCard(card,g.players);
     assert.match(html,/Spotter/); assert.match(html,/data-vote-shortcut="2"/); assert.match(html,/Spotted the West lift/); assert.match(html,new RegExp(label));
-    assert.doesNotMatch(html,/Snake|Loyal|Rig|armed/); pictures.add(html.match(/<svg[^]*?<\/svg>/g).at(-1));
+    assert.doesNotMatch(html,/Trickster|Keeper|Rig|armed/); pictures.add(html.match(/<svg[^]*?<\/svg>/g).at(-1));
   }
   assert.equal(pictures.size,3);
   assert.match(View.spotterCard({kind:'spotter',id:2,ids:[2],station:null,seconds:0,saves:0,misses:0,text:''},g.players),/Kept moving/);
@@ -51,16 +51,16 @@ test('the last catch distinguishes saved, missed and no attempt; reveals name on
     s.cards[2]={...s.cards[2],ids,saved}; const f=View.facts(s,g.players)[2]; assert.equal(f.label,label); pictures.add(f.image);
   }
   assert.equal(pictures.size,3);
-  for(const role of ['Loyal','Snake']) {
+  for(const role of ['Keeper','Trickster']) {
     const p=g.players.find(p=>p.role===role), other=g.players.find(q=>q.role!==role), vote={removed:p.id,totals:{[p.id]:4,[other.id]:2},abstentions:1}, html=View.result(vote,g.players);
     assert.match(html,new RegExp(` ${role}</span>`)); assert.match(html,/4 votes/); assert.match(html,/1 skipped/);
-    assert.equal((html.match(new RegExp(role==='Snake'?'class="snake-eyes"':'class="loyal-prize-pin"','g'))||[]).length,2);
-    assert.doesNotMatch(html,role==='Snake'?/loyal-prize-pin/:/snake-eyes/);
-    const changed=g.players.map(q=>q.id===p.id?q:{...q,role:q.role==='Snake'?'Loyal':'Snake'});
+    assert.equal((html.match(new RegExp(role==='Trickster'?'class="snake-eyes"':'class="loyal-prize-pin"','g'))||[]).length,2);
+    assert.doesNotMatch(html,role==='Trickster'?/loyal-prize-pin/:/snake-eyes/);
+    const changed=g.players.map(q=>q.id===p.id?q:{...q,role:q.role==='Trickster'?'Keeper':'Trickster'});
     assert.equal(View.result(vote,changed),html);
   }
   const tie=View.result({removed:null,totals:{1:2,2:2},abstentions:4},g.players);
-  assert.match(tie,/Everyone stays/); assert.doesNotMatch(tie,/role-stamp|Snake|Loyal|snake-eyes|loyal-prize-pin/);
+  assert.match(tie,/Everyone stays/); assert.doesNotMatch(tie,/role-stamp|Trickster|Keeper|snake-eyes|loyal-prize-pin/);
 });
 
 test('all eight seats remain visible, while self, eliminated and non-tied candidates are unvotable', () => {
@@ -98,13 +98,13 @@ test('the leader costume depends only on positive public votes, including ties',
   const g=sample(); g.beginVote(); g.castVote(0,1); g.castVote(1,2);
   const leaders=()=>g.players.filter(p=>View.candidateState(g,p,g.liveVotes()).leader).map(p=>p.id);
   assert.deepEqual(leaders(),[1,2]); g.castVote(1,3); assert.deepEqual(leaders(),[1,3]);
-  g.players.forEach(p=>p.role=p.role==='Snake'?'Loyal':'Snake'); assert.deepEqual(leaders(),[1,3]);
+  g.players.forEach(p=>p.role=p.role==='Trickster'?'Keeper':'Trickster'); assert.deepEqual(leaders(),[1,3]);
   g.beginVote(); assert.deepEqual(leaders(),[]);
   assert.match(View.waitingStation(g.reviewSnapshot().stations[0],g.players),/Still playing/);
 });
 
 test('role cues are opt-in and never appear on unrevealed faces or evidence', () => {
-  const g=sample(),p=g.players[0],snake={...p,role:'Snake'},loyal={...p,role:'Loyal'};
+  const g=sample(),p=g.players[0],snake={...p,role:'Trickster'},loyal={...p,role:'Keeper'};
   assert.match(View.rolePortrait(snake),/class="snake-eyes"/);assert.doesNotMatch(View.rolePortrait(snake),/loyal-prize-pin/);
   assert.match(View.rolePortrait(loyal),/class="loyal-prize-pin"/);assert.doesNotMatch(View.rolePortrait(loyal),/snake-eyes/);
   assert.equal(View.portrait(snake),View.portrait(loyal));assert.equal(View.votingPortrait(snake),View.votingPortrait(loyal));
