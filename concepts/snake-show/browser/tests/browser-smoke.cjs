@@ -25,15 +25,17 @@ const url = pathToFileURL(path.join(__dirname, '..', 'index.html')).href;
     await page.locator('#gotIt').click();
     await page.locator('#practice').click(); await page.clock.runFor(120);
     assert.equal(await page.evaluate(() => snakeShowTest.game.activeIds().length), 2);
-    // Clicking a timer button must not steal focus from the winch; Space keeps driving the motor.
-    await page.locator('#pull').focus(); await page.locator('#freezePhaseTimer').click();
-    assert.equal(await page.evaluate(() => document.activeElement.id), 'pull');
+    // At the console, Space drives the winch even after clicks or pauses move focus to another button.
+    await page.locator('#freezePhaseTimer').click(); await page.locator('#tuneToggle').click(); await page.locator('#tuneToggle').click();
+    await page.keyboard.press('Escape'); await page.clock.runFor(60); await page.keyboard.press('Escape'); await page.clock.runFor(60);
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'pause');
     const frozenLiftTimer = await page.locator('#timer').innerText();
     await page.keyboard.down('Space'); await page.clock.runFor(1600);
     assert.equal(await page.evaluate(() => snakeShowTest.game.players[0].pulling), true);
     assert.ok(await page.evaluate(() => snakeShowTest.game.stations[0].h[0] > 0));
     assert.equal(await page.locator('#timer').innerText(), frozenLiftTimer);
-    await page.keyboard.up('Space');
+    await page.keyboard.up('Space'); await page.clock.runFor(60);
+    assert.equal(await page.evaluate(() => snakeShowTest.paused), false);
     await page.locator('#freezePhaseTimer').click();
     assert.equal(await page.evaluate(() => snakeShowTest.game.players[0].pulling), false);
     await capture('desktop-lift');

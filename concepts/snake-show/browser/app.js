@@ -118,6 +118,9 @@
     const p = game.players[0];
     return game.stations.reduce((near, s) => Math.hypot(p.x - POSITIONS[s.index].x, p.y - POSITIONS[s.index].y) < 110 ? s : near, null);
   }
+  // While you operate your own console, Space is the winch no matter which button has focus.
+  function operating() { return !!game && game.phase === 'challenge' && game.players[0].active && game.mode !== 'watch' && view.camera === 'lift' && view.station === game.players[0].station; }
+  let spaceHeld = false;
   function movable() { return !earlyReviewOpen && game.mode !== 'watch' && (game.phase === 'lobby' || game.phase === 'challenge' && game.players[0].active && !game.players[0].operated && view.camera === 'villa'); }
   function interact() {
     if (paused) return;
@@ -179,14 +182,17 @@
     if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName) || e.altKey || e.ctrlKey || e.metaKey) return;
     if (paused) return;
     const action = { Space: 'pull', KeyR: 'rig', KeyC: 'catch' }[e.code];
-    if (action && !(e.code === 'Space' && /^(BUTTON|A)$/.test(e.target.tagName) && e.target.getClientRects().length)) {
-      e.preventDefault(); if (!e.repeat) actionDown(action, e.code); return;
+    // A focused button or link keeps its native Space activation unless you are at your console.
+    if (action && !(e.code === 'Space' && !operating() && /^(BUTTON|A)$/.test(e.target.tagName) && e.target.getClientRects().length)) {
+      e.preventDefault(); if (e.code === 'Space') spaceHeld = true; if (!e.repeat) actionDown(action, e.code); return;
     }
     if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code) && movable()) { keys.add(e.code); e.preventDefault(); view.destination = null; }
     if (e.code === 'KeyE' && !e.repeat) { e.preventDefault(); interact(); }
   });
   window.addEventListener('keyup', e => {
     keys.delete(e.code);
+    // Cancel the focused button's activation for a Space that drove the winch.
+    if (e.code === 'Space' && spaceHeld) { spaceHeld = false; e.preventDefault(); }
     const action = { Space: 'pull', KeyR: 'rig', KeyC: 'catch' }[e.code];
     if (action) actionUp(action, e.code);
   });
@@ -515,8 +521,6 @@
     renderCast(force); if (challenge) renderTabs(force);
     if (devTools) devTools.update();
   }
-  // Pointer clicks on timer buttons keep focus where it is, so a focused winch button still answers Space.
-  $('devTimers').addEventListener('pointerdown', e => { if (e.target.closest('[data-timer]')) e.preventDefault(); });
   $('devTimers').addEventListener('click', e => {
     const button = e.target.closest('[data-timer]'); if (!button || button.disabled) return;
     game.setTimerPaused(button.dataset.timer, !game.timers[button.dataset.timer].paused); updateUI();
