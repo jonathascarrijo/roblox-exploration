@@ -10,9 +10,9 @@
     if (dialog) dialog.prepend($('devTimers'));
     else timerHome.after($('devTimers'));
   }
-  for (const id of ['cameraDialog', 'helpDialog']) $(id).addEventListener('close', () => {
-    placeTimerControls(['cameraDialog', 'helpDialog'].map($).find(dialog => dialog.open));
-  });
+  // The dialog close event is dispatched later; the open attribute changes at once, so watch that instead.
+  const dialogWatcher = new MutationObserver(() => placeTimerControls(['cameraDialog', 'helpDialog'].map($).find(dialog => dialog.open)));
+  for (const id of ['cameraDialog', 'helpDialog']) dialogWatcher.observe($(id), { attributeFilter: ['open'] });
   const params = new URLSearchParams(location.search);
   const devMode = params.get('dev') === '1';
   let devTools = null;
